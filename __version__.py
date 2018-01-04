@@ -1,0 +1,1 @@
+armarx_version = "0.9.2"
