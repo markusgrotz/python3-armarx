@@ -104,7 +104,7 @@ class TimestampFactory(Ice.ObjectFactory):
 
 
 
-load_armarx_slice('MemoryX', 'component/WorkingMemoryInterface.ice')
+load_armarx_slice('MemoryX', 'components/WorkingMemoryInterface.ice')
 from memoryx import SegmentLockBase
 from memoryx import EntityAttributeBase
 from memoryx import PlanePrimitiveBase
