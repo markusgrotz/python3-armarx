@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-import __version__ as v
 from pip.req import parse_requirements
 
 #install_reqs = parse_requirements("requirements.txt")
@@ -10,14 +9,14 @@ from pip.req import parse_requirements
 
 setup(
     name="armarx",
-    version=v.armarx_version,
+    version="0.9.2",
     description="python tools for ArmarX",
     author="Markus Grotz",
-    author_email="markus.grotz.edu",
+    author_email="markus.grotz@kit.edu",
     url="https://armarx.humanoids.kit.edu/",
 #    install_requires=reqs,
 #    tests_require=test_reqs,
-    install_requires=['argcomplete', 'configparser'],
+    install_requires=['argcomplete'],
     tests_require=['nose', 'mock'],
     test_suite="nose.collector",
     packages=find_packages(exclude=["tests"]),
