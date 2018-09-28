@@ -37,8 +37,13 @@ def get_data_path(package_name):
     return get_package_information(package_name, 'DATA_DIR:')
 
 
-def get_dependencies(package_name):
-    return get_package_information(package_name, 'SOURCE_PACKAGE_DEPENDENCIES:')
+def get_dependencies(package_name, include_self=False):
+    dependencies = get_package_information(package_name, 'SOURCE_PACKAGE_DEPENDENCIES:')
+    if include_self and is_armarx_package(package_name):
+        dependencies.append(package_name)
+        return dependencies
+    else:
+        return dependencies or []
 
 
 def get_include_path(package_name):
