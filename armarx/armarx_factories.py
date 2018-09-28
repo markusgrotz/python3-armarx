@@ -3,23 +3,16 @@ import Ice
 from .interface_helper import load_armarx_slice, ice_communicator
 load_armarx_slice('RobotAPI', 'observers/KinematicUnitObserverInterface.ice')
 
-from armarx import TimedVariantBase
 from armarx import DatafieldRefBase
 from armarx import ChannelRefBase
-from armarx import VariantBase
 
-
-class Variant(VariantBase):
-    pass
+from .variants import Variant
+from .variants import TimedVariant
 
 
 class VariantFactory(Ice.ObjectFactory):
     def create(self, t):
         return Variant()
-
-
-class TimedVariant(TimedVariantBase):
-    pass
 
 
 class TimedVariantFactory(Ice.ObjectFactory):
