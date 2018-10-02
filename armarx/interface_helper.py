@@ -1,4 +1,6 @@
 import logging
+
+import time
 import os
 import configparser
 
@@ -13,10 +15,11 @@ logger = logging.getLogger(__name__)
 
 def load_armarx_slice(project, filename):
     """
-    simple helper function to load a slice definition file.  The imported slice
-    is then available through the python import function.
+    Simple helper function to load a slice definition file.  Definitions in the imported slice
+    file are then available through the python import function.
 
-    :param project: name of the amrarx package
+    :raises IOError: if the slice file was not found
+    :param project: name of the armarx package
     :type project: str
     :param filename: relative path to the slice interface
     :type filename: str
@@ -42,6 +45,7 @@ def load_armarx_slice(project, filename):
 def register_object(ice_object, ice_object_name):
     """
     Register an local ice object with ice under the given name
+
     :param ice_object: Local ice object instance
     :param ice_object_name: Name with which the object should be registered
     :return: Proxy to this object
@@ -64,8 +68,10 @@ def register_object(ice_object, ice_object_name):
 def get_topic(cls, topic_name):
     """
     Retrieve a topic proxy casted to the first parameter
+
     :param cls: Type of the topic
     :param topic_name: Name of the topic
+    :type topic_name: str
     :return: a casted topic proxy
     """
     topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager'))
@@ -102,6 +108,30 @@ def using_topic(proxy, topic_name):
     return topic
 
 
+def wait_for_proxy(cls, proxy_name, timeout=0):
+    """
+    waits for a proxy.
+
+    :param cls: the class definition of an ArmarXComponent
+    :param proxy_name: name of the proxy
+    :type proxy_name: str
+    :param timeout: timeout to wait for the proxy
+    :type timeout: int
+    :returns: the retrieved proxy
+    :rtype: an instance of cls
+    """
+    proxy = None
+    start_time = time.time()
+    while not ice_communicator.isShutdown() and proxy is None:
+        proxy = ice_communicator.stringToProxy(proxy_name)
+        if timeout and (timeout + start_time) > time.time():
+            return
+        else:
+            logger.debug('Waiting for proxy {}'.format(proxy_name))
+            time.sleep(0.1)
+    return cls.checkedCast(proxy)
+
+
 def get_proxy(cls, proxy_name):
     """
     Connects to a proxy.
@@ -117,20 +147,29 @@ def get_proxy(cls, proxy_name):
 
 
 def get_config_dir():
+    """
+    :raises IOError: if the $HOME/.armarx does not exists
+    :returns: the default armarx config folder
+    :rtype: str
+    """
     config_dir = os.path.expanduser('~/.armarx/')
     if not os.path.isdir(config_dir):
-        raise Exception('ArmarX config folder does not exists.')
+        raise IOError('ArmarX config folder does not exists.')
     return config_dir
 
 
 def load_config():
+    """
+    :raises IOError: if armarx.ini does not exists
+    :returns: the default armarx config
+    :rtype: configparser.ConfigParser
+    """
     config_dir = get_config_dir()
     config_file = os.path.join(config_dir, 'armarx.ini')
     if not os.path.exists(config_file):
-        raise Exception('ArmarX config file does not exists.')
+        raise IOError('ArmarX config file does not exists.')
     config = configparser.Configparser()
     config.read(config_file)
-
     return config
 
 
