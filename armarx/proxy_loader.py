@@ -10,8 +10,8 @@ from .cmake_helper import get_data_path
 
 import importlib
 import types
-from .interface_helper import get_proxy
-from .interface_helper import get_topic
+from .ice_manager import get_proxy
+from .ice_manager import get_topic
 
 logger = logging.getLogger(__name__)
 

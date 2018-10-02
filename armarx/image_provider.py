@@ -3,9 +3,10 @@
 import logging
 import numpy as np
 
-from armarx.interface_helper import load_armarx_slice, ice_communicator
-from armarx.interface_helper import register_object
-from armarx.interface_helper import get_topic
+from .interface_helper import load_armarx_slice,
+from .ice_manager import ice_communicator
+from .ice_manager import register_object
+from .ice_manager import get_topic
 load_armarx_slice('VisionX', 'core/ImageProviderInterface.ice')
 load_armarx_slice('VisionX', 'core/ImageProcessorInterface.ice')
 
