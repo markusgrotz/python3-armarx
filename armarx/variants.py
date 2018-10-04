@@ -1,4 +1,4 @@
-from .interface_helper import load_armarx_slice
+from .slice_loader import load_armarx_slice
 load_armarx_slice('ArmarXCore', 'observers/ObserverInterface.ice')
 
 from armarx import VariantBase
