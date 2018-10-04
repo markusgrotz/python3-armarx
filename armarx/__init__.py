@@ -1,7 +1,7 @@
 from .ice_manager import test_connection
 
 import sys
-from .proxy_loader import ArmarXVariantInfoFinder
+from .slice_loader import ArmarXVariantInfoFinder
 
 test_connection()
 
