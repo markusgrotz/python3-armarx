@@ -1,6 +1,6 @@
 import Ice
 
-from .armarx_manager import ice_communicator
+from .ice_manager import ice_communicator
 from .slice_loader import load_armarx_slice
 load_armarx_slice('RobotAPI', 'observers/KinematicUnitObserverInterface.ice')
 
