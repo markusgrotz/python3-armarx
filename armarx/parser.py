@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 
+import sys
 import logging
 
 
@@ -17,10 +18,10 @@ class ArmarXArgumentParser(ArgumentParser):
 
         log_format = '%(asctime)s - %(levelname)s - %(message)s'
         if args.verbose:
-            logging.basicConfig(format=log_format, level=logging.DEBUG)
+            logging.basicConfig(format=log_format, stream=sys.stdout, level=logging.DEBUG)
         elif args.quiet:
-            logging.basicConfig(format=log_format, level=logging.ERROR)
+            logging.basicConfig(format=log_format, stream=sys.stdout, level=logging.ERROR)
         else:
-            logging.basicConfig(format=log_format, level=logging.INFO)
+            logging.basicConfig(format=log_format, stream=sys.stdout, level=logging.INFO)
 
         return args
