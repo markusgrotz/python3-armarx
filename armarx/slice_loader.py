@@ -58,6 +58,7 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.mapping = self.build_mapping()
+        self.patched = {}
 
     def build_mapping(self):
         global_mapping = dict()
@@ -91,11 +92,24 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
         variant_info = self.mapping.get(type_name, None)
         if variant_info:
             load_armarx_slice(variant_info.package_name, variant_info.include_path)
-            self.patch_slice_definition(variant_info)
+            # todo we need to patch all interface since it might be already
+            # loaded
+            for _, variant_info in self.mapping.items():
+                self.patch_slice_definition(variant_info)
         return None
 
     def patch_slice_definition(self, variant_info):
         default_name = variant_info.default_name
+
+        if variant_info.type_name in self.patched:
+            return
+
+        mod = importlib.import_module('armarx')
+
+        if not hasattr(mod, variant_info.type_name):
+            return
+
+        cls = getattr(mod, variant_info.type_name)
 
         def get_default_topic(cls, name=None):
             return get_topic(cls, name or default_name)
@@ -103,7 +117,6 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
         def get_default_proxy(cls, name=None):
             return get_proxy(cls, name or default_name)
 
-        mod = importlib.import_module('armarx')
-        cls = getattr(mod, variant_info.type_name)
         cls.get_proxy = types.MethodType(get_default_proxy, cls)
         cls.get_topic = types.MethodType(get_default_topic, cls)
+        self.patched[variant_info.type_name] = True

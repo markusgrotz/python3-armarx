@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import logging
 import numpy as np
 
-from .ice_manager import ice_communicator
 from .ice_manager import register_object
 from .ice_manager import get_topic
 from .slice_loader import load_armarx_slice
@@ -69,27 +66,3 @@ class ImageProvider(ImageProviderInterface):
 
     def shutdown(self, current=None):
         current.adapter.getCommunicator().shutdown()
-
-
-def main():
-    import time
-
-    logging.basicConfig(level=logging.DEBUG)
-
-    logger.info('testing image provider')
-    image_provider = ImageProvider('TestImageProvider')
-    logger.info('registering image provider')
-    image_provider.register()
-
-    try:
-        while not ice_communicator.isShutdown():
-            logger.debug('providing random image')
-            images = np.random.random(image_provider.data_dimensions) * 255.0
-            image_provider.update_image(np.uint8(images))
-            time.sleep(0.1)
-    except KeyboardInterrupt:
-        logger.info('shutting down')
-
-
-if __name__ == '__main__':
-    main()
