@@ -11,7 +11,7 @@ import __version__ as v
 setup(
     name="armarx",
     version=v.armarx_version,
-    description="python tools for ArmarX",
+    description="python bindings for ArmarX",
     author="Markus Grotz",
     author_email="markus.grotz@kit.edu",
     url="https://armarx.humanoids.kit.edu/",
