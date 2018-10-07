@@ -1,1 +1,1 @@
-armarx_version = "0.9.2"
+armarx_version = "0.10.0"
