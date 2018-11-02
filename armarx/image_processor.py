@@ -33,7 +33,7 @@ def read_images(image_provider):
 class ImageProcessor(ImageProcessorInterface):
 
     def __init__(self, provider_name):
-        super(ImageProcessorInterface, self).__init__()
+        super().__init__()
         self.provider_name = provider_name
         self.result_image_provider = ImageProvider(self.__class__.__name__ + 'Result')
 
@@ -58,7 +58,7 @@ class ImageProcessor(ImageProcessorInterface):
         pass
 
     def shutdown(self):
-        self.topic.unsubscribe(self)
+        self.image_listener_topic.unsubscribe(self)
 
     def register(self):
         logger.debug('Registering image processor')
