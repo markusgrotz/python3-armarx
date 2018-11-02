@@ -97,39 +97,6 @@ class TimestampFactory(Ice.ObjectFactory):
         return Timestamp()
 
 
-
-load_armarx_slice('MemoryX', 'components/WorkingMemoryInterface.ice')
-from memoryx import SegmentLockBase
-from memoryx import EntityAttributeBase
-from memoryx import PlanePrimitiveBase
-
-class SegmentLock(SegmentLockBase):
-    pass
-
-
-class SegmentLockFactory(Ice.ObjectFactory):
-    def create(self, t):
-        return SegmentLock()
-
-
-class EntityAttribute(EntityAttributeBase):
-    pass
-
-
-class EntityAttributeFactory(Ice.ObjectFactory):
-    def create(self, t):
-        return EntityAttribute()
-
-
-class PlanePrimitive(PlanePrimitiveBase):
-    pass
-
-
-class PlanePrimitiveFactory(Ice.ObjectFactory):
-    def create(self, t):
-        return PlanePrimitive()
-
-
 def register():
     ice_communicator.addObjectFactory(VariantFactory(), Variant.ice_staticId())
     ice_communicator.addObjectFactory(TimedVariantFactory(), TimedVariant.ice_staticId())
@@ -142,7 +109,3 @@ def register():
     ice_communicator.addObjectFactory(PoseFactory(), Pose.ice_staticId())
     ice_communicator.addObjectFactory(FramedPositionFactory(), FramedPosition.ice_staticId())
     ice_communicator.addObjectFactory(FramedPoseFactory(), FramedPose.ice_staticId())
-
-    ice_communicator.addObjectFactory(SegmentLockFactory(), SegmentLock.ice_staticId())
-    ice_communicator.addObjectFactory(EntityAttributeFactory(), EntityAttribute.ice_staticId())
-    ice_communicator.addObjectFactory(PlanePrimitiveFactory(), PlanePrimitive.ice_staticId())
