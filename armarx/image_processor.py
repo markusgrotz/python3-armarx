@@ -35,7 +35,6 @@ class ImageProcessor(ImageProcessorInterface):
     def __init__(self, provider_name):
         super().__init__()
         self.provider_name = provider_name
-        self.result_image_provider = ImageProvider(self.__class__.__name__ + 'Result')
 
         self.thread = threading.Thread(target=self.process)
         self.cv = threading.Condition()
@@ -58,12 +57,15 @@ class ImageProcessor(ImageProcessorInterface):
         pass
 
     def shutdown(self):
-        self.image_listener_topic.unsubscribe(self)
+        self.image_listener_topic.unsubscribe(self.proxy)
 
     def register(self):
         logger.debug('Registering image processor')
-        self.result_image_provider.register()
         self.proxy = register_object(self, self.__class__.__name__)
         self.image_source = get_proxy(ImageProviderInterfacePrx, self.provider_name)
+        d = self.image_source.getImageFormat().dimension
+        n = self.image_source.getNumberImages()
+        self.result_image_provider = ImageProvider(self.__class__.__name__ + 'Result', n, d.width, d.height)
+        self.result_image_provider.register()
         self.thread.start()
         self.image_listener_topic = using_topic(self.proxy, self.provider_name + '.ImageListener')
