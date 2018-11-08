@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="armarx-dev",
-    version="0.10.2",
+    version="0.10.3",
     description="python bindings for ArmarX",
     author="Markus Grotz",
     author_email="markus.grotz@kit.edu",
