@@ -66,7 +66,6 @@ def get_package_data(package_name):
     if armarx_cmake_script is None:
         for include in includes:
             cmake_script = os.path.join(include, rel_cmake_script)
-            logger.info("Checking " + cmake_script)
             if os.path.exists(cmake_script):
                 armarx_cmake_script = cmake_script
                 break
