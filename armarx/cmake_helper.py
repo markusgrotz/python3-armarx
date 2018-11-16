@@ -11,9 +11,6 @@ def get_armarx_include_dirs(pkg_name):
     """
     finds the package path for an armarx package
 
-
-    .. fixme: this does not work for installed packages
-
     :param pkg_name: name of the package
     :returns: the path to the package if found
     :rtype: str
