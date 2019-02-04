@@ -4,33 +4,26 @@ import os
 import subprocess
 
 logger = logging.getLogger(__name__)
+# make global var since finding it is expensive
+armarx_cmake_script = None
 
-
-def get_armarx_pkg_dir(pkg_name):
+def get_armarx_include_dirs(pkg_name):
     """
     finds the package path for an armarx package
-
-
-    .. fixme: this does not work for installed packages
 
     :param pkg_name: name of the package
     :returns: the path to the package if found
     :rtype: str
     """
-    path = os.path.expanduser('~/.cmake/packages/{}/'.format(pkg_name))
-    l = list(os.listdir(path))
-    if len(l) != 1:
-        logger.error('unable to find path for package {}. path is not unique'.format(pkg_name))
-        raise ValueError('unable to find cmake package path')
-    with open(os.path.join(path, l[0])) as f:
-        lines = f.readlines()
-    if len(lines) != 1:
-        logger.error('unable to find path for package {}'.format(pkg_name))
-        raise ValueError('unable to find cmake package path')
-    else:
-        for line in open(os.path.join(lines[0][:-1], 'CMakeCache.txt')):
-            if line.startswith('Project_SOURCE_DIR'):
-                return line.split('=')[-1][:-1]
+
+    cmd = ["cmake", "--find-package", "-DNAME=" + pkg_name, "-DCOMPILER_ID=GNU", "-DLANGUAGE=C",  "-DMODE=COMPILE"]
+    result = subprocess.check_output(cmd).decode("utf-8")
+    includes = []
+    path_list = result.split("-I")
+    for path in path_list:
+        if len(path.strip()) > 0:
+            includes.append(path.strip())
+    return includes
 
 
 def get_data_path(package_name):
@@ -64,10 +57,21 @@ def get_package_data(package_name):
     if not package_name:
         logger.error('package name is empty.')
         return
-    cmake_script = os.path.join(get_armarx_pkg_dir('ArmarXCore'), 'source/ArmarXCore/core/system/cmake/FindPackageX.cmake')
-    cmd = ['cmake', '-DPACKAGE={}'.format(package_name), '-P', cmake_script]
-    return subprocess.check_output(cmd).decode('utf-8')
-
+    rel_cmake_script = 'ArmarXCore/core/system/cmake/FindPackageX.cmake'
+    includes = get_armarx_include_dirs('ArmarXCore')
+    global armarx_cmake_script
+    if armarx_cmake_script is None:
+        for include in includes:
+            cmake_script = os.path.join(include, rel_cmake_script)
+            if os.path.exists(cmake_script):
+                armarx_cmake_script = cmake_script
+                break
+    if armarx_cmake_script:
+        cmd = ['cmake', '-DPACKAGE={}'.format(package_name), '-P', armarx_cmake_script]
+        return subprocess.check_output(cmd).decode('utf-8')
+    else:
+        logger.error("Could not find " + rel_cmake_script + " for ArmarXCore in " + (", ").join(includes))
+        raise ValueError("Could not find a valid ArmarXCore path!")
 
 def is_armarx_package(package_name):
     package_data = get_package_data(package_name)
