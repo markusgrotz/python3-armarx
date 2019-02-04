@@ -4,22 +4,24 @@ import os
 import subprocess
 
 logger = logging.getLogger(__name__)
+
 # make global var since finding it is expensive
 armarx_cmake_script = None
 
+
 def get_armarx_include_dirs(pkg_name):
     """
-    finds the package path for an armarx package
+    find the include dir path for an armarx package
 
     :param pkg_name: name of the package
-    :returns: the path to the package if found
+    :returns: the include path to the package if found
     :rtype: str
     """
 
-    cmd = ["cmake", "--find-package", "-DNAME=" + pkg_name, "-DCOMPILER_ID=GNU", "-DLANGUAGE=C",  "-DMODE=COMPILE"]
-    result = subprocess.check_output(cmd).decode("utf-8")
+    cmd = ['cmake', '--find-package', '-DNAME=' + pkg_name, '-DCOMPILER_ID=GNU', '-DLANGUAGE=C',  '-DMODE=COMPILE']
+    result = subprocess.check_output(cmd).decode('utf-8')
     includes = []
-    path_list = result.split("-I")
+    path_list = result.split('-I')
     for path in path_list:
         if len(path.strip()) > 0:
             includes.append(path.strip())
@@ -70,8 +72,9 @@ def get_package_data(package_name):
         cmd = ['cmake', '-DPACKAGE={}'.format(package_name), '-P', armarx_cmake_script]
         return subprocess.check_output(cmd).decode('utf-8')
     else:
-        logger.error("Could not find " + rel_cmake_script + " for ArmarXCore in " + (", ").join(includes))
-        raise ValueError("Could not find a valid ArmarXCore path!")
+        logger.error('Could not find ' + rel_cmake_script + ' for ArmarXCore in ' + (', ').join(includes))
+        raise ValueError('Could not find a valid ArmarXCore path!')
+
 
 def is_armarx_package(package_name):
     package_data = get_package_data(package_name)
