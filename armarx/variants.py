@@ -25,14 +25,17 @@ def hash_type_name(type_id):
 
 class TimedVariant(TimedVariantBase):
 
-    def __init__(self, x):
-        self.data = x
-        self._typeId = hash_type_name(self.data.ice_id())
-        self._timestamp = datetime.now().timestamp()
+    def __init__(self, data=None, _typeId=-1, _timestamp=0):
+        super().__init__(data, _typeId=-1, _timestamp=0)
+        if self._typeId == -1 and hasattr(data, 'ice_id'):
+            self._typeId = hash_type_name(self.data.ice_id())
+        if _timestamp == 0:
+            self._timestamp = datetime.now().timestamp()
 
 
 class Variant(VariantBase):
 
-    def __init__(self, x):
-        self.data = x
-        self._typeId = hash_type_name(self.data.ice_id())
+    def __init__(self, data=None, _typeId=-1):
+        super().__init__(data, _typeId)
+        if self._typeId == -1 and hasattr(data, 'ice_id'):
+            self._typeId = hash_type_name(self.data.ice_id())
