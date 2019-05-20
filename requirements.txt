@@ -1,3 +1,4 @@
 argcomplete
-# zeroc-ice
+zeroc-ice==3.7.0
+lxml
 # configparser

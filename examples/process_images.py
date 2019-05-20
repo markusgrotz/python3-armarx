@@ -22,7 +22,7 @@ def main():
 
     logger.debug('Starting example image processor')
 
-    image_processor = TestImageProcessor('Armar3ImageProvider')
+    image_processor = TestImageProcessor("RCImageProvider")
     image_processor.register()
 
 

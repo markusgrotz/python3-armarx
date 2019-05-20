@@ -14,7 +14,7 @@ setup(
     author="Markus Grotz",
     author_email="markus.grotz@kit.edu",
     url="https://armarx.humanoids.kit.edu/",
-    # install_requires=reqs,
+    install_requires=["zeroc-ice==3.7.0", "lxml", "argcomplete"],
     # tests_require=test_reqs,
     # install_requires=['argcomplete', 'configparser'],
     # tests_require=['nose', 'mock'],
