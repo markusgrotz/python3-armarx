@@ -1,4 +1,4 @@
 argcomplete
+zeroc-ice==3.7.0
 lxml
-# zeroc-ice==3.7.0
 wheel
