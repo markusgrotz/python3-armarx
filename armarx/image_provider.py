@@ -39,6 +39,8 @@ class ImageProvider(ImageProviderInterface):
     def update_image(self, images, timestamp = None):
         if not timestamp:
             self.imageTimestamp = int(time.time() * 1e6)
+        else:
+            self.imageTimestamp = timestamp
         self.images = images
         if self.image_topic:
             self.image_topic.reportImageAvailable(self.name)
@@ -57,14 +59,14 @@ class ImageProvider(ImageProviderInterface):
         logger.debug('getImageFormat() {}'.format(self.image_format))
         return self.image_format
 
-    def getImagesAndMetaInfo(self, info, current=None):
-        logger.debug('getImages()')
+    def getImagesAndMetaInfo(self, current=None):
+        logger.debug('getImageAndMetaInfo()')
         info = MetaInfoSizeBase()
         info.timeProvided = self.imageTimestamp
         blob = memoryview(self.images)
-        info.size = len(blob)
-        info.capacity = len(blob)
-        return blob
+        info.size = self.images.size
+        info.capacity = info.size
+        return (blob, info)
 
     def getImages(self, current=None):
         logger.debug('getImages()')
