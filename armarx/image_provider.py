@@ -15,7 +15,7 @@ from visionx import ImageProviderInterface
 from visionx import ImageProcessorInterfacePrx
 from visionx import ImageFormatInfo
 from visionx import ImageType
-
+from armarx import MetaInfoSizeBase
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +30,15 @@ class ImageProvider(ImageProviderInterface):
         self.images = np.zeros(self.data_dimensions, dtype=np.uint8)
         self.image_topic = None
         self.proxy = None
+        self.imageTimestamp = 0
 
     def register(self):
         self.proxy = register_object(self, self.name)
         self.image_topic = get_topic(ImageProcessorInterfacePrx, '{}.ImageListener'.format(self.name))
 
-    def update_image(self, images):
+    def update_image(self, images, timestamp = None):
+        if not timestamp:
+            self.imageTimestamp = int(time.time() * 1e6)
         self.images = images
         if self.image_topic:
             self.image_topic.reportImageAvailable(self.name)
@@ -53,6 +56,15 @@ class ImageProvider(ImageProviderInterface):
     def getImageFormat(self, current=None):
         logger.debug('getImageFormat() {}'.format(self.image_format))
         return self.image_format
+
+    def getImagesAndMetaInfo(self, info, current=None):
+        logger.debug('getImages()')
+        info = MetaInfoSizeBase()
+        info.timeProvided = self.imageTimestamp
+        blob = memoryview(self.images)
+        info.size = len(blob)
+        info.capacity = len(blob)
+        return blob
 
     def getImages(self, current=None):
         logger.debug('getImages()')
