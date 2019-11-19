@@ -1,5 +1,12 @@
 # Python 3.0 bindings for ArmarX
 
+## Installation
+For the installation simply execute:
+
+```bash
+pip install git+https://gitlab.com/ArmarX/python3-armarx.git
+```
+
 ## Using the bindings
 
 ### Connecting to a proxy
