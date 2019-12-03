@@ -87,7 +87,7 @@ def wait_for_proxy(cls, proxy_name, timeout=0):
     :param cls: the class definition of an ArmarXComponent
     :param proxy_name: name of the proxy
     :type proxy_name: str
-    :param timeout: timeout to wait for the proxy
+    :param timeout: timeout in seconds to wait for the proxy. Zero means to wait forever
     :type timeout: int
     :returns: the retrieved proxy
     :rtype: an instance of cls
@@ -95,13 +95,18 @@ def wait_for_proxy(cls, proxy_name, timeout=0):
     proxy = None
     start_time = time.time()
     while not ice_communicator.isShutdown() and proxy is None:
-        proxy = ice_communicator.stringToProxy(proxy_name)
-        if timeout and (timeout + start_time) > time.time():
+        try:
+            proxy = ice_communicator.stringToProxy(proxy_name)
+            proxy_cast = cls.checkedCast(proxy)
+            return proxy_cast
+        except NotRegisteredException:
+            proxy = None
+        if timeout and (start_time + timeout) < time.time():
+            logging.exception('Timeout while waiting for proxy {}'.format(proxy_name))
             return
         else:
             logger.debug('Waiting for proxy {}'.format(proxy_name))
             time.sleep(0.1)
-    return cls.checkedCast(proxy)
 
 
 def get_proxy(cls, proxy_name):
