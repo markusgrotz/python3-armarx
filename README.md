@@ -1,11 +1,14 @@
 # Python 3.0 bindings for ArmarX
 
-## Installation
-For the installation simply execute:
+This package provides Python 3.0 bindings for ArmarX.
 
-```bash
-pip install git+https://gitlab.com/ArmarX/python3-armarx.git
-```
+In addition, the package also includes some helper functions, such as
+publishing or subscribing to images.
+
+
+## Installation
+
+`pip install --user -i https://pypi.humanoids.kit.edu armarx-dev`
 
 ## Using the bindings
 
@@ -22,5 +25,8 @@ platform_unit.moveTo(0.0, 0.0, 0.0, 50.0, 0.1)
 
 Slice definitions can be loaded using the `slice_loader.load_armarx_slice`
 function. Default values for the proxy name will also be mapped.
+
+
+More examples can be found in the `examples` folder.
 
 
