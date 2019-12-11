@@ -2,13 +2,11 @@ import logging
 
 import os
 import subprocess
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
-# make global var since finding it is expensive
-armarx_cmake_script = None
-
-
+@lru_cache(maxsize=32)
 def get_armarx_include_dirs(pkg_name):
     """
     find the include dir path for an armarx package
@@ -28,6 +26,7 @@ def get_armarx_include_dirs(pkg_name):
     return includes
 
 
+@lru_cache(maxsize=32)
 def get_data_path(package_name):
     return get_package_information(package_name, 'DATA_DIR:')
 
@@ -55,22 +54,19 @@ def get_package_information(package_name, info):
             return l.split(';')
 
 
+@lru_cache(maxsize=32)
 def get_package_data(package_name):
     if not package_name:
         logger.error('package name is empty.')
         return
     rel_cmake_script = 'ArmarXCore/core/system/cmake/FindPackageX.cmake'
     includes = get_armarx_include_dirs('ArmarXCore')
-    global armarx_cmake_script
-    if armarx_cmake_script is None:
-        for include in includes:
-            cmake_script = os.path.join(include, rel_cmake_script)
-            if os.path.exists(cmake_script):
-                armarx_cmake_script = cmake_script
-                break
-    if armarx_cmake_script:
-        cmd = ['cmake', '-DPACKAGE={}'.format(package_name), '-P', armarx_cmake_script]
-        return subprocess.check_output(cmd).decode('utf-8')
+    for include in includes:
+        cmake_script = os.path.join(include, rel_cmake_script)
+        if os.path.exists(cmake_script):
+            armarx_cmake_script = cmake_script
+            cmd = ['cmake', '-DPACKAGE={}'.format(package_name), '-P', armarx_cmake_script]
+            return subprocess.check_output(cmd).decode('utf-8')
     else:
         logger.error('Could not find ' + rel_cmake_script + ' for ArmarXCore in ' + (', ').join(includes))
         raise ValueError('Could not find a valid ArmarXCore path!')
