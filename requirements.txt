@@ -1,4 +1,4 @@
 argcomplete
 lxml
 zeroc-ice
-# configparser
+wheel
