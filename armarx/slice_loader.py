@@ -14,6 +14,7 @@ from .cmake_helper import get_data_path
 
 from .ice_manager import get_proxy
 from .ice_manager import get_topic
+from .ice_manager import wait_for_proxy
 
 from .cmake_helper import get_dependencies, get_include_path
 
@@ -71,7 +72,11 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
 
     def load_variant_info(self, package_name):
         mapping = dict()
-        variant_path = os.path.join(get_data_path(package_name)[0], package_name, 'VariantInfo-{}.xml'.format(package_name))
+        data_path = get_data_path(package_name)
+        if not data_path:
+            logger.warn('unable to get data path for package {}'.format(package_name))
+            return
+        variant_path = os.path.join(data_path[0], package_name, 'VariantInfo-{}.xml'.format(package_name))
         if not os.path.exists(variant_path):
             logger.warn('unable to read variant info for package {}'.format(package_name))
             return mapping
@@ -111,12 +116,17 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
 
         cls = getattr(mod, variant_info.type_name)
 
-        def get_default_topic(cls, name=None):
+        def _get_default_topic(cls, name=None):
             return get_topic(cls, name or default_name)
 
-        def get_default_proxy(cls, name=None):
+        def _get_default_proxy(cls, name=None):
             return get_proxy(cls, name or default_name)
 
-        cls.get_proxy = types.MethodType(get_default_proxy, cls)
-        cls.get_topic = types.MethodType(get_default_topic, cls)
+        def _wait_for_default_proxy(cls, name=None, timeout=0):
+            return wait_for_proxy(cls, name or default_name, timeout)
+
+        cls.get_proxy = types.MethodType(_get_default_proxy, cls)
+        cls.get_topic = types.MethodType(_get_default_topic, cls)
+        cls.wait_for_proxy = types.MethodType(_wait_for_default_proxy, cls)
+
         self.patched[variant_info.type_name] = True
