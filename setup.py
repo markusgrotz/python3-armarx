@@ -9,7 +9,7 @@ test_reqs = [str(i.req) for i in test_req]
 
 setup(
     name='armarx-dev',
-    version='0.11.0',
+    version='0.11.1',
     description='python bindings for ArmarX',
     author='Markus Grotz',
     author_email='markus.grotz@kit.edu',
