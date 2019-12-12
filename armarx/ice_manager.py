@@ -120,8 +120,8 @@ def get_proxy(cls, proxy_name):
     :rtype: an instance of cls
     :raises: Ice::NotRegisteredException if the proxy is not available
     """
-    proxy = ice_communicator.stringToProxy(proxy_name)
     try:
+        proxy = ice_communicator.stringToProxy(proxy_name)
         return cls.checkedCast(proxy)
     except NotRegisteredException:
         logging.exception('Proxy {} does not exist'.format(proxy_name))
@@ -163,7 +163,23 @@ def is_connected(ice_node_name):
 
 
 def is_alive():
+    """
+    checks if shutdown has been invoked on the communicator. 
+
+    :returns: true if ice grid registry is alive
+    """
     return not ice_communicator.isShutdown()
+
+
+def wait_for_shutdown():
+    """
+    sleeps until the ice communicator receives a shutdown signal 
+    or the program receives a keyboard interrupt
+    """
+    try:
+        ice_communicator.waitForShutdown()
+    except KeyboardInterrupt:
+        pass
 
 
 def _initialize():

@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
-from armarx.ice_manager import is_alive
-from armarx.ice_manager import register_object
+from armarx import ice_manager
+from armarx import slice_loader 
 
-from armarx.slice_loader import load_armarx_slice
-load_armarx_slice('ComponentsExample', 'RNGComponentProviderIceInterface.ice')
+slice_loader.load_armarx_slice('ComponentsExample', 'RNGComponentProviderIceInterface.ice')
 from armarx import RNGProviderComponentInterface
 
 import time
 import logging
 import random
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +28,8 @@ def main():
     parser = ArgumentParser(description='RNGProviderComponent')
     parser.parse_args()
 
-    register_object(RNGProviderComponent(), 'RNGProviderComponent')
-
-    try:
-        while is_alive():
-            logger.debug('Press any key to exit.')
-            time.sleep(1.0)
-    except KeyboardInterrupt:
-        logger.info('shutting down')
-
+    ice_manager.register_object(RNGProviderComponent(), 'RNGProviderComponent')
+    ice_manager.wait_for_shutdown()
 
 if __name__ == '__main__':
     main()
