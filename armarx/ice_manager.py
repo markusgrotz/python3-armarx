@@ -80,6 +80,34 @@ def using_topic(proxy, topic_name):
     return topic
 
 
+def wait_for_dependencies(proxy_names, timeout=0):
+    """
+    waits for a dependency list
+
+    :param proxy_names: the proxy names to wait for
+    :type proxy_names: list of str
+
+    :returns:  True if all dependencies are resolved
+    :rtype: bool
+    """
+    start_time = time.time()
+    while not ice_communicator.isShutdown():
+        if timeout and (start_time + timeout) < time.time():
+            logging.exception('Timeout while waiting for proxy {}'.format(proxy_name))
+            return False
+        dependencies_resolved = True
+        for proxy_name in proxy_names:
+            try:
+                proxy = ice_communicator.stringToProxy(proxy_name)
+                proxy.ice_ping()
+            except NotRegisteredException:
+                dependencies_resolved = False
+        if dependencies_resolved:
+            return True
+        else:
+            time.sleep(0.1)
+
+
 def wait_for_proxy(cls, proxy_name, timeout=0):
     """
     waits for a proxy.
