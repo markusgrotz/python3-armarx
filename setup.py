@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
 
-install_reqs = parse_requirements('requirements.txt', session='_dummy_session')
-test_req = parse_requirements('test_requirements.txt', session='_dummy_session')
-reqs = [str(i.req) for i in install_reqs]
-test_reqs = [str(i.req) for i in test_req]
+def parse_requirements(filename):
+    lines = [l.strip() for l in open(filename)]
+    return [l for l in lines if l and not l.startswith('#')]
+
+reqs = parse_requirements('requirements.txt')
+test_reqs = parse_requirements('test_requirements.txt')
 
 setup(
     name='armarx-dev',
-    version='0.11.1',
+    version='0.11.3',
     description='python bindings for ArmarX',
     author='Markus Grotz',
     author_email='markus.grotz@kit.edu',
