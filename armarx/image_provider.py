@@ -6,6 +6,7 @@ from .ice_manager import get_topic
 from .slice_loader import load_armarx_slice
 load_armarx_slice('VisionX', 'core/ImageProviderInterface.ice')
 load_armarx_slice('VisionX', 'core/ImageProcessorInterface.ice')
+import time
 
 
 from armarx import armarx_factories
@@ -15,6 +16,7 @@ from visionx import ImageProviderInterface
 from visionx import ImageProcessorInterfacePrx
 from visionx import ImageFormatInfo
 from visionx import ImageType
+from armarx import MetaInfoSizeBase
 
 
 logger = logging.getLogger(__name__)
@@ -35,8 +37,9 @@ class ImageProvider(ImageProviderInterface):
         self.proxy = register_object(self, self.name)
         self.image_topic = get_topic(ImageProcessorInterfacePrx, '{}.ImageListener'.format(self.name))
 
-    def update_image(self, images):
+    def update_image(self, images, time_provided = 0):
         self.images = images
+        self.time_provided = time_provided or int(time.time() * 1000.0 * 1000.0)
         if self.image_topic:
             self.image_topic.reportImageAvailable(self.name)
         else:
@@ -53,6 +56,15 @@ class ImageProvider(ImageProviderInterface):
     def getImageFormat(self, current=None):
         logger.debug('getImageFormat() {}'.format(self.image_format))
         return self.image_format
+
+    def getImagesAndMetaInfo(self,  current=None):
+        logger.debug('getImageFormat() {}'.format(self.image_format))
+        info = MetaInfoSizeBase()
+        d = self.image_format.dimension
+        info.size = self.image_format.bytesPerPixel * d.width *  d.height
+        info.capacity = info.size
+        info.timeProvided = self.time_provided
+        return memoryview(self.images), info
 
     def getImages(self, current=None):
         logger.debug('getImages()')
