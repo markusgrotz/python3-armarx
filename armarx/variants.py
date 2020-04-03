@@ -5,21 +5,28 @@ from armarx import VariantBase
 from armarx import TimedVariantBase
 
 from datetime import datetime
+import numpy as np
 
 
 def hash_type_name(type_id):
     """
     converts an ice id to a variant's type id
+
     ..see:: c++ implementation in ArmarXCore/observers/variants/Variants.cpp::hashTypeName()
+
+    The implementation uses a normal int, thus the value can be larger than 2 ** 31 - 1 
 
     :param type_id:: the type id
     :type type_id:: basestring
     :returns: the hash value of type_id
     :rtype: int
     """
-    hash_value = 0
+    prev_error_level = np.geterr()
+    np.seterr(over='ignore')
+    hash_value = np.int32(0)
     for ch in type_id:
-        hash_value = (((hash_value << 5) + hash_value) & 0xffffffff) ^ ord(ch)
+        hash_value = ((np.int32(hash_value) << np.int32(5)) + np.int32(hash_value)) ^ np.int32(ord(ch))
+    np.seterr(over=prev_error_level['ignore'])
     return hash_value
 
 
