@@ -26,7 +26,7 @@ def hash_type_name(type_id):
     hash_value = np.int32(0)
     for ch in type_id:
         hash_value = ((np.int32(hash_value) << np.int32(5)) + np.int32(hash_value)) ^ np.int32(ord(ch))
-    np.seterr(over=prev_error_level['ignore'])
+    np.seterr(over=prev_error_level['over'])
     return hash_value
 
 
