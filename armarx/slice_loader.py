@@ -65,7 +65,7 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
         global_mapping = dict()
         parser = configparser.ConfigParser()
         parser.read(os.path.expanduser('~/.armarx/armarx.ini'))
-        packages = parser.get('AutoCompletion', 'packages')
+        packages = parser.get('AutoCompletion', 'packages', fallback='ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision')
         for package_name in packages.split(','):
             global_mapping.update(self.load_variant_info(package_name))
         return global_mapping
