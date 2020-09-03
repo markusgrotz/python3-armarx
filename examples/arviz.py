@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 import time
 
 import numpy as np
 import transforms3d as tf3d
 
+import armarx
 import armarx.arviz as viz
 
 
@@ -133,8 +136,7 @@ def fill_objects_layer(layer: viz.Layer, time_sec):
     ]
 
 
-if __name__ == '__main__':
-
+def main():
     # Create a client with a name.
     arviz = viz.Client("ArViz Python Example")
 
@@ -182,3 +184,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         # Ctrl + C was pressed.
         pass
+
+
+if __name__ == '__main__':
+    main()

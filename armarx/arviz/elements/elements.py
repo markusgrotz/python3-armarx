@@ -10,7 +10,7 @@ import armarx
 import armarx.viz as viz
 
 
-import arviz.conversions as conv
+from armarx.arviz import conversions as conv
 from .Element import Element
 
 
