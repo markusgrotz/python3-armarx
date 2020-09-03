@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Union
+from typing import List, Union
 
 from armarx import slice_loader
 from armarx.ice_manager import get_topic

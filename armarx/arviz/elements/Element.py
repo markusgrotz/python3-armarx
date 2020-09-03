@@ -2,7 +2,6 @@ import enum
 from typing import Iterable, Union, List
 
 import numpy as np
-import transforms3d as tf3d
 
 
 class ElementFlags(enum.IntFlag):
@@ -78,6 +77,7 @@ class Element:
     @property
     def ori_quat(self):
         """The orientation as [w, x, y, z] quaternion."""
+        import transforms3d as tf3d
         try:
             return tf3d.quaternions.mat2quat(self.ori_mat)
         except np.linalg.LinAlgError as e:
@@ -86,6 +86,7 @@ class Element:
 
     @ori_quat.setter
     def ori_quat(self, value):
+        import transforms3d as tf3d
         try:
             self.ori_mat = tf3d.quaternions.quat2mat(value)
         except np.linalg.LinAlgError as e:

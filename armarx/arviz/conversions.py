@@ -7,7 +7,7 @@ from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
 
 import armarx
-import armarx.viz as viz
+import armarx.viz
 
 
 def vector3f_to_numpy(v: armarx.Vector3f):
@@ -24,52 +24,52 @@ def vector3fs_from_numpy(array: np.ndarray):
     return list(map(vector3f_from_numpy, array))
 
 
-def color_to_numpy(c: viz.data.Color) -> np.ndarray:
+def color_to_numpy(c: armarx.viz.data.Color) -> np.ndarray:
     return np.array([c.r, c.g, c.b, c.a])
 
-def set_viz_color(c: viz.data.Color, value):
+def set_viz_color(c: armarx.viz.data.Color, value):
     if len(value) == 3:
         c.r, c.g, c.b = map(int, value)
         c.a = int(c.a)
     else:
         c.r, c.g, c.b, c.a = map(int, value)
 
-def to_viz_color(value) -> viz.data.Color:
-    c = viz.data.Color()
+def to_viz_color(value) -> armarx.viz.data.Color:
+    c = armarx.viz.data.Color()
     set_viz_color(c, value)
     return c
 
 
-def colored_point_to_numpy_full(point: viz.data.ColoredPoint):
+def colored_point_to_numpy_full(point: armarx.viz.data.ColoredPoint):
     return np.array([point.x, point.y, point.z,
                      point.color.r, point.color.g, point.color.b, point.color.a])
 
-def colored_point_to_numpy_position(point: viz.data.ColoredPoint):
+def colored_point_to_numpy_position(point: armarx.viz.data.ColoredPoint):
     return np.array([point.x, point.y, point.z])
 
-def colored_point_to_numpy_color(point: viz.data.ColoredPoint):
+def colored_point_to_numpy_color(point: armarx.viz.data.ColoredPoint):
     return np.array([point.color.r, point.color.g, point.color.b, point.color.a])
 
 
-def colored_points_to_numpy_full(points: List[viz.data.ColoredPoint]):
+def colored_points_to_numpy_full(points: List[armarx.viz.data.ColoredPoint]):
     if len(points) > 0:
         return np.stack(list(map(colored_point_to_numpy_full, points)))
     else:
         return np.array([])
 
-def colored_points_to_numpy_positions(points: List[viz.data.ColoredPoint]):
+def colored_points_to_numpy_positions(points: List[armarx.viz.data.ColoredPoint]):
     return np.stack(list(map(colored_point_to_numpy_position, points)))
 
-def colored_points_to_numpy_colors(points: List[viz.data.ColoredPoint]):
+def colored_points_to_numpy_colors(points: List[armarx.viz.data.ColoredPoint]):
     return np.stack(list(map(colored_point_to_numpy_color, points)))
 
 
-def set_colored_point_from_numpy_position(cp: viz.data.ColoredPoint, pos: np.ndarray):
+def set_colored_point_from_numpy_position(cp: armarx.viz.data.ColoredPoint, pos: np.ndarray):
     pos = np.array(pos)
     cp.x, cp.y, cp.z = map(float, pos)
 
 
-def set_colored_point_from_numpy(cp: viz.data.ColoredPoint, array: np.ndarray):
+def set_colored_point_from_numpy(cp: armarx.viz.data.ColoredPoint, array: np.ndarray):
     array = np.array(array)
     if array.ndim != 1:
         raise ValueError("Trying to set colored point from non-flat array with shape {}.\nPassed: {}"
@@ -85,11 +85,11 @@ def set_colored_point_from_numpy(cp: viz.data.ColoredPoint, array: np.ndarray):
         set_viz_color(cp.color, array[3:])
 
 
-def set_colored_points_from_numpy(cps: List[viz.data.ColoredPoint], array: np.ndarray):
+def set_colored_points_from_numpy(cps: List[armarx.viz.data.ColoredPoint], array: np.ndarray):
     array = np.array(array)
 
     if len(cps) < len(array):
-        cps += [viz.data.ColoredPoint() for _ in range(len(array) - len(cps))]
+        cps += [armarx.viz.data.ColoredPoint() for _ in range(len(array) - len(cps))]
     elif len(cps) > len(array):
         del cps[len(array):]
     assert len(cps) == len(array)
@@ -99,7 +99,7 @@ def set_colored_points_from_numpy(cps: List[viz.data.ColoredPoint], array: np.nd
 
 
 def colored_point_from_numpy(point: np.ndarray):
-    cp = viz.data.ColoredPoint()
+    cp = armarx.viz.data.ColoredPoint()
     set_colored_point_from_numpy(cp, point)
     return cp
 

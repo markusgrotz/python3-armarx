@@ -2,7 +2,6 @@ import enum
 from typing import Any, Dict, List, Union, Tuple
 
 import numpy as np
-import transforms3d as tf3d
 
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
@@ -16,6 +15,7 @@ from .Element import Element
 
 
 def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
+    import transforms3d as tf3d
     dir = np.array(dir)
     dir /= np.linalg.norm(dir)
     cross = np.cross(natural_dir, dir)
@@ -90,7 +90,7 @@ class ArrowCircle(Element):
 
     @property
     def normal(self) -> np.ndarray:
-        return tf3d.quaternions.rotate_vector(self.natural_normal, self.orientation)
+        return self.ori_mat @ self.natural_normal
 
     @normal.setter
     def normal(self, value):
@@ -162,7 +162,7 @@ class Cylinder(Element):
 
     @property
     def direction(self):
-        return tf3d.quaternions.rotate_vector(self.natural_dir, self.orientation)
+        return self.ori_mat @ self.natural_dir
 
     @direction.setter
     def direction(self, value):

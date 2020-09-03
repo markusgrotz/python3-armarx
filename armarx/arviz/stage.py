@@ -1,7 +1,6 @@
-from typing import List, Union, Tuple
+from typing import List
 
 from .layer import Layer
-from .elements.elements import Pose
 
 
 class Stage:
@@ -21,6 +20,7 @@ class Stage:
         return layer
 
     def origin_layer(self, layer_name="Origin", id="Origin", scale=1.0) -> Layer:
+        from .elements.elements import Pose
         layer = self.layer(layer_name)
         layer.add(Pose(id, scale=scale))
         return layer
