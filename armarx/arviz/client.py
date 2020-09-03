@@ -1,3 +1,5 @@
+import logging
+
 from typing import List, Union
 
 from armarx import slice_loader
@@ -8,6 +10,9 @@ import armarx.viz
 
 from .layer import Layer
 from .stage import Stage
+
+
+logger = logging.getLogger(__name__)
 
 
 class Client:
@@ -56,3 +61,6 @@ class Client:
             return [layer_like.data()]
         elif isinstance(layer_like, Stage):
             return [layer.data() for layer in layer_like.layers]
+        else:
+            logger.warn('Unable to get layer updates')
+            return []
