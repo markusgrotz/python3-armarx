@@ -8,7 +8,7 @@ publishing or subscribing to images.
 
 ## Installation
 
-`pip install --user -i https://pypi.humanoids.kit.edu armarx-dev`
+`pip3 install --user --upgrade --extra-index-url https://pypi.humanoids.kit.edu:443/ armarx-dev`
 
 ## Using the bindings
 
