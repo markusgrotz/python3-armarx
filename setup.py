@@ -10,7 +10,7 @@ test_reqs = parse_requirements('test_requirements.txt')
 
 setup(
     name='armarx-dev',
-    version='0.12.0',
+    version='0.12.1',
     description='python bindings for ArmarX',
     author='Markus Grotz',
     author_email='markus.grotz@kit.edu',
