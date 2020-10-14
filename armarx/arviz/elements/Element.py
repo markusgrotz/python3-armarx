@@ -7,6 +7,7 @@ import numpy as np
 class ElementFlags(enum.IntFlag):
     NONE = 0
     OVERRIDE_MATERIAL = 1
+    HIDDEN = 2
 
 
 class Element:
