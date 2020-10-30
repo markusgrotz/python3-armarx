@@ -33,7 +33,7 @@ class TextStateListener(TextToSpeechStateInterface):
 
 
     def is_idle(self):
-        return isinstance(self.state, TextToSpeechStateType.eIdle)
+        return self.state == TextToSpeechStateType.eIdle
 
     def say(self, text):
         self.cv.wait_for(lambda: self.is_idle(), timeout=30)
