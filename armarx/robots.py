@@ -50,6 +50,7 @@ from armarx.ice_manager import get_proxy
 
 from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
+from armarx.speech import TextStateListener
 
 
 class Robot(object):
