@@ -5,9 +5,11 @@ from .layer import Layer
 
 class Stage:
 
-    def __init__(self, component: str):
+    def __init__(self, component: str, commit_on_exit=False, client=None):
         self.component = component
         self.layers: List[Layer] = []
+        self.commit_on_exit = commit_on_exit
+        self.client = client
 
     def layer(self, name) -> Layer:
         """
@@ -39,4 +41,5 @@ class Stage:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        if self.commit_on_exit and self.client is not None:
+            self.client.commit(self)
