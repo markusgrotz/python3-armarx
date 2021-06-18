@@ -6,7 +6,7 @@ from armarx import slice_loader
 from armarx.ice_manager import get_topic
 
 slice_loader.load_armarx_slice("RobotAPI", "ArViz/Component.ice")
-import armarx.viz
+import armarx.viz  # The Ice namespace
 
 from .layer import Layer
 from .stage import Stage
@@ -32,8 +32,12 @@ class Client:
         """
         return Layer(self.component_name, name)
 
-    def begin_stage(self) -> Stage:
-        return Stage(self.component_name)
+    def begin_stage(self, commit_on_exit=False) -> Stage:
+        if commit_on_exit:
+            return Stage(self.component_name,
+                         commit_on_exit=commit_on_exit, client=self)
+        else:
+            return Stage(self.component_name)
 
     def commit(self, layers_or_stages: Union[None, Layer, Stage, List[Union[Layer, Stage]]] = None):
         """
