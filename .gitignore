@@ -6,3 +6,5 @@
 # Generated files
 CMakeFiles/
 __pycache__
+
+armarx_dev.egg-info/
