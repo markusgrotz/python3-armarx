@@ -6,6 +6,7 @@ from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
+
 @lru_cache(maxsize=32)
 def get_armarx_include_dirs(pkg_name):
     """
@@ -75,3 +76,58 @@ def get_package_data(package_name):
 def is_armarx_package(package_name):
     package_data = get_package_data(package_name)
     return package_data.strip()
+
+
+@lru_cache(maxsize=32)
+def find_cmake_package(
+        package_name: str,
+        package_cache_dir: str = "~/.cmake/packages",
+        ) -> str:
+    """
+    Find a CMake package using the package cache.
+
+    :param package_name: The name of the CMake project.
+    :param package_cache_dir: The directory of the cmake package cache.
+    :return: The absolute path to the package root.
+    :raise: IOError If the package cannot be found.
+    """
+    cmake_package_cache_dir = os.path.expanduser(package_cache_dir)
+    directory = os.path.join(cmake_package_cache_dir, package_name)
+
+    if not os.path.isdir(directory):
+        msg = "Could not find CMake package '{}' in CMake package cache '{}'."\
+            .format(package_name, cmake_package_cache_dir)
+
+        # Case mismatch?
+        dirs = sorted(os.listdir(cmake_package_cache_dir))
+        dirs_lower = [d.lower() for d in dirs]
+        try:
+            index = dirs_lower.index(package_name.lower())
+            msg += f"\nDid you mean '{dirs[index]}'?"
+        except ValueError:
+            pass
+
+        raise IOError(msg)
+
+    files = os.listdir(directory)
+    if len(files) == 1:
+        with open(os.path.join(directory, files[0])) as file:
+            content = file.read()
+        build_dir = content.strip()
+        root_dir, build = os.path.split(build_dir)
+        if build != "build":
+            raise IOError("Something strange")
+        return root_dir
+
+    elif len(files) == 0:
+        msg = f"Found no file in directory: {directory}"
+        raise IOError(msg)
+
+    else:
+        msg = "Found more than one file with the following contents:"
+        for filename in sorted(files):
+            with open(os.path.join(directory, filename)) as file:
+                content = file.read().strip()
+            msg += f"\n- {file}: \t{content}"
+        raise IOError(msg)
+
