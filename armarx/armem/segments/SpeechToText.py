@@ -82,16 +82,31 @@ class SpeechToTextReader(SpeechToTextClientBase):
         self.reader = reader
 
 
-    def fetch_latest_instance(self, updated_ids: List[MemoryID]):
+    def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
         """
         Query the latest snapshot of the given updated IDs and
         return its first instance.
         """
-        for up_id in updated_ids:
-            assert self.core_segment_id.contains(up_id)
+        if updated_ids is None:
+            memory = self.reader.query_latest(self.core_segment_id)
 
-        latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
-        latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
+            latest_snapshot = None
+
+            core_seg = memory.coreSegments[self.core_segment_id.core_segment_name]
+            for prov_seg in core_seg.providerSegments.values():
+                for entity in prov_seg.entities.values():
+                    for snapshot in entity.history.values():
+                        if (latest_snapshot is None
+                            or latest_snapshot.id.timestamp_usec
+                                < latest_snapshot.id.timestamp_usec):
+                            latest_snapshot = snapshot
+        else:
+            for up_id in updated_ids:
+                assert self.core_segment_id.contains(up_id)
+
+            latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
+            latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
+
         latest_instance = latest_snapshot.instances[0]
         return latest_instance
 
