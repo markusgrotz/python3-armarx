@@ -1,12 +1,13 @@
-import time
 from typing import Dict, Any, List, Optional, Callable, Union
+import logging
 
-from armarx import slice_loader
-from armarx.ice_manager import get_proxy
+import armarx
+from armarx import slice_loader, ice_manager
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 slice_loader.load_armarx_slice("RobotAPI", "armem/mns/MemoryNameSystemInterface.ice")
-import armarx.armem as armem
+
+from armarx import armem
 
 
 from armarx.armem.core import MemoryID, error as armem_error
@@ -14,8 +15,9 @@ from armarx.armem.client.Reader import Reader
 from armarx.armem.client.Writer import Writer
 
 
-
 class MemoryNameSystem:
+
+    cls_logger = logging.getLogger(__file__)
 
     Callback = Callable[[MemoryID, List[MemoryID]], None]
     UpdatedSnasphotIDs = List[Union[MemoryID, "armarx.armem.data.MemoryID"]]
@@ -24,14 +26,41 @@ class MemoryNameSystem:
     MemoryServerPrx = "armarx.armem.server.MemoryInterfacePrx"
 
 
+    @classmethod
+    def get_mns(cls, mns_name="MemoryNameSystem", **kwargs) -> "MemoryNameSystem":
+        import Ice
+
+        try:
+            mns_proxy = ice_manager.get_proxy(
+                armarx.armem.mns.MemoryNameSystemInterfacePrx, mns_name)
+            return MemoryNameSystem(mns_proxy, **kwargs)
+
+        except Ice.NotRegisteredException as e:
+            cls.cls_logger.error(e)
+            raise armem_error.ArMemError(f"Memory Name System '{MemoryNameSystem}' is not registered.")
+
+    @classmethod
+    def wait_for_mns(cls, mns_name="MemoryNameSystem", **kwargs) -> "MemoryNameSystem":
+        mns_proxy = ice_manager.wait_for_proxy(
+            armem.mns.MemoryNameSystemInterfacePrx, mns_name, timeout=0)
+        return MemoryNameSystem(mns_proxy, **kwargs)
+
 
     def __init__(
             self,
-            mns: Optional[MemoryNameSystemPrx]
+            mns: Optional[MemoryNameSystemPrx],
+            logger=None,
             ):
 
         self.mns = mns
         self.servers: Dict[str, MemoryServer] = {}
+
+        self.subscriptions: Dict[MemoryID, List[Callback]] = {}
+
+        self.logger = logger or self.cls_logger
+
+
+    # Server Resolution
 
 
     def update(self):
@@ -74,9 +103,11 @@ class MemoryNameSystem:
         if server is None:
             inputs = armem.data.WaitForMemoryInput()
             inputs.name = memory_id.memory_name
-            input.timeoutMilliSeconds = timeout_ms
+            inputs.timeoutMilliSeconds = timeout_ms
 
+            self.logger.info(f"Waiting for memory server {memory_id} ...")
             result = self.mns.waitForMemory(inputs)
+            self.logger.info(f"Resolved memory server {memory_id}.")
             if result.success:
                 if result.proxy:
                     server = result.proxy
@@ -89,8 +120,12 @@ class MemoryNameSystem:
         assert server is not None
         return server
 
+
     def get_reader(self, memory_id: MemoryID) -> Reader:
         return Reader(self.resolve_server(memory_id))
+
+    def wait_for_reader(self, memory_id: MemoryID) -> Reader:
+        return Reader(self.wait_for_server(memory_id))
 
     def get_all_readers(self, update=True) -> Dict[str, Reader]:
         return self._get_all_clients(Reader, update)
@@ -98,8 +133,17 @@ class MemoryNameSystem:
     def get_writer(self, memory_id: MemoryID) -> Writer:
         return Writer(self.resolve_server(memory_id))
 
+    def wait_for_writer(self, memory_id: MemoryID) -> Writer:
+        return Writer(self.wait_for_server(memory_id))
+
     def get_all_writers(self, update=True) -> Dict[str, Writer]:
         return self._get_all_clients(Writer, update)
+
+
+    # ToDo: System-wide queries and commits
+
+
+    # Subscription
 
 
     def subscribe(self, subscription_id: MemoryID, callback: Callback):
@@ -160,14 +204,11 @@ class MemoryNameSystem:
         :throw: Ice.NotRegisteredException If the server does not exist.
         """
         import Ice
-        import logging
 
         try:
-            return get_proxy(armem.server.MemoryInterfacePrx, proxy_name)
+            return ice_manager.get_proxy(armem.server.MemoryInterfacePrx, proxy_name)
 
         except Ice.NotRegisteredException as e:
-            logging.error(e)
+            cls.cls_logger.error(e)
             return None
-
-
 

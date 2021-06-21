@@ -1,13 +1,16 @@
 from typing import Dict, Any, List, Optional, Callable, Union
 
-import armarx.armem as armem
+from armarx import slice_loader
+slice_loader.load_armarx_slice("RobotAPI", "armem/query.ice")
+
+from armarx import armem
 
 from armarx.armem.core import MemoryID
 
 
 class Reader:
 
-    ReadingMemoryServerPrx = "armarx.armem.server.ReadingMemoryInterfacePrx"
+    ReadingMemoryServerPrx = "armem.server.ReadingMemoryInterfacePrx"
     qd = armem.query.data
 
 
@@ -84,20 +87,34 @@ class Reader:
             snapshot_id: MemoryID,
             ) -> armem.data.EntitySnapshot:
 
-        q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
-        q_prov = self.qd.provider.Single(entityName=snapshot_id.entity_name,
-                                         entityQueries=[q_entity])
-        q_core = self.qd.core.Single(providerSegmentName=snapshot_id.provider_segment_name,
-                                     providerSegmentQueries=[q_prov])
-        q_memory = self.qd.memory.Single(coreSegmentName=snapshot_id.core_segment_name,
-                                         coreSegmentQueries=[q_core])
-        memory = self.query([q_memory])
-        snapshot = (memory.coreSegments[snapshot_id.core_segment_name]
-                    .providerSegments[snapshot_id.provider_segment_name]
-                    .entities[snapshot_id.entity_name]
-                    .history[snapshot_id.timestamp_usec]
-        )
-        return snapshot
+        return self.query_snapshots([snapshot_id])[0]
+
+
+    def query_snapshots(
+            self,
+            snapshot_ids: List[MemoryID],
+            ) -> List[armem.data.EntitySnapshot]:
+
+        qs_memory = []
+        for snapshot_id in snapshot_ids:
+            q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
+            q_prov = self.qd.provider.Single(entityName=snapshot_id.entity_name,
+                                             entityQueries=[q_entity])
+            q_core = self.qd.core.Single(providerSegmentName=snapshot_id.provider_segment_name,
+                                         providerSegmentQueries=[q_prov])
+            q_memory = self.qd.memory.Single(coreSegmentName=snapshot_id.core_segment_name,
+                                             coreSegmentQueries=[q_core])
+            qs_memory.append(q_memory)
+
+        memory = self.query(qs_memory)
+        snapshots = [
+            memory.coreSegments[snapshot_id.core_segment_name]
+            .providerSegments[snapshot_id.provider_segment_name]
+            .entities[snapshot_id.entity_name]
+            .history[snapshot_id.timestamp_usec]
+            for snapshot_id in snapshot_ids
+        ]
+        return snapshots
 
 
     def __bool__(self):
