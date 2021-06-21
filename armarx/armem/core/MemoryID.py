@@ -1,3 +1,5 @@
+import copy
+
 import armarx
 from armarx import slice_loader
 
@@ -24,6 +26,35 @@ class MemoryID(ice_twin.IceTwin):
         self.timestamp_usec = timestamp_usec
         self.instance_index = instance_index
 
+    @classmethod
+    def from_string(cls, string: str):
+        items = string.split("/")
+        # Handle escaped /'s
+        i = 0
+        while i < len(items):
+            item = items[i]
+            while len(item) > 0 and item[-1] == "\\":
+                # The / causing the split was escaped. Merge the items together.
+                if i < len(items):
+                    items[i] = item[:-1] + "/" + items[i+1]
+                    del items[i]
+            i += 1
+
+        self = cls()
+        try:
+            # Set as much as possible until an index error occurs.
+            self.memory_name = items[0]
+            self.core_segment_name = items[1]
+            self.provider_segment_name = items[2]
+            self.entity_name = items[3]
+            self.timestamp_usec = int(items[4])
+            self.instance_index = int(items[5])
+        except IndexError:
+            pass
+
+        return self
+
+
     def set_memory_id(self, id: "MemoryID"):
         self.memory_name = id.memory_name
 
@@ -46,6 +77,37 @@ class MemoryID(ice_twin.IceTwin):
     def set_instance_id(self, id: "MemoryID"):
         self.set_snapshot_id(id)
         self.instance_index = id.instance_index
+
+
+    def with_memory_name(self, name: str) -> "MemoryID":
+        c = copy.copy(self)
+        c.memory_name = name
+        return c
+
+    def with_core_segment_name(self, name: str) -> "MemoryID":
+        c = copy.copy(self)
+        c.core_segment_name = name
+        return c
+
+    def with_provider_segment_name(self, name: str) -> "MemoryID":
+        c = copy.copy(self)
+        c.provider_segment_name = name
+        return c
+
+    def with_entity_name(self, name: str) -> "MemoryID":
+        c = copy.copy(self)
+        c.entity_name = name
+        return c
+
+    def with_timestamp(self, time_usec: int) -> "MemoryID":
+        c = copy.copy(self)
+        c.timestamp_usec = time_usec
+        return c
+
+    def with_instance_index(self, index: int) -> "MemoryID":
+        c = copy.copy(self)
+        c.instance_index = index
+        return c
 
 
     def contains(self, id: "MemoryID"):
