@@ -5,10 +5,10 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
 slice_loader.load_armarx_slice("RobotAPI", "armem/commit.ice")
 from armarx import armem
 
-from armarx.ice_conv import IceTwin
+from armarx.ice_conv import ice_twin
 
 
-class MemoryID(icetwin.IceTwin):
+class MemoryID(ice_twin.IceTwin):
 
     def __init__(self,
                  memory_name: str = "",
@@ -133,10 +133,11 @@ class MemoryID(icetwin.IceTwin):
                 self.provider_segment_name, self.entity_name,
                 self.timestamp_usec, self.instance_index]
 
-    def get_ice_cls(self):
+
+    def _get_ice_cls(self):
         return armem.data.MemoryID
 
-    def set_to_ice(self, ice: armem.data.Commit):
+    def _set_to_ice(self, ice: armem.data.Commit):
         ice.memoryName = self.memory_name
         ice.coreSegmentName = self.core_segment_name
         ice.providerSegmentName = self.provider_segment_name
@@ -144,13 +145,14 @@ class MemoryID(icetwin.IceTwin):
         ice.timestampMicroSeconds = self.timestamp_usec
         ice.instanceIndex = self.instance_index
 
-    def set_from_ice(self, ice):
+    def _set_from_ice(self, ice):
         self.memory_name = ice.memoryName
         self.core_segment_name = ice.coreSegmentName
         self.provider_segment_name = ice.providerSegmentName
         self.entity_name = ice.entityName
         self.timestamp_usec = ice.timestampMicroSeconds
         self.instance_index = ice.instanceIndex
+
 
     @classmethod
     def from_aron(cls, aron: "armarx.aron.data.AronData") -> "MemoryID":
