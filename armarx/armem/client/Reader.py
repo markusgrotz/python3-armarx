@@ -72,12 +72,32 @@ class Reader:
 
     def query_latest(
             self,
+            memory_id: Optional[MemoryID] = None,
             ) -> armem.data.Memory:
+        if memory_id is None:
+            memory_id = MemoryID()
 
         q_entity = self.qd.entity.Single()  # Latest
-        q_prov = self.qd.provider.All(entityQueries=[q_entity])
-        q_core = self.qd.core.All(providerSegmentQueries=[q_prov])
-        q_memory = self.qd.memory.All(coreSegmentQueries=[q_core])
+        if memory_id.entity_name:
+            q_prov = self.qd.provider.Single(entityName=memory_id.entity_name,
+                                             entityQueries=[q_entity])
+        else:
+            q_prov = self.qd.provider.All(entityQueries=[q_entity])
+
+        if memory_id.provider_segment_name:
+            q_core = self.qd.core.Single(providerSegmentName=memory_id.provider_segment_name,
+                                         providerSegmentQueries=[q_prov])
+        else:
+            q_core = self.qd.core.All(providerSegmentQueries=[q_prov])
+
+
+        if memory_id.core_segment_name:
+            q_memory = self.qd.memory.Single(coreSegmentName=memory_id.core_segment_name,
+                                             coreSegmentQueries=[q_core])
+        else:
+            q_memory = self.qd.memory.All(coreSegmentQueries=[q_core])
+
+
         memory = self.query([q_memory])
         return memory
 
@@ -97,7 +117,11 @@ class Reader:
 
         qs_memory = []
         for snapshot_id in snapshot_ids:
-            q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
+            if snapshot_id.timestamp_usec >= 0:
+                q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
+            else:
+                q_entity = self.qd.entity.Single()  # Latest
+
             q_prov = self.qd.provider.Single(entityName=snapshot_id.entity_name,
                                              entityQueries=[q_entity])
             q_core = self.qd.core.Single(providerSegmentName=snapshot_id.provider_segment_name,
@@ -107,13 +131,16 @@ class Reader:
             qs_memory.append(q_memory)
 
         memory = self.query(qs_memory)
-        snapshots = [
-            memory.coreSegments[snapshot_id.core_segment_name]
-            .providerSegments[snapshot_id.provider_segment_name]
-            .entities[snapshot_id.entity_name]
-            .history[snapshot_id.timestamp_usec]
-            for snapshot_id in snapshot_ids
-        ]
+        snapshots = []
+        for snapshot_id in snapshot_ids:
+            entity = (memory.coreSegments[snapshot_id.core_segment_name]
+                      .providerSegments[snapshot_id.provider_segment_name]
+                      .entities[snapshot_id.entity_name])
+            snapshots.append(
+                entity.history[snapshot_id.timestamp_usec]
+                if snapshot_id.timestamp_usec >= 0
+                else next(iter(entity.history.values()))
+            )
         return snapshots
 
 
