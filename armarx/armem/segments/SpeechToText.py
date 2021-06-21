@@ -74,11 +74,6 @@ class SpeechToTextWriter(SpeechToTextClientBase):
         return self.writer.commit(commit)
 
 
-    def make_entity_name(self, provider_name: str, entity_name: str = "text"):
-        return (self.core_segment_id
-                .with_provider_segment_name(provider_name)
-                .with_entity_name(entity_name))
-
 
 class SpeechToTextReader(SpeechToTextClientBase):
 
