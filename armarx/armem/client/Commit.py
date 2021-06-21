@@ -2,7 +2,7 @@ import time
 from typing import Dict, Any, List, Optional, Callable, Union
 
 from armarx.ice_conv import ice_twin
-from armarx.armem.core import MemoryID
+from armarx.armem.core import MemoryID, time_usec
 
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
@@ -65,9 +65,10 @@ class Commit(ice_twin.IceTwin):
         self.updates = updates or []
 
 
-    def add(self, update: Optional[EntityUpdate] = None):
+    def add(self, update: Optional[EntityUpdate] = None,
+            **kwargs):
         if update is None:
-            update = EntityUpdate()
+            update = EntityUpdate(**kwargs)
         self.updates.append(update)
         return update
 
