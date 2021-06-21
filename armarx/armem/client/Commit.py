@@ -1,7 +1,7 @@
 import time
 from typing import Dict, Any, List, Optional, Callable, Union
 
-from armarx.ice_conv import IceTwin
+from armarx.ice_conv import ice_twin
 from armarx.armem.core import MemoryID
 
 from armarx import slice_loader
@@ -11,7 +11,7 @@ import armarx.aron as aron
 import armarx.armem as armem
 
 
-class EntityUpdate(IceTwin):
+class EntityUpdate(ice_twin.IceTwin):
 
     def __init__(
             self,
@@ -59,7 +59,7 @@ class EntityUpdate(IceTwin):
 
 
 
-class Commit(IceTwin):
+class Commit(ice_twin.IceTwin):
 
     def __init__(self, updates: List[EntityUpdate] = None):
         self.updates = updates or []
@@ -78,7 +78,7 @@ class Commit(IceTwin):
 
 
     def _set_to_ice(self, dto: armem.data.Commit):
-        dto.updates = icetwin.to_ice(self.updates)
+        dto.updates = ice_twin.to_ice(self.updates)
 
 
     def _set_from_ice(self, dto):
