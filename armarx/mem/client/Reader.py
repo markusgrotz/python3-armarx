@@ -5,7 +5,7 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/query.ice")
 
 from armarx import armem
 
-from armarx.armem.core import MemoryID
+from armarx.mem.core import MemoryID
 
 
 class Reader:
@@ -26,6 +26,12 @@ class Reader:
             self,
             queries: List[armem.query.data.MemoryQuery],
             ) -> armem.data.Memory:
+        """
+        Perform a memory query. Return the result if successful,
+        otherwise raise an exception.
+        :param queries: The query(s)
+        :return: The result, if successful.
+        """
 
         inp = self.qd.Input(memoryQueries=queries, withData=True)
         result = self.server.query(inp)
@@ -33,6 +39,62 @@ class Reader:
             raise RuntimeError(f"Memory query failed. Reason:\n{result.errorMessage}")
         else:
             return result.memory
+
+
+    def query_snapshots(
+            self,
+            ids: List[MemoryID],
+            ) -> Dict[MemoryID, armem.data.EntitySnapshot]:
+        """
+        Query snapshots corresponding to list of memory IDs.
+
+        Each ID can refer to an entity, a snapshot or an instance. When not
+        referring to an entity snapshot, the latest snapshot will be queried.
+
+        All memory IDs must refer to the memory this reader is reading from.
+        If an ID refers to another memory, the query will not find it and it
+        will not be part of the result.
+
+        :param ids: The entity, snapshot or instance IDs.
+        :return: The query result, if successful.
+        """
+
+        qs_memory = []
+        for snapshot_id in snapshot_ids:
+            if snapshot_id.timestamp_usec >= 0:
+                q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
+            else:
+                q_entity = self.qd.entity.Single()  # Latest
+
+            q_prov = self.qd.provider.Single(entityName=snapshot_id.entity_name,
+                                             entityQueries=[q_entity])
+            q_core = self.qd.core.Single(providerSegmentName=snapshot_id.provider_segment_name,
+                                         providerSegmentQueries=[q_prov])
+            q_memory = self.qd.memory.Single(coreSegmentName=snapshot_id.core_segment_name,
+                                             coreSegmentQueries=[q_core])
+            qs_memory.append(q_memory)
+
+        memory = self.query(qs_memory)
+
+        snapshots = dict()
+        for id in ids:
+            entity = (memory.coreSegments[id.core_segment_name]
+                .providerSegments[id.provider_segment_name]
+                .entities[id.entity_name])
+            snapshots[id] = entity.history[
+                id.timestamp_usec
+                if id.timestamp_usec >= 0
+                else max(entity.history.keys())
+            ]
+        return snapshots
+
+
+    def query_snapshot(
+            self,
+            snapshot_id: MemoryID,
+            ) -> armem.data.EntitySnapshot:
+
+        return self.query_snapshots([snapshot_id])[snapshot_id]
 
 
     def query_all(
@@ -101,47 +163,6 @@ class Reader:
         memory = self.query([q_memory])
         return memory
 
-
-    def query_snapshot(
-            self,
-            snapshot_id: MemoryID,
-            ) -> armem.data.EntitySnapshot:
-
-        return self.query_snapshots([snapshot_id])[0]
-
-
-    def query_snapshots(
-            self,
-            snapshot_ids: List[MemoryID],
-            ) -> List[armem.data.EntitySnapshot]:
-
-        qs_memory = []
-        for snapshot_id in snapshot_ids:
-            if snapshot_id.timestamp_usec >= 0:
-                q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
-            else:
-                q_entity = self.qd.entity.Single()  # Latest
-
-            q_prov = self.qd.provider.Single(entityName=snapshot_id.entity_name,
-                                             entityQueries=[q_entity])
-            q_core = self.qd.core.Single(providerSegmentName=snapshot_id.provider_segment_name,
-                                         providerSegmentQueries=[q_prov])
-            q_memory = self.qd.memory.Single(coreSegmentName=snapshot_id.core_segment_name,
-                                             coreSegmentQueries=[q_core])
-            qs_memory.append(q_memory)
-
-        memory = self.query(qs_memory)
-        snapshots = []
-        for snapshot_id in snapshot_ids:
-            entity = (memory.coreSegments[snapshot_id.core_segment_name]
-                      .providerSegments[snapshot_id.provider_segment_name]
-                      .entities[snapshot_id.entity_name])
-            snapshots.append(
-                entity.history[snapshot_id.timestamp_usec]
-                if snapshot_id.timestamp_usec >= 0
-                else next(iter(entity.history.values()))
-            )
-        return snapshots
 
 
     def __bool__(self):
