@@ -97,8 +97,8 @@ class SpeechToTextReader(SpeechToTextClientBase):
                 for entity in prov_seg.entities.values():
                     for snapshot in entity.history.values():
                         if (latest_snapshot is None
-                            or latest_snapshot.id.timestampMicroSeconds
-                                < latest_snapshot.id.timestampMicroSeconds):
+                            or latest_snapshot.id.timestamp_usec
+                                < latest_snapshot.id.timestamp_usec):
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
@@ -107,10 +107,7 @@ class SpeechToTextReader(SpeechToTextClientBase):
             latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
             latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
 
-        if latest_snapshot is not None:
-            latest_instance = latest_snapshot.instances[0]
-        else:
-            latest_instance = None
+        latest_instance = latest_snapshot.instances[0]
         return latest_instance
 
 

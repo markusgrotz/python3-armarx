@@ -15,21 +15,6 @@ from armarx.mem.client.Reader import Reader
 from armarx.mem.client.Writer import Writer
 
 
-class ServerProxies:
-
-    def __init__(
-            self,
-            reading: Optional[armem.server.ReadingMemoryInterface] = None,
-            writing: Optional[armem.server.WritingMemoryInterface] = None,
-            ):
-        self.reading = reading
-        self.writing = writing
-
-    @classmethod
-    def from_ice(cls, server: armem.mns.dto.MemoryServerInterfaces):
-        return cls(reading=server.reading, writing=server.writing)
-
-
 class MemoryNameSystem:
 
     cls_logger = logging.getLogger(__file__)
@@ -68,9 +53,9 @@ class MemoryNameSystem:
             ):
 
         self.mns = mns
-        self.servers: Dict[str, ServerProxies] = {}
+        self.servers: Dict[str, MemoryServer] = {}
 
-        self.subscriptions: Dict[MemoryID, List["Callback"]] = {}
+        self.subscriptions: Dict[MemoryID, List[Callback]] = {}
 
         self.logger = logger or self.cls_logger
 
@@ -79,19 +64,15 @@ class MemoryNameSystem:
 
 
     def update(self):
-        import Ice
 
         result: "armem.data.GetAllRegisteredMemoriesResult"
         try:
-            result = self.mns.getAllRegisteredServers()
+            result = self.mns.getAllRegisteredMemories()
         except Ice.NotRegisteredException as e:
             raise ArMemError(e)
         if result.success:
             # Do some implicit type check
-            self.servers = {
-                name: ServerProxies.from_ice(server)
-                for name, server in result.servers.items()
-            }
+            self.servers = {name: server for name, server in result.proxies.items()}
         else:
             raise armem_error.ArMemError(f"MemoryNameSystem query failed: {result.errorMessage}")
 
@@ -99,7 +80,7 @@ class MemoryNameSystem:
     def resolve_server(
             self,
             memory_id: MemoryID,
-            ) -> ServerProxies:
+            ) -> MemoryServerPrx:
 
         server = self.servers.get(memory_id.memory_name, None)
 
@@ -114,21 +95,22 @@ class MemoryNameSystem:
 
     def wait_for_server(
             self,
-            memory_id: MemoryID
-            ) -> ServerProxies:
+            memory_id: MemoryID,
+            timeout_ms=-1,
+            ) -> MemoryServerPrx:
 
         server = self.servers.get(memory_id.memory_name, None)
         if server is None:
-            inputs = armem.mns.dto.WaitForServerInput(
-                name=memory_id.memory_name,
-            )
+            inputs = armem.data.WaitForMemoryInput()
+            inputs.name = memory_id.memory_name
+            inputs.timeoutMilliSeconds = timeout_ms
 
             self.logger.info(f"Waiting for memory server {memory_id} ...")
-            result: armem.mns.dto.WaitForServerResult = self.mns.waitForServer(inputs)
+            result = self.mns.waitForMemory(inputs)
             self.logger.info(f"Resolved memory server {memory_id}.")
             if result.success:
-                if result.server.reading or result.server.writing:
-                    server = ServerProxies.from_ice(result.server)
+                if result.proxy:
+                    server = result.proxy
                 else:
                     raise armem_error.CouldNotResolveMemoryServer(
                         memory_id, f"Returned proxy is null: {result.proxy}")
@@ -140,25 +122,26 @@ class MemoryNameSystem:
 
 
     def get_reader(self, memory_id: MemoryID) -> Reader:
-        return Reader(self.resolve_server(memory_id).reading)
+        return Reader(self.resolve_server(memory_id))
 
     def wait_for_reader(self, memory_id: MemoryID) -> Reader:
-        return Reader(self.wait_for_server(memory_id).reading)
+        return Reader(self.wait_for_server(memory_id))
 
     def get_all_readers(self, update=True) -> Dict[str, Reader]:
         return self._get_all_clients(Reader, update)
 
     def get_writer(self, memory_id: MemoryID) -> Writer:
-        return Writer(self.resolve_server(memory_id).writing)
+        return Writer(self.resolve_server(memory_id))
 
     def wait_for_writer(self, memory_id: MemoryID) -> Writer:
-        return Writer(self.wait_for_server(memory_id).writing)
+        return Writer(self.wait_for_server(memory_id))
 
     def get_all_writers(self, update=True) -> Dict[str, Writer]:
         return self._get_all_clients(Writer, update)
 
 
-    # System-wide queries
+    # ToDo: System-wide queries and commits
+
 
     def resolve_entity_instance(
             self,
@@ -166,18 +149,15 @@ class MemoryNameSystem:
             ) -> Optional["armem.data.EntityInstance"]:
         instances = self.resolve_entity_instances([id])
         if len(instances) > 0:
-            return instances[id]
+            return instances[entity_instance_id]
         else:
             return None
 
 
-    def resolve_entity_snapshots(
+    def resolve_entity_instances(
             self,
             ids: List[MemoryID],
-            ) -> Dict[MemoryID, "armem.data.EntitySnapshot"]:
-        errors = ""
-        error_counter = 0
-
+            ) -> Dict[MemoryID, "armem.data.EntityInstance"]:
         ids_per_memory = dict()
         for id in ids:
             if id.memory_name in ids_per_memory:
@@ -190,24 +170,10 @@ class MemoryNameSystem:
             reader = self.get_reader(memory_id=MemoryID(memory_name))
             try:
                 snapshots = reader.query_snapshots(ids)
-                result = {**result, **snapshots}  # Merge dicts
+                result = {**result, **snapshots}
             except RuntimeError as e:
-                error_counter += 1
-                errors += f"\n#{error_counter}\n"
-                errors += f"Failed to retrieve IDs {ids} from query result: \n{e}"
-
-        if errors:
-            self.logger.info(
-                f"{self.__class__.__name__}.{self.resolve_entity_instance.__name__}:"
-                f"The following errors may affect your result: \n{errors}\n\n"
-                + "When resolving entity snapshots: \n- {}".format("\n- ".join(map(str, ids)))
-            )
-
+                pass
         return result
-
-
-    # ToDo: System-wide commits
-
 
 
     # Subscription
