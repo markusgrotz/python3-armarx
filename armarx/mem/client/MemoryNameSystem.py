@@ -10,9 +10,9 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/mns/MemoryNameSystemInterface.
 from armarx import armem
 
 
-from armarx.armem.core import MemoryID, error as armem_error
-from armarx.armem.client.Reader import Reader
-from armarx.armem.client.Writer import Writer
+from armarx.mem.core import MemoryID, error as armem_error
+from armarx.mem.client.Reader import Reader
+from armarx.mem.client.Writer import Writer
 
 
 class MemoryNameSystem:
@@ -141,6 +141,39 @@ class MemoryNameSystem:
 
 
     # ToDo: System-wide queries and commits
+
+
+    def resolve_entity_instance(
+            self,
+            id: MemoryID,
+            ) -> Optional["armem.data.EntityInstance"]:
+        instances = self.resolve_entity_instances([id])
+        if len(instances) > 0:
+            return instances[entity_instance_id]
+        else:
+            return None
+
+
+    def resolve_entity_instances(
+            self,
+            ids: List[MemoryID],
+            ) -> Dict[MemoryID, "armem.data.EntityInstance"]:
+        ids_per_memory = dict()
+        for id in ids:
+            if id.memory_name in ids_per_memory:
+                ids_per_memory[id.memory_name].append(id)
+            else:
+                ids_per_memory[id.memory_name] = [id]
+
+        result = dict()
+        for memory_name, ids in ids_per_memory.items():
+            reader = self.get_reader(memory_id=MemoryID(memory_name))
+            try:
+                snapshots = reader.query_snapshots(ids)
+                result = {**result, **snapshots}
+            except RuntimeError as e:
+                pass
+        return result
 
 
     # Subscription
