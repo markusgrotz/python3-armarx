@@ -4,7 +4,6 @@ import armarx
 from armarx import slice_loader
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
-slice_loader.load_armarx_slice("RobotAPI", "armem/commit.ice")
 from armarx import armem
 
 from armarx.ice_conv import ice_twin
@@ -161,6 +160,10 @@ class MemoryID(ice_twin.IceTwin):
     def __hash__(self):
         # Just use two values to make has computation more efficient.
         return hash((self.timestamp_usec, self.instance_index, self.entity_name))
+
+    def __repr__(self):
+        return "<{} {}>".format(
+            self.__class__.__name__, self.__str__())
 
     def __str__(self):
         return "'{}'".format("/".join(map(str, self.get_set_items())))
