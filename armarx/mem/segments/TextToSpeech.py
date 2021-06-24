@@ -2,8 +2,8 @@ from typing import Dict, List, Optional
 
 from armarx.aronpy import conversion as aronconv
 
-from armarx.armem.core import MemoryID
-from armarx.armem.client import MemoryNameSystem, Commit, Reader, Writer
+from armarx.mem.core import MemoryID
+from armarx.mem.client import MemoryNameSystem, Commit, Reader, Writer
 
 
 class TextToSpeech:
