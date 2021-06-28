@@ -18,7 +18,7 @@ class EntityUpdate(ice_twin.IceTwin):
             entity_id: MemoryID = None,
             instances_data: List[aron.data.AronData] = None,
             time_created_usec: Optional[int] = None,
-            confidence: float = 1.0,
+            confidence: Optional[float] = None,
             time_sent_usec: Optional[int] = None,
             ):
 
@@ -27,7 +27,7 @@ class EntityUpdate(ice_twin.IceTwin):
 
         self.time_created_usec = time_created_usec or time_usec()
 
-        self.confidence = confidence
+        self.confidence = 1.0 if confidence is None else float(confidence)
         self.time_sent_usec: Optional[int] = time_sent_usec
 
 
