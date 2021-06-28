@@ -140,8 +140,7 @@ class MemoryNameSystem:
         return self._get_all_clients(Writer, update)
 
 
-    # ToDo: System-wide queries and commits
-
+    # System-wide queries
 
     def resolve_entity_instance(
             self,
@@ -154,10 +153,13 @@ class MemoryNameSystem:
             return None
 
 
-    def resolve_entity_instances(
+    def resolve_entity_snapshots(
             self,
             ids: List[MemoryID],
-            ) -> Dict[MemoryID, "armem.data.EntityInstance"]:
+            ) -> Dict[MemoryID, "armem.data.EntitySnapshot"]:
+        errors = ""
+        error_counter = 0
+
         ids_per_memory = dict()
         for id in ids:
             if id.memory_name in ids_per_memory:
@@ -170,10 +172,24 @@ class MemoryNameSystem:
             reader = self.get_reader(memory_id=MemoryID(memory_name))
             try:
                 snapshots = reader.query_snapshots(ids)
-                result = {**result, **snapshots}
+                result = {**result, **snapshots}  # Merge dicts
             except RuntimeError as e:
-                pass
+                error_counter += 1
+                errors += f"\n#{error_counter}\n"
+                errors += f"Failed to retrieve IDs {ids} from query result: \n{e}"
+
+        if errors:
+            self.logger.info(
+                f"{self.__class__.__name__}.{self.resolve_entity_instance.__name__}:"
+                f"The following errors may affect your result: \n{errors}\n\n"
+                + "When resolving entity snapshots: \n- {}".format("\n- ".join(map(str, ids)))
+            )
+
         return result
+
+
+    # ToDo: System-wide commits
+
 
 
     # Subscription
