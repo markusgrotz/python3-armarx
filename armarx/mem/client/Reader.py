@@ -60,7 +60,7 @@ class Reader:
         """
 
         qs_memory = []
-        for snapshot_id in snapshot_ids:
+        for snapshot_id in ids:
             if snapshot_id.timestamp_usec >= 0:
                 q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
             else:
