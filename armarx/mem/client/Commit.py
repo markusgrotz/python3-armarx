@@ -57,6 +57,16 @@ class EntityUpdate(ice_twin.IceTwin):
         self.confidence = dto.confidence
         self.time_sent_usec = dto.timeSentMicroSeconds
 
+    def __repr__(self):
+        return "<{c} id={i} t={t} c={con:.3f} with {n} instance{ns}>".format(
+            c=self.__class__.__name__,
+            i=self.entity_id,
+            t=self.time_created_usec,
+            n=len(self.instances_data),
+            ns="" if len(self.instances_data) == 1 else "s",
+            con=self.confidence,
+            # d=self.instances_data,
+        )
 
 
 class Commit(ice_twin.IceTwin):
@@ -84,3 +94,16 @@ class Commit(ice_twin.IceTwin):
 
     def _set_from_ice(self, dto):
         self.updates = EntityUpdate.from_ice(dto.updates)
+
+    def __repr__(self):
+        return "<{c} with {n} update{ns}>".format(
+            c=self.__class__.__name__,
+            n=len(self.updates),
+            ns="" if len(self.updates) == 1 else "s",
+        )
+
+    def __str__(self):
+        return "{r}\n- {u}".format(
+            r=self.__repr__(),
+            u="n- ".join(map(str, self.updates))
+        )
