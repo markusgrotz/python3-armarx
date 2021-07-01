@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "armarx-dev"
+version = "0.13.0"
+description = "Python bindings for ArmarX"
+authors = ["Markus Grotz <markus.grotz@kit.edu>"]
+packages = [{include = "armarx"}]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+zeroc-ice = "3.7.0"
+lxml = "^4.6.3"
+argparse = "^1.4.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
