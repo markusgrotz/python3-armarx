@@ -1,5 +1,0 @@
-argcomplete
-lxml
-# zeroc-ice==3.7.0
-wheel
-# transforms3d==0.3.1 # required for armarx.arviz
