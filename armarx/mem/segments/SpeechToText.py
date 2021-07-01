@@ -107,7 +107,10 @@ class SpeechToTextReader(SpeechToTextClientBase):
             latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
             latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
 
-        latest_instance = latest_snapshot.instances[0]
+        if latest_snapshot is not None:
+            latest_instance = latest_snapshot.instances[0]
+        else:
+            latest_instance = None
         return latest_instance
 
 
