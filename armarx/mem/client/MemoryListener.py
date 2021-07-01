@@ -6,6 +6,7 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/client/MemoryListenerInterface
 
 from armarx import armem
 
+from armarx.mem.core.MemoryID import MemoryID
 from armarx.mem.client.MemoryNameSystem import MemoryNameSystem
 
 
@@ -43,5 +44,6 @@ class MemoryListener(armem.client.MemoryListenerInterface):
 
     def memoryUpdated(self, updated_snapshot_ids: List[armem.data.MemoryID], c=None):
         """Called by the MemoryListenerTopic."""
+        updated_snapshot_ids = MemoryID.from_ice(updated_snapshot_ids)
         for mns in self.mns_clients:
             mns.updated(updated_snapshot_ids=updated_snapshot_ids)
