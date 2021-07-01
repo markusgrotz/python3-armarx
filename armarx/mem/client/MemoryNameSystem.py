@@ -53,9 +53,9 @@ class MemoryNameSystem:
             ):
 
         self.mns = mns
-        self.servers: Dict[str, MemoryServer] = {}
+        self.servers: Dict[str, "MemoryServerPrx"] = {}
 
-        self.subscriptions: Dict[MemoryID, List[Callback]] = {}
+        self.subscriptions: Dict[MemoryID, List["Callback"]] = {}
 
         self.logger = logger or self.cls_logger
 
@@ -148,7 +148,7 @@ class MemoryNameSystem:
             ) -> Optional["armem.data.EntityInstance"]:
         instances = self.resolve_entity_instances([id])
         if len(instances) > 0:
-            return instances[entity_instance_id]
+            return instances[id]
         else:
             return None
 
