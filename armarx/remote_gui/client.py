@@ -2,8 +2,8 @@
 This module provides functionality for remote GUI clients.
 
 Classes:
-- Tab: Base class for remote tabs.
-- Client: Remote GUI client.
+ - Tab: Base class for remote tabs.
+ - Client: Remote GUI client.
 """
 
 from armarx.remote_gui.ice_wrapper import TabProxy, get_remote_gui_proxy
@@ -21,9 +21,9 @@ class Tab:
     The structure of the GUI is defined via a single root widget.
     The root widget is usually a container widget which contains many child widgets.
 
-    The 'create_widget_tree' method must be overridden in derived class to create the root widget and all its children.
+    The :meth:`create_widget_tree` method must be overridden in derived class to create the root widget and all its children.
 
-    The 'on_update' method is called by the Client after updates have been received from the GUI.
+    The :meth:`on_update` method is called by the Client after updates have been received from the GUI.
     """
 
     def __init__(self, id: str):

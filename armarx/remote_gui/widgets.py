@@ -2,22 +2,22 @@
 This module provides remote GUI widget classes.
 
 Widget classes:
-- Label: Display a text string.
-- LineEdit: Edit text in a box.
-- ComboBox: Select an option from a predefined list.
-- IntSpinBox: Edit an integer value in a box.
-- IntSlider: Select an integer value with a slider.
-- FloatSpinBox: Edit a floating point value in a box.
-- FloatSlider: Select a floating point value with a slider.
-- Button: Click a button.
-- CheckBox: Mark a box with a check mark.
-- ToggleButton: Toggle a button.
-- HBoxLayout: Layout widgets horizontally.
-- VBoxLayout: Layout widgets vertically.
-- GridLayout: Layout widgets in a grid.
-- GroupBox: Group widgets in box.
-- VSpacer: Add vertical spacing to fill a layout.
-- HSpacer: Add horizontal spacing to fill a layout.
+ - Label: Display a text string.
+ - LineEdit: Edit text in a box.
+ - ComboBox: Select an option from a predefined list.
+ - IntSpinBox: Edit an integer value in a box.
+ - IntSlider: Select an integer value with a slider.
+ - FloatSpinBox: Edit a floating point value in a box.
+ - FloatSlider: Select a floating point value with a slider.
+ - Button: Click a button.
+ - CheckBox: Mark a box with a check mark.
+ - ToggleButton: Toggle a button.
+ - HBoxLayout: Layout widgets horizontally.
+ - VBoxLayout: Layout widgets vertically.
+ - GridLayout: Layout widgets in a grid.
+ - GroupBox: Group widgets in box.
+ - VSpacer: Add vertical spacing to fill a layout.
+ - HSpacer: Add horizontal spacing to fill a layout.
 """
 
 from armarx.remote_gui.ice_wrapper import rg, make_value_variant, make_widget_state, TabProxy
@@ -30,8 +30,8 @@ class Widget:
     Base class for widgets.
 
     This class provides the following properties:
-    - hidden: Controls whether the widget is visible or hidden.
-    - disabled: Controls whether the widget is enabled or disabled.
+     - hidden: Controls whether the widget is visible or hidden.
+     - disabled: Controls whether the widget is enabled or disabled.
     """
     next_id = 0
 
@@ -101,7 +101,7 @@ class ValueWidget(Widget):
         Sets the value of the widget.
 
         The new value will be stored locally until the updates have been sent to the remote server.
-        Sending the updates can be done via 'Client.send_updates' or 'Tab.send_updates'.
+        Sending the updates can be done via :meth:`Client.send_updates` or :meth:`Tab.send_updates`.
         """
         self.desc.defaultValue = make_value_variant(new_value)
 
