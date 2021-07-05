@@ -2,13 +2,13 @@ import logging
 
 import time
 import os
-import configparser
 
 
 import Ice
 from IceGrid import ObjectExistsException, RegistryPrx
 from IceStorm import TopicManagerPrx, NoSuchTopic, AlreadySubscribed
 from Ice import NotRegisteredException
+from .config import get_ice_config_files
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def register_object(ice_object, ice_object_name):
     """
-    Register an local ice object with ice under the given name
+    Register a local ice object under the given name
 
     :param ice_object: Local ice object instance
     :param ice_object_name: Name with which the object should be registered
@@ -155,32 +155,6 @@ def get_proxy(cls, proxy_name):
         logging.exception('Proxy {} does not exist'.format(proxy_name))
 
 
-def get_config_dir():
-    """
-    :raises IOError: if the $HOME/.armarx does not exists
-    :returns: the default armarx config folder
-    :rtype: str
-    """
-    config_dir = os.path.expanduser('~/.armarx/')
-    if not os.path.isdir(config_dir):
-        raise IOError('ArmarX config folder does not exists.')
-    return config_dir
-
-
-def load_config():
-    """
-    :raises IOError: if armarx.ini does not exists
-    :returns: the default armarx config
-    :rtype: configparser.ConfigParser
-    """
-    config_dir = get_config_dir()
-    config_file = os.path.join(config_dir, 'armarx.ini')
-    if not os.path.exists(config_file):
-        raise IOError('ArmarX config file does not exists.')
-    config = configparser.Configparser()
-    config.read(config_file)
-    return config
-
 
 def get_admin():
     return ice_registry.createAdminSession('user', 'password').getAdmin()
@@ -211,10 +185,7 @@ def wait_for_shutdown():
 
 
 def _initialize():
-    config_path = get_config_dir()
-    ice_config_files = [os.path.join(config_path, 'default.generated.cfg'),
-                        os.path.join(config_path, 'default.cfg')]
-
+    ice_config_files = get_ice_config_files()
     ice_communicator = Ice.initialize(['--Ice.Config={}'.format(','.join(ice_config_files))])
     ice_registry_proxy = ice_communicator.stringToProxy('IceGrid/Registry')
     ice_registry = RegistryPrx.checkedCast(ice_registry_proxy)

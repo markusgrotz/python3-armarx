@@ -1,6 +1,5 @@
 import os
 import logging
-import configparser
 from collections import namedtuple
 from lxml import etree
 
@@ -18,6 +17,8 @@ from .ice_manager import wait_for_proxy
 
 from .cmake_helper import get_dependencies, get_include_path
 
+from .config import get_packages
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,8 +28,11 @@ VariantInfo = namedtuple('VariantInfo', ['package_name', 'type_name',
 
 def load_armarx_slice(project, filename):
     """
-    Simple helper function to load a slice definition file.  Definitions in the imported slice
-    file are then available through the python import function.
+    Simple helper function to load a slice definition file.
+    
+    
+    Loads a slice definition file from a project. Definitions in the imported
+    slice file are then available through the python import function.
 
     :raises IOError: if the slice file was not found
     :param project: name of the armarx package
@@ -63,9 +67,7 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
 
     def build_mapping(self):
         global_mapping = dict()
-        parser = configparser.ConfigParser()
-        parser.read(os.path.expanduser('~/.armarx/armarx.ini'))
-        packages = parser.get('AutoCompletion', 'packages', fallback='ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision')
+        packages = get_packages()
         for package_name in packages.split(','):
             global_mapping.update(self.load_variant_info(package_name))
         return global_mapping
@@ -97,13 +99,16 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
         variant_info = self.mapping.get(type_name, None)
         if variant_info:
             load_armarx_slice(variant_info.package_name, variant_info.include_path)
-            # todo we need to patch all interface since it might be already
-            # loaded
+            # ..todo:: we need to patch all interfaces since an interface might
+            # be already loaded
             for _, variant_info in self.mapping.items():
                 self.patch_slice_definition(variant_info)
         return None
 
     def patch_slice_definition(self, variant_info):
+        """
+        Adds get_proxy, get_topic, and other methods to the imported interface
+        """
         default_name = variant_info.default_name
 
         if variant_info.type_name in self.patched:
