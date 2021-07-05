@@ -31,6 +31,9 @@ def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
 
 
 class Arrow(Element):
+    """
+    An arrow element for ArViz
+    """
 
     natural_dir = np.array((0, 1, 0))
 
@@ -74,6 +77,9 @@ class Arrow(Element):
 
 
 class ArrowCircle(Element):
+    """
+    An arrow circle element for ArViz
+    """
 
     natural_normal = np.array((0, 1, 0))
 
@@ -104,6 +110,9 @@ class ArrowCircle(Element):
 
 
 class Box(Element):
+    """
+    A box element for ArViz
+    """
 
     def __init__(self, id, size=1.0, **kwargs):
         super().__init__(ice_data_cls=viz.data.ElementBox, id=id, **kwargs)
@@ -129,6 +138,9 @@ class Box(Element):
 
 
 class Cylinder(Element):
+    """
+    A cylinder element for ArViz
+    """
 
     natural_dir = np.array((0, 1, 0))
 
@@ -175,6 +187,9 @@ class Cylinder(Element):
 
 
 class Sphere(Element):
+    """
+    A sphere element for ArViz
+    """
 
     def __init__(self, id, radius=10., **kwargs):
         super().__init__(ice_data_cls=viz.data.ElementSphere, id=id, **kwargs)
@@ -186,6 +201,9 @@ class Sphere(Element):
 
 
 class Ellipsoid(Element):
+    """
+    An ellipsoid element for ArViz
+    """
 
     def __init__(self, id, axis_lengths=None, curvature=None, **kwargs):
         super().__init__(ice_data_cls=viz.data.ElementEllipsoid, id=id, **kwargs)
@@ -222,6 +240,9 @@ class Ellipsoid(Element):
 
 
 class Line(Element):
+    """
+    A line element for ArViz
+    """
 
     def __init__(self, id, start=None, end=None, line_width=10., **kwargs):
         super().__init__(ice_data_cls=viz.data.ElementLine, id=id, **kwargs)
@@ -258,6 +279,9 @@ class Line(Element):
 
 
 class Pose(Element):
+    """
+    A 6-D pose element for ArViz
+    """
 
     def __init__(self, id, **kwargs):
         super().__init__(ice_data_cls=viz.data.ElementPose, id=id, **kwargs)
@@ -336,6 +360,9 @@ class Object(Element):
 
 
 class Robot(Object):
+    """
+    A robot element for ArViz
+    """
 
     def __init__(self, id,
                  joint_angles=None,
@@ -352,6 +379,9 @@ class Robot(Object):
 
 
 class PointCloud(Element):
+    """
+    A point cloud element for ArViz
+    """
 
     def __init__(self, id,
                  transparency=0.0, point_size=1.0,
@@ -437,6 +467,9 @@ class PointCloud(Element):
 
 
 class Polygon(Element):
+    """
+    A polygon element for arviz
+    """
 
     def __init__(self, id, line_width=0.0, line_color=None, points=None,
                  **kwargs):
@@ -451,6 +484,9 @@ class Polygon(Element):
 
     @property
     def line_color(self) -> np.ndarray:
+        """
+        The line color of the polygon
+        """
         return self._line_color
 
     @line_color.setter
