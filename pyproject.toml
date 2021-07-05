@@ -4,6 +4,9 @@ version = "0.13.0"
 description = "Python bindings for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 packages = [{include = "armarx"}]
+readme = "README.md"
+repository = "http://gitlab.com/ArmarX/python3-armarx"
+documentation = "https://armarx.humanoids.kit.edu/python/"
 
 [tool.poetry.dependencies]
 python = "^3.6"
