@@ -6,7 +6,8 @@ Classes:
  - Client: Remote GUI client.
 """
 
-from armarx.remote_gui.ice_wrapper import TabProxy, get_remote_gui_proxy
+from armarx import RemoteGuiInterfacePrx
+from armarx.remote_gui.ice_wrapper import TabProxy
 from armarx.remote_gui.widgets import Widget
 
 from typing import List
@@ -81,7 +82,7 @@ class Client:
 
     def __init__(self, provider_name: str = "RemoteGuiProvider"):
         self.provider_name = provider_name
-        self.proxy = get_remote_gui_proxy(provider_name)
+        self.proxy = RemoteGuiInterfacePrx.get_proxy(provider_name)
         self.tabs: List[Tab] = []
 
     def add_tab(self, tab: Tab):

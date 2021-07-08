@@ -1,18 +1,10 @@
 import numpy as np
 import copy
 
-from armarx import slice_loader
-from armarx.ice_manager import get_proxy
-
-slice_loader.load_armarx_slice("ArmarXGui", "RemoteGuiInterface.ice")
-import armarx.RemoteGui
 from armarx import RemoteGuiInterfacePrx
+import armarx.RemoteGui
 
 rg = armarx.RemoteGui
-
-
-def get_remote_gui_proxy(provider_name: str = "RemoteGuiProvider") -> RemoteGuiInterfacePrx:
-    return get_proxy(RemoteGuiInterfacePrx, provider_name)
 
 
 def make_value_variant(py_value) -> rg.ValueVariant:
