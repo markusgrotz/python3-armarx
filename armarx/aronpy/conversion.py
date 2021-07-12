@@ -1,3 +1,4 @@
+import enum
 import numpy as np
 
 from typing import List, Dict
@@ -32,6 +33,8 @@ def to_aron(value) -> "armarx.aron.data.AronData":
         return aron_ice.data.AronFloat(value)
     elif isinstance(value, list):
         return aron_ice.data.AronList(list(map(to_aron, value)))
+    elif isinstance(value, enum.IntEnum):
+        return to_aron(value.value)  # int
 
     elif isinstance(value, dict):
         a = aron_ice.data.AronDict({})
