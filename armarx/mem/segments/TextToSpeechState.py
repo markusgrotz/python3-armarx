@@ -30,20 +30,21 @@ class TextToSpeechStateReader(scb.SpecialReaderBase):
 
 
 
+class TextToSpeechEvent(enum.IntEnum):
+    STARTED = 0
+    FINISHED = 1
+
+
 class TextToSpeechState:
 
-    class Event(enum.IntEnum):
-        STARTED = 0
-        FINISHED = 1
-
     core_segment_id = MemoryID("Speech", "TextToSpeechState")
+    Type = TextToSpeechStateType
     Reader = TextToSpeechStateReader
     Writer = TextToSpeechStateWriter
 
-
     def __init__(
             self,
-            event: Event,
+            event: TextToSpeechEvent,
             text: str,
             tts_snapshot_id: MemoryID,
             ):
