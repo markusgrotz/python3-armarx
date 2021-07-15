@@ -62,10 +62,20 @@ class A6(Robot):
     def grasp(self, object_name):
         pass
 
-    def open_hands(self):
-        shape_name = 'Open'
-        self.left_hand.setShape(shape_name)
-        self.right_hand.setShape(shape_name)
+    def open_hand(self, hand_name='left, right', shape_name=None):
+        shape_name = shape_name or 'Open'
+        if 'left' in hand_name:
+            self.left_hand.setShape(shape_name)
+        if 'right' in hand_name:
+            self.right_hand.setShape(shape_name)
+
+    def close_hand(self, hand_name='left, right', shape_name=None):
+        shape_name = shape_name or 'Close'
+        if 'left' in hand_name:
+            self.left_hand.setShape(shape_name)
+        if 'right' in hand_name:
+            self.right_hand.setShape(shape_name)
+
 
     def init_pose(self):
         joint_angles = { "ArmL1_Cla1": 0.036781, "ArmL2_Sho1": 0.839879, "ArmL3_Sho2":
