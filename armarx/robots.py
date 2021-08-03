@@ -88,9 +88,14 @@ class A6(Robot):
         self.move_joints(joint_angles)
 
     def move_joints(self, joint_angles):
+        """
+        Sets the joint position
+
+        :param joint_angles: A map containing the joint name and positions.
+        """
         control_mode = {k: ControlMode.ePositionControl for k,v in joint_angles.items()}
-        kinematic_unit.switchControlMode(control_mode)
-        kinematic_unit.setJointAngles(joint_angles)
+        self.kinematic_unit.switchControlMode(control_mode)
+        self.kinematic_unit.setJointAngles(joint_angles)
 
 
 
