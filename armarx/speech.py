@@ -20,7 +20,7 @@ class TextStateListener(TextToSpeechStateInterface):
         self.state = TextToSpeechStateType.eIdle
         self.tts = TextListenerInterfacePrx.get_topic()
 
-    def reportState(state, c=None):
+    def reportState(self, state, c=None):
         with self.cv:
             self.state = state
             if self.is_idle():
