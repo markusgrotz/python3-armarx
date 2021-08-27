@@ -1,11 +1,15 @@
 import os
+import sys
 import logging
 from collections import namedtuple
-from lxml import etree
+
+import warnings
 
 from importlib.abc import MetaPathFinder
 import importlib
 import types
+
+from lxml import etree
 
 import Ice
 
