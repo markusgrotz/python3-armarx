@@ -4,6 +4,16 @@ Installation
 The ArmarX Python bindings are available as packages.
 Just grab the latest version from `pypi.humanoids.kit.edu <https://pypi.humanoids.kit.edu>`__ .
 
+With poetry 
+
+.. highlight:: bash
+.. code-block:: bash
+
+    poetry config repositories.h2t https://pypi.humanoids.kit.edu/simple/
+    poetry add armarx-dev
+
+or with pip
+
 .. highlight:: bash
 .. code-block:: bash
 
@@ -17,9 +27,6 @@ tool, i.e. `armarx-package add python <your project name>`.  Then you can use
 
 If you are using poetry then add the the following lines to `pyproject.toml`::
 
-    [[tool.poetry.source]]
-    name = "h2t"
-    url = "https://pypi.humanoids.kit.edu/simple/"
 
 
 Configuration
