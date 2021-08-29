@@ -101,32 +101,44 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
             # loaded
             for _, variant_info in self.mapping.items():
                 self.patch_slice_definition(variant_info)
+        else:
+            print(f"Variant info {fullname} could not be loaded")
         return None
 
-    def patch_slice_definition(self, variant_info):
+    def patch_slice_definition(self, variant_info: VariantInfo):
         default_name = variant_info.default_name
 
         if variant_info.type_name in self.patched:
             return
 
+        def patch_module(mod: str):
+
+            try:
+                print(f"Patching module {mod}")
+                if not hasattr(mod, variant_info.type_name):
+                    return
+
+                cls = getattr(mod, variant_info.type_name)
+
+                def _get_default_topic(cls, name=None):
+                    return get_topic(cls, name or default_name)
+
+                def _get_default_proxy(cls, name=None):
+                    return get_proxy(cls, name or default_name)
+
+                def _wait_for_default_proxy(cls, name=None, timeout=0):
+                    return wait_for_proxy(cls, name or default_name, timeout)
+
+                cls.get_proxy = types.MethodType(_get_default_proxy, cls)
+                cls.get_topic = types.MethodType(_get_default_topic, cls)
+                cls.wait_for_proxy = types.MethodType(_wait_for_default_proxy, cls)
+
+                self.patched[variant_info.type_name] = True
+            except:
+                print(f"Could not patch module '{mod.__str__()}'")
+
         mod = importlib.import_module('armarx')
+        patch_module(mod)
 
-        if not hasattr(mod, variant_info.type_name):
-            return
-
-        cls = getattr(mod, variant_info.type_name)
-
-        def _get_default_topic(cls, name=None):
-            return get_topic(cls, name or default_name)
-
-        def _get_default_proxy(cls, name=None):
-            return get_proxy(cls, name or default_name)
-
-        def _wait_for_default_proxy(cls, name=None, timeout=0):
-            return wait_for_proxy(cls, name or default_name, timeout)
-
-        cls.get_proxy = types.MethodType(_get_default_proxy, cls)
-        cls.get_topic = types.MethodType(_get_default_topic, cls)
-        cls.wait_for_proxy = types.MethodType(_wait_for_default_proxy, cls)
-
-        self.patched[variant_info.type_name] = True
+        mod = importlib.import_module(variant_info.package_name)
+        patch_module(mod)
