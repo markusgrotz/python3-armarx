@@ -149,5 +149,8 @@ class ArmarXVariantInfoFinder(MetaPathFinder):
         mod = importlib.import_module('armarx')
         patch_module(mod)
 
-        mod = importlib.import_module(variant_info.package_name)
-        patch_module(mod)
+        try:
+            mod = importlib.import_module(variant_info.package_name)
+            patch_module(mod)
+        except:
+            print(f"Could not patch module {mod.__str__()}")
