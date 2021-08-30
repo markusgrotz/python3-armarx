@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "armarx-dev"
+version = "0.13.1"
+description = "Python bindings for ArmarX"
+authors = ["Markus Grotz <markus.grotz@kit.edu>"]
+packages = [{include = "armarx"}]
+readme = "README.md"
+repository = "http://gitlab.com/ArmarX/python3-armarx"
+documentation = "https://armarx.humanoids.kit.edu/python/"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+zeroc-ice = "3.7.0"
+lxml = "^4.6.3"
+argparse = "^1.4.0"
+Sphinx = {version = "^4.0.2", optional = true}
+sphinx-rtd-theme = {version = "^0.5.2", optional = true}
+toml = {version = "^0.10.2", optional = true}
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.extras]
+docs = ["sphinx"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+

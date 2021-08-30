@@ -1,9 +1,9 @@
-from .ice_manager import test_connection
+"""
+This module automatically injects available slice definitions into the armarx namespace 
+"""
 
 import sys
+
 from .slice_loader import ArmarXVariantInfoFinder
 
-test_connection()
 sys.meta_path.insert(0, ArmarXVariantInfoFinder())
-
-
