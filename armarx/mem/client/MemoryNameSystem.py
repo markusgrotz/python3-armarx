@@ -15,6 +15,21 @@ from armarx.mem.client.Reader import Reader
 from armarx.mem.client.Writer import Writer
 
 
+class ServerProxies:
+
+    def __init__(
+            self,
+            reading: Optional[armem.server.ReadingMemoryInterface] = None,
+            writing: Optional[armem.server.WritingMemoryInterface] = None,
+            ):
+        self.reading = reading
+        self.writing = writing
+
+    @classmethod
+    def from_ice(cls, server: armem.mns.dto.MemoryServerInterfaces):
+        return cls(reading=server.reading, writing=server.writing)
+
+
 class MemoryNameSystem:
 
     cls_logger = logging.getLogger(__file__)
@@ -53,7 +68,7 @@ class MemoryNameSystem:
             ):
 
         self.mns = mns
-        self.servers: Dict[str, "MemoryServerPrx"] = {}
+        self.servers: Dict[str, ServerProxies] = {}
 
         self.subscriptions: Dict[MemoryID, List["Callback"]] = {}
 
@@ -72,7 +87,10 @@ class MemoryNameSystem:
             raise ArMemError(e)
         if result.success:
             # Do some implicit type check
-            self.servers = {name: server for name, server in result.proxies.items()}
+            self.servers = {
+                name: ServerProxies.from_ice(server)
+                for name, server in result.servers.items()
+            }
         else:
             raise armem_error.ArMemError(f"MemoryNameSystem query failed: {result.errorMessage}")
 
@@ -80,7 +98,7 @@ class MemoryNameSystem:
     def resolve_server(
             self,
             memory_id: MemoryID,
-            ) -> MemoryServerPrx:
+            ) -> ServerProxies:
 
         server = self.servers.get(memory_id.memory_name, None)
 
@@ -95,22 +113,21 @@ class MemoryNameSystem:
 
     def wait_for_server(
             self,
-            memory_id: MemoryID,
-            timeout_ms=-1,
-            ) -> MemoryServerPrx:
+            memory_id: MemoryID
+            ) -> ServerProxies:
 
         server = self.servers.get(memory_id.memory_name, None)
         if server is None:
-            inputs = armem.data.WaitForMemoryInput()
-            inputs.name = memory_id.memory_name
-            inputs.timeoutMilliSeconds = timeout_ms
+            inputs = armem.mns.dto.WaitForServerInput(
+                name=memory_id.memory_name,
+            )
 
             self.logger.info(f"Waiting for memory server {memory_id} ...")
-            result = self.mns.waitForMemory(inputs)
+            result: armem.mns.dto.WaitForServerResult = self.mns.waitForServer(inputs)
             self.logger.info(f"Resolved memory server {memory_id}.")
             if result.success:
-                if result.proxy:
-                    server = result.proxy
+                if result.server.reading or result.server.writing:
+                    server = ServerProxies.from_ice(result.server)
                 else:
                     raise armem_error.CouldNotResolveMemoryServer(
                         memory_id, f"Returned proxy is null: {result.proxy}")
@@ -122,19 +139,19 @@ class MemoryNameSystem:
 
 
     def get_reader(self, memory_id: MemoryID) -> Reader:
-        return Reader(self.resolve_server(memory_id))
+        return Reader(self.resolve_server(memory_id).reading)
 
     def wait_for_reader(self, memory_id: MemoryID) -> Reader:
-        return Reader(self.wait_for_server(memory_id))
+        return Reader(self.wait_for_server(memory_id).reading)
 
     def get_all_readers(self, update=True) -> Dict[str, Reader]:
         return self._get_all_clients(Reader, update)
 
     def get_writer(self, memory_id: MemoryID) -> Writer:
-        return Writer(self.resolve_server(memory_id))
+        return Writer(self.resolve_server(memory_id).writing)
 
     def wait_for_writer(self, memory_id: MemoryID) -> Writer:
-        return Writer(self.wait_for_server(memory_id))
+        return Writer(self.wait_for_server(memory_id).writing)
 
     def get_all_writers(self, update=True) -> Dict[str, Writer]:
         return self._get_all_clients(Writer, update)
