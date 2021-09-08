@@ -62,10 +62,20 @@ class A6(Robot):
     def grasp(self, object_name):
         pass
 
-    def open_hands(self):
-        shape_name = 'Open'
-        self.left_hand.setShape(shape_name)
-        self.right_hand.setShape(shape_name)
+    def open_hand(self, hand_name='left, right', shape_name=None):
+        shape_name = shape_name or 'Open'
+        if 'left' in hand_name:
+            self.left_hand.setShape(shape_name)
+        if 'right' in hand_name:
+            self.right_hand.setShape(shape_name)
+
+    def close_hand(self, hand_name='left, right', shape_name=None):
+        shape_name = shape_name or 'Close'
+        if 'left' in hand_name:
+            self.left_hand.setShape(shape_name)
+        if 'right' in hand_name:
+            self.right_hand.setShape(shape_name)
+
 
     def init_pose(self):
         joint_angles = { "ArmL1_Cla1": 0.036781, "ArmL2_Sho1": 0.839879, "ArmL3_Sho2":
@@ -78,9 +88,14 @@ class A6(Robot):
         self.move_joints(joint_angles)
 
     def move_joints(self, joint_angles):
+        """
+        Sets the joint position
+
+        :param joint_angles: A map containing the joint name and positions.
+        """
         control_mode = {k: ControlMode.ePositionControl for k,v in joint_angles.items()}
-        kinematic_unit.switchControlMode(control_mode)
-        kinematic_unit.setJointAngles(joint_angles)
+        self.kinematic_unit.switchControlMode(control_mode)
+        self.kinematic_unit.setJointAngles(joint_angles)
 
 
 
