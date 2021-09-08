@@ -109,6 +109,6 @@ class Volumetric:
             self._size_model_context.y = y
 
             size = self.size_model.get_size(voxel_size=voxel_size, context=self._size_model_context)
-            if size is None or min(size) <= 0:
+            if size is None or min(size) < 0:
                 continue
             layer.add(Box(f"{i:>04}", position=x, size=size, color=color))
