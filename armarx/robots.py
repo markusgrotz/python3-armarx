@@ -75,6 +75,12 @@ class A6(Robot):
         self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
         self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy('Armar6KinematicUnit')
         self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
+        self.both_arms_joint_names = ["ArmL1_Cla1", "ArmL2_Sho1", "ArmL3_Sho2",
+                "ArmL4_Sho3", "ArmL5_Elb1", "ArmL6_Elb2", "ArmL7_Wri1",
+                "ArmL8_Wri2", "ArmR1_Cla1", "ArmR2_Sho1", "ArmR3_Sho2",
+                "ArmR4_Sho3", "ArmR5_Elb1", "ArmR6_Elb2", "ArmR7_Wri1",
+                "ArmR8_Wri2"]
+
 
     def grasp(self, object_name):
         pass
@@ -124,13 +130,58 @@ class A6(Robot):
                 "Neck_2_Pitch": 0.2, "TorsoJoint": 0.5}
         self.move_joints(joint_angles)
 
+
+
+    def wait_for_joints(self, joint_angles, eps=0.1, timeout=5):
+        """
+        Waits until the robot has reached a pose
+
+        :param eps: angle accuraccy in radiant
+        :param timeout: timeout in seconds
+        """
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            has_reached = True
+            actual_joint_angles = self.kinematic_unit.getJointAngles()
+            for joint_name, expected_joint_angle in joint_angles:
+                actual_joint_angle = actual_joint_angles[joint_name]
+                if abs(expected_joint_angle - actual_joint_angle) > eps:
+                    has_reached = False
+                    break
+            if has_reached:
+                return True
+            else:
+                time.sleep(0.05)
+        return False
+
+    def both_arms_zero_torque(self, joint_names=None):
+        """
+        Sets zero torque mode for both arms
+        """
+        joint_names = joint_names or self.both_arms_joint_names
+        control_mode = {n: ControlMode.eTorqueControl for n in joint_names}
+        joint_torques = {n: 0 for n in joint_names}
+        self.kinematic_unit.switchControlMode(control_mode)
+        self.kinematic_unit.setJointTorques(joint_torques)
+
+    def both_arms_zero_velocity(self, joint_names=None):
+        """
+        Sets zero velocity for both arms
+        """
+        joint_names = joint_names or self.both_arms_joint_names
+        control_mode = {n: ControlMode.eVelocityControl for n in joint_names}
+        joint_velocities = {n: 0 for n in joint_names}
+        self.kinematic_unit.switchControlMode(control_mode)
+        self.kinematic_unit.setJointVelocities(joint_velocities)
+
+
     def move_joints(self, joint_angles):
         """
         Sets the joint position
 
         :param joint_angles: A map containing the joint name and positions.
         """
-        control_mode = {k: ControlMode.ePositionControl for k,v in joint_angles.items()}
+        control_mode = {k: ControlMode.ePositionControl for k, _ in joint_angles.items()}
         self.kinematic_unit.switchControlMode(control_mode)
         self.kinematic_unit.setJointAngles(joint_angles)
 
