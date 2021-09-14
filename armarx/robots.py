@@ -143,7 +143,7 @@ class A6(Robot):
         while (time.time() - start_time) < timeout:
             has_reached = True
             actual_joint_angles = self.kinematic_unit.getJointAngles()
-            for joint_name, expected_joint_angle in joint_angles:
+            for joint_name, expected_joint_angle in joint_angles.items():
                 actual_joint_angle = actual_joint_angles[joint_name]
                 if abs(expected_joint_angle - actual_joint_angle) > eps:
                     has_reached = False
