@@ -79,10 +79,11 @@ class MemoryNameSystem:
 
 
     def update(self):
+        import Ice
 
         result: "armem.data.GetAllRegisteredMemoriesResult"
         try:
-            result = self.mns.getAllRegisteredMemories()
+            result = self.mns.getAllRegisteredServers()
         except Ice.NotRegisteredException as e:
             raise ArMemError(e)
         if result.success:
