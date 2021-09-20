@@ -72,11 +72,11 @@ class IceConverter(abc.ABC):
         self._handlers_to_ice[type] = handler
 
     @abc.abstractmethod
-    def _from_ice(self, dto):
+    def _from_ice(self, dto, *args, **kwargs):
         """Convert the Ice DTO to a Python BO."""
         ...
 
     @abc.abstractmethod
-    def _to_ice(self, bo):
+    def _to_ice(self, bo, *args, **kwargs):
         """Convert the Python BO to an Ice DTO."""
         ...
