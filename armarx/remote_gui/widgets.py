@@ -453,6 +453,9 @@ class GridLayout(ContainerWidget):
     def add(self, child: Widget, pos: Tuple[int, int] = None, span: Tuple[int, int] = None):
         """Add a child widget at the specified grid position (x, y) and span (width, height)."""
 
+        if span is None:
+            span = (1, 1)
+
         self.add_child(child)
 
         layout = rg.GridLayoutData()
