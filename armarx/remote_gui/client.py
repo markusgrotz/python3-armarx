@@ -10,7 +10,7 @@ from armarx import RemoteGuiInterfacePrx
 from armarx.remote_gui.ice_wrapper import TabProxy
 from armarx.remote_gui.widgets import Widget
 
-from typing import List
+from typing import Callable, List, Optional
 import abc
 
 
@@ -105,3 +105,29 @@ class Client:
         """Send updates to the remote GUI for all added tabs."""
         for tab in self.tabs:
             tab.send_updates()
+
+    def update_loop(self, callback: Callable, block=True) -> Optional["threading.Thread"]:
+        """
+        Run a loop receiving and sending updates.
+        :param callback: The callback to call after receiving updates.
+        :param block:
+            If true, blocks until a KeyboardInterrupt is received.
+            If false, starts the loop in a thread and returns the thread.
+        :return: If block is False, returns the thread, otherwise returns nothing.
+        """
+        if block:
+            try:
+                while True:
+                    self.receive_updates()
+
+                    callback()
+
+                    self.send_updates()
+            except KeyboardInterrupt:
+                pass
+        else:
+            from threading import Thread
+            thread = Thread(target=lambda: self.update_loop(callback=callback, block=True), name="Remote GUI")
+            thread.start()
+            return thread
+
