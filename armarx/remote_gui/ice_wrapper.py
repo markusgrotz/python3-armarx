@@ -151,7 +151,10 @@ class TabProxy:
         return current_value
 
     def has_value_changed(self, name: str):
-        old_value = unwrap_value_variant(self.old_values[name])
+        old_value = self.old_values.get(name, None)
+        if old_value is None:
+            return True
+        old_value = unwrap_value_variant(old_value)
         current_value = self.get_value(name)
         return not are_equal(old_value, current_value)
 
