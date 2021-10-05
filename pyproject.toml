@@ -3,7 +3,7 @@ name = "armarx-dev"
 version = "0.13.3"
 description = "Python bindings for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
-packages = [{include = "armarx"}]
+packages = [{include = "armarx"}, {include = "visionx"}]
 readme = "README.md"
 repository = "http://gitlab.com/ArmarX/python3-armarx"
 documentation = "https://armarx.humanoids.kit.edu/python/"
@@ -19,6 +19,7 @@ toml = {version = "^0.10.2", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+setuptools = "^58.1.0"
 
 [tool.poetry.extras]
 docs = ["sphinx"]
