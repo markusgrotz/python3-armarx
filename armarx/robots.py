@@ -71,6 +71,7 @@ class A6(Robot):
 
     def __init__(self):
         super().__init__()
+        self.profile_name = 'Armar6Real'
         self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
         self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
         self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy('Armar6KinematicUnit')
@@ -88,6 +89,7 @@ class A6(Robot):
     def open_hand(self, hand_name='left, right', shape_name=None):
         """
         Opens a hand or both hands
+
         :param hand_name: the name of the hand
         :param shape_name: the name of the hand shape
         """
@@ -103,6 +105,7 @@ class A6(Robot):
     def close_hand(self, hand_name='left, right', shape_name=None):
         """
         Closes a hand or both hands
+
         :param hand_name: the name of the hand
         :param shape_name: the name of the hand shape
         """
@@ -132,7 +135,7 @@ class A6(Robot):
 
 
 
-    def wait_for_joints(self, joint_angles, eps=0.1, timeout=5):
+    def wait_for_joints(self, joint_angles: Dict[str, float], eps=0.1, timeout=5):
         """
         Waits until the robot has reached a pose
 
@@ -175,16 +178,22 @@ class A6(Robot):
         self.kinematic_unit.setJointVelocities(joint_velocities)
 
 
-    def move_joints(self, joint_angles):
+    def move_joints(self, joint_angles: Dict[str, float]):
         """
         Sets the joint position
 
-        :param joint_angles: A map containing the joint name and positions.
+        :param joint_angles: A map containing the joint names and positions.
         """
         control_mode = {k: ControlMode.ePositionControl for k, _ in joint_angles.items()}
         self.kinematic_unit.switchControlMode(control_mode)
         self.kinematic_unit.setJointAngles(joint_angles)
 
 
+    def place_object(self, state_parameters=None):
+        s = StatechartExecutor(self.profile_name, 'Armar6GraspingGroup', 'PlaceObject')
+        return s.run(state_parameters, True)
 
+    def grasp_object(self, state_parameters=None):
+        s = StatechartExecutor(self.profile_name, 'Armar6GraspingGroup', 'GraspSingleObject')
+        return s.run(state_parameters, True)
 
