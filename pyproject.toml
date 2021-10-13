@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "armarx-dev"
-version = "0.13.3"
+version = "0.14.0"
 description = "Python bindings for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 packages = [{include = "armarx"}, {include = "visionx"}]
@@ -27,6 +27,3 @@ docs = ["sphinx"]
 [build-system]
 requires = ["setuptools", "wheel", "poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-
-
