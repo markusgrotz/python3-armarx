@@ -26,10 +26,10 @@ Creating a proxy
 
     #!/usr/bin/env python
 
+    import random
+
     from armarx import RNGProviderComponentInterface
     from armarx import ice_manager
-
-    import random
 
 
     class RNGProvider(RNGProviderComponentInterface):

@@ -24,10 +24,11 @@ Python bindings share some configuration with the statecharts.  Section
 Quickstart
 ----------
 
-Grab the latest version with `pip install --extra-index-url https://pypi.humanoids.kit.edu/ armarx-dev`.
+Grab the latest version with `poetry add armarx-dev` or
+`pip install --extra-index-url https://pypi.humanoids.kit.edu/ armarx-dev`.
 
 To access a proxy via ice you can load the interface with the import keyword.
-For convenience, function such as `get_proxy` are automatically injected with
+For convenience, functions such as `get_proxy` are automatically injected with
 default parameters.
 
 .. highlight:: python
@@ -40,6 +41,37 @@ default parameters.
 
 
 That's it. Happy coding. 
+
+
+
+Robots module
+-------------
+
+The `armarx.robots` module is a easy and convient way to control a robot.
+
+.. highlight:: python
+.. code-block:: python
+
+    from armarx.robots import A6
+    
+    # we use the ARMAR-6 robot
+    robot = A6()
+    # use the text-to-speech system to say something
+    robot.say('Hello World')
+
+    # look at a specific target, i.e. in front of the robot
+    from armarx import FramedPositionBase
+    position = FramedPositionBase(0, 1000, 1650, frame='root', agent='Armar6'))
+    robot.gaze.fixate(position)
+
+    # close both hands
+    robot.close_hand('both')
+    robot.say('Here it is.')
+
+    #execute the handover action. 
+    robot.handover()
+
+
 
 
 Indices and tables
