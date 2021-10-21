@@ -15,6 +15,32 @@ If you are looking for information on a specific function
 .. automodule:: armarx.slice_loader
     :members: load_armarx_slice
 
+.. automodule:: armarx.statechart
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+
+API Reference for perception
+============================
+
+armarx\.image\_processor module
+-------------------------------
+
+.. automodule:: armarx.image_processor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+armarx\.image\_provider module
+------------------------------
+
+.. automodule:: armarx.image_provider
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 API Reference for Remote GUI
 ============================

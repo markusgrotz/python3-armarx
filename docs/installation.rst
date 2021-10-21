@@ -25,7 +25,14 @@ Alternatatively, you can create a project template with the `armarx-package`
 tool, i.e. `armarx-package add python <your project name>`.  Then you can use
 `poetry install` to setup a virtual env.
 
-If you are using poetry then add the the following lines to `pyproject.toml`::
+If you are using poetry then add the the following lines to `pyproject.toml`
+
+.. highlight:: toml
+.. code-block:: toml
+
+    [[tool.poetry.source]]
+    name = "h2t"
+    url = "https://pypi.humanoids.kit.edu/simple/"
 
 
 
@@ -35,6 +42,4 @@ Configuration
 The ArmarX Python bindings read the available ArmarX projects from the
 configurtion :file:`$HOME/.armarx/armarx.ini`. Here the key 'packages' from the
 entry 'AutoCompletion' is relevant.
-
-
 
