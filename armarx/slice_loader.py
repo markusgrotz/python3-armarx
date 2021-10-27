@@ -54,6 +54,8 @@ def _load_armarx_slice(armarx_package_name: str, filename: str):
     """
     package_dependencies = get_dependencies(armarx_package_name)
     package_dependencies.append(armarx_package_name)
+    if "ArmarXCore" not in package_dependencies:
+        package_dependencies = ["ArmarXCore"] + package_dependencies
 
     include_paths = ['-I{}'.format(Ice.getSliceDir())]
 
