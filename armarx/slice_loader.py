@@ -64,6 +64,7 @@ def _load_armarx_slice(armarx_package_name: str, filename: str):
         include_paths.extend(interface_include_path)
 
     filename = os.path.join(include_paths[-1], armarx_package_name, 'interface', filename)
+    filename = os.path.abspath(filename)
 
     search_path = ' -I'.join(include_paths)
     logger.debug('Looking for slice files in %s', search_path)
