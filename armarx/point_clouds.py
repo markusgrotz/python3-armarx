@@ -1,10 +1,12 @@
 import logging
-from abc import ABC
+import threading
 import time
+from typing import Tuple
+
 
 import numpy as np
 
-from armarx.ice_manager import register_object, get_topic
+from armarx.ice_manager import register_object, get_proxy, get_topic, using_topic
 from armarx.slice_loader import _load_armarx_slice
 _load_armarx_slice("VisionX", "core/PointCloudProcessorInterface.ice")
 
@@ -12,6 +14,8 @@ import visionx as vx
 import armarx as ax
 
 PointCloudProviderInterface = vx.PointCloudProviderInterface
+PointCloudProviderInterfacePrx = vx.PointCloudProviderInterfacePrx
+PointCloudProcessorInterface = vx.PointCloudProcessorInterface
 PointCloudProcessorInterfacePrx = vx.PointCloudProcessorInterfacePrx
 MetaPointCloudFormat = vx.MetaPointCloudFormat
 PointContentType = vx.PointContentType
@@ -79,7 +83,7 @@ def get_point_cloud_format(max_points: int, point_dt: np.dtype) -> MetaPointClou
     return result
 
 
-class PointCloudProvider(PointCloudProviderInterface, ABC):
+class PointCloudProvider(PointCloudProviderInterface):
     """
     A point cloud provider offers point clouds.
 
@@ -153,5 +157,61 @@ class PointCloudProvider(PointCloudProviderInterface, ABC):
     def hasSharedMemorySupport(self, current=None):
         return False
 
-    def shutdown(self, current=None):
-        current.adapter.getCommunicator().shutdown()
+
+class PointCloudProcessor(PointCloudProcessorInterface):
+    """
+    A point cloud processor takes one or more point clouds from existing point cloud processors as input
+    and produces one or more point clouds as output.
+    """
+
+    def __init__(self, name: str,
+                 source_provider_name: str = None):
+        self.name = name
+        self.proxy = None
+
+        self.cv = threading.Condition()
+        self.point_cloud_available = False
+
+        # Source provider is set in on_connect()
+        self.source_provider_name = source_provider_name
+        self.source_provider_proxy = None
+        self.source_provider_topic = None
+
+    def reportPointCloudAvailable(self, provider_name: str, current=None):
+        with self.cv:
+            self.point_cloud_available = True
+            self.cv.notify()
+
+    def wait_for_next_point_cloud(self) -> Tuple[np.array, MetaPointCloudFormat]:
+        with self.cv:
+            self.cv.wait_for(lambda: self.point_cloud_available)
+
+            raw_point_cloud, info = self.source_provider_proxy.getPointCloud()
+            point_dt = dt_from_point_type(info.type)
+            point_cloud = np.frombuffer(raw_point_cloud, dtype=point_dt)
+
+            return point_cloud, info
+
+            # TODO: Updating the result provider should be available through a method
+            #if isinstance(result, tuple):
+            #    result_images, info = result
+            #else:
+            #    result_images = result
+            #    info.timeProvided = 0
+
+            #self.result_image_provider.update_image(result_images, info.timeProvided)
+
+    def on_disconnect(self):
+        self.source_provider_topic.unsubscribe(self.proxy)
+
+    def on_connect(self):
+        logger.debug('Registering point cloud processor')
+        self.proxy = register_object(self, self.name)
+        self.source_provider_proxy = get_proxy(PointCloudProviderInterfacePrx, self.source_provider_name)
+
+        self.source_provider_topic = using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
+
+        # TODO: Result providers need to be handled separately
+        #self.result_image_provider = ImageProvider(f'{self.__class__.__name__}Result', self.num_result_images, d.width, d.height)
+        #self.result_image_provider.register()
+        #self._image_listener_topic = using_topic(proxy, f'{self.provider_name}.ImageListener')
