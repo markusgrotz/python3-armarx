@@ -3,7 +3,7 @@ import time
 import math
 
 from armarx.ice_manager import is_alive
-from armarx.point_clouds import PointCloudProvider, dt_point_color_xyz
+from armarx.point_clouds import PointCloudProvider, dtype_point_color_xyz, rgb_to_uint32
 
 logger = logging.getLogger(__name__)
 
@@ -12,16 +12,14 @@ HEIGHT = 120
 
 
 def main():
-    pc_provider = PointCloudProvider('ExamplePointCloudProvider', WIDTH * HEIGHT,
-                                     point_dt=dt_point_color_xyz)
+    pc_provider = PointCloudProvider('ExamplePointCloudProvider', point_dtype=dtype_point_color_xyz,
+                                     initial_capacity=WIDTH * HEIGHT)
     pc_provider.on_connect()
 
     try:
         while is_alive():
             pc = pc_provider.create_point_cloud_array(WIDTH * HEIGHT)
             t = time.time()
-            sin = math.sin(t)
-            cos = math.cos(t)
 
             # You can slice the relevant data fields out of the structured data
             positions = pc['position']  # This is a view to the position data (3D array float32)
@@ -35,7 +33,9 @@ def main():
                 for x in range(WIDTH):
                     g = int(255.0 * height_t)
                     b = int(255 * (1.0 - height_t))
-                    colors[index] = 255 + g * 256 + b * 256 * 256
+                    colors[index] = 255 + g*256 + b*256*256
+                    # The following code is very slow and is therefore commented out
+                    # colors[index] = rgb_to_uint32(255, g, b)
                     point = positions[index]
                     point[0] = x
                     point[1] = y
