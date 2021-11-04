@@ -17,7 +17,7 @@ def _load_config():
 
 
 def _get_config_dir():
-    if os.environ["ARMARX_WORKSPACE"]:
+    if os.environ.get("ARMARX_WORKSPACE", None):
         config_dir = os.path.join(os.environ['ARMARX_WORKSPACE'], 'armarx_config')
     else:
         config_dir = os.path.expanduser('~/.armarx/')
