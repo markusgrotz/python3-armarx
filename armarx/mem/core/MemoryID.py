@@ -221,7 +221,7 @@ class MemoryID(ice_twin.IceTwin):
 
 
     @classmethod
-    def from_aron(cls, aron: "armarx.aron.data.AronData") -> "MemoryID":
+    def from_aron(cls, aron: "armarx.aron.data.dto.GenericData") -> "MemoryID":
         data = aron_conv.from_aron(aron)
         self = cls()
         self.memory_name = data["memoryName"]
@@ -233,7 +233,7 @@ class MemoryID(ice_twin.IceTwin):
         return self
 
 
-    def to_aron(self) -> "armarx.aron.data.AronData":
+    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         import numpy as np
 
         data = {

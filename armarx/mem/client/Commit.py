@@ -1,5 +1,4 @@
-import time
-from typing import Dict, Any, List, Optional, Callable, Union
+from typing import List, Optional
 
 from armarx.ice_conv import ice_twin
 from armarx.mem.core import MemoryID, time_usec
@@ -7,7 +6,7 @@ from armarx.mem.core import MemoryID, time_usec
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 
-import armarx.aron as aron
+from armarx.aronpy.conversion import Aron
 import armarx.armem as armem
 
 
@@ -16,7 +15,7 @@ class EntityUpdate(ice_twin.IceTwin):
     def __init__(
             self,
             entity_id: MemoryID = None,
-            instances_data: List[aron.data.AronData] = None,
+            instances_data: List[Aron.Data] = None,
             time_created_usec: Optional[int] = None,
             confidence: Optional[float] = None,
             time_sent_usec: Optional[int] = None,
@@ -32,7 +31,12 @@ class EntityUpdate(ice_twin.IceTwin):
 
 
     def set_time_created_to_now(self):
-        self.time_created_usec = time_usec()
+        self.time_created_usec = self.now()
+
+
+    @staticmethod
+    def now():
+        return time_usec()
 
 
     @classmethod
@@ -56,6 +60,7 @@ class EntityUpdate(ice_twin.IceTwin):
 
         self.confidence = dto.confidence
         self.time_sent_usec = dto.timeSentMicroSeconds
+
 
     def __repr__(self):
         return "<{c} id={i} t={t} c={con:.3f} with {n} instance{ns}>".format(

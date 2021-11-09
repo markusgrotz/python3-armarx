@@ -55,9 +55,16 @@ class MemoryNameSystem:
             raise armem_error.ArMemError(f"Memory Name System '{MemoryNameSystem}' is not registered.")
 
     @classmethod
-    def wait_for_mns(cls, mns_name="MemoryNameSystem", **kwargs) -> "MemoryNameSystem":
+    def wait_for_mns(cls, mns_name="MemoryNameSystem", logger=None, **kwargs) -> "MemoryNameSystem":
+        if logger is not None:
+            logger.info("Wait for Memory Name System ... ")
+
         mns_proxy = ice_manager.wait_for_proxy(
             armem.mns.MemoryNameSystemInterfacePrx, mns_name, timeout=0)
+
+        if logger is not None:
+            logger.info("Done.")
+
         return MemoryNameSystem(mns_proxy, **kwargs)
 
 
@@ -85,7 +92,7 @@ class MemoryNameSystem:
         try:
             result = self.mns.getAllRegisteredServers()
         except Ice.NotRegisteredException as e:
-            raise ArMemError(e)
+            raise armem_error.ArMemError(e)
         if result.success:
             # Do some implicit type check
             self.servers = {

@@ -9,6 +9,7 @@ dtypes_dict = {
 }
 
 
+
 def import_aron_ice():
     try:
         import armarx.aron
@@ -20,29 +21,94 @@ def import_aron_ice():
     return armarx.aron
 
 
-def to_aron(value) -> "armarx.aron.data.AronData":
-    aron_ice = import_aron_ice()
+try:
+    class Aron:
+        ARON_VERSION = "beta 0.2.3"
+
+        ns = import_aron_ice().data.dto
+
+        Data = ns.GenericData
+
+        String = ns.AronString
+        Int = ns.AronInt
+        Long = ns.AronLong
+        Float = ns.AronFloat
+
+        List = ns.List
+        Dict = ns.Dict
+
+        NdArray = ns.NDArray
+
+        @classmethod
+        def with_version(cls, data):
+            data.VERSION = cls.ARON_VERSION
+            return data
+
+        @classmethod
+        def string(cls, value: str):
+            return cls.with_version(cls.String(value=value))
+
+        @classmethod
+        def int(cls, value: int):
+            return cls.with_version(cls.Int(value=value))
+
+        @classmethod
+        def long(cls, value: int):
+            return cls.with_version(cls.Long(value=value))
+
+        @classmethod
+        def float(cls, value: float):
+            return cls.with_version(cls.Float(value=value))
+
+        @classmethod
+        def list(cls, elements: list):
+            return cls.with_version(cls.List(elements=elements))
+
+        @classmethod
+        def dict(cls, elements: dict):
+            return cls.with_version(cls.Dict(elements=elements))
+
+
+
+except AttributeError as e:
+
+    class Aron:
+
+        ns = import_aron_ice().data
+
+        Data = ns.AronData
+
+        String = ns.AronString
+        Int = ns.AronInt
+        Long = ns.AronLong
+        Float = ns.AronFloat
+
+        List = ns.AronList
+        Dict = ns.AronDict
+
+        NdArray = ns.AronNDArray
+
+
+def to_aron(value) -> "armarx.aron.data.dto.GenericData":
 
     if isinstance(value, str):
-        return aron_ice.data.AronString(value)
+        return Aron.string(value)
     elif isinstance(value, int) or isinstance(value, np.int32):
-        return aron_ice.data.AronInt(int(value))
+        return Aron.int(int(value))
     elif isinstance(value, np.int64):
-        return aron_ice.data.AronLong(int(value))
+        return Aron.long(int(value))
     elif isinstance(value, float):
-        return aron_ice.data.AronFloat(value)
+        return Aron.float(value)
     elif isinstance(value, list):
-        return aron_ice.data.AronList(list(map(to_aron, value)))
+        return Aron.list(list(map(to_aron, value)))
     elif isinstance(value, enum.IntEnum):
         return to_aron(value.value)  # int
 
     elif isinstance(value, dict):
-        a = aron_ice.data.AronDict({})
-        for k, v in value.items():
-            a.elements[k] = to_aron(v)
+        a = Aron.dict({k: to_aron(v) for k, v in value.items()})
         return a
 
-    elif isinstance(value, aron_ice.data.AronDict):
+    elif isinstance(value, Aron.Dict):
         return value
 
     try:
@@ -53,7 +119,7 @@ def to_aron(value) -> "armarx.aron.data.AronData":
     raise TypeError(f"Could not convert object of type '{type(value)}' to aron.")
 
 
-def from_aron(a: "armarx.aron.data.AronData"):
+def from_aron(a: "armarx.aron.data.dto.GenericData"):
     def handle_dict(elements):
         return {k: from_aron(v) for k, v in elements.items()}
 
@@ -67,13 +133,15 @@ def from_aron(a: "armarx.aron.data.AronData"):
     elif isinstance(a, str) or isinstance(a, int) or isinstance(a, float):
         return a
 
-    aron_ice = import_aron_ice()
-
-    if isinstance(a, aron_ice.data.AronNDArray):
+    if isinstance(a, Aron.NdArray):
         # Last entry is #bytes per entry
         data: bytes = a.data
         dtype = dtypes_dict[a.type]
-        shape: List[int] = a.dimensions[:-1]
+        shape: List[int]
+        try:
+            shape = a.dimensions[:-1]
+        except AttributeError:
+            shape = a.shape[:-1]
 
         array: np.ndarray = np.frombuffer(buffer=data, dtype=dtype)
         array = array.reshape(shape)
@@ -86,11 +154,18 @@ def from_aron(a: "armarx.aron.data.AronData"):
 
     try:
         elements = a.elements
+    except AttributeError:
+        print("no elements")
+        pass
+    else:
+        print(f"type(elements): {type(elements)}")
         if isinstance(elements, list):
             return handle_list(elements)
         elif isinstance(elements, dict):
             return handle_dict(elements)
-    except AttributeError:
-        pass
+        else:
+            raise TypeError(f"Could not handle aron container object of type '{type(a)}'. \n"
+                            f"elements: {elements}")
 
-    raise TypeError(f"Could not handle aron object of type '{type(a)}'.")
+    raise TypeError(f"Could not handle aron object of type '{type(a)}'.\n"
+                    f"dir(a): {dir(a)}")
