@@ -51,7 +51,7 @@ class TextToSpeechState:
         self.text = text
         self.tts_snapshot_id = tts_snapshot_id
 
-    def to_aron(self) -> "armarx.aron.data.AronData":
+    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         dto = aronconv.to_aron({
             "event": self.event,
             "text": self.text,
@@ -60,7 +60,7 @@ class TextToSpeechState:
         return dto
 
     @classmethod
-    def from_aron(cls, dto: "armarx.aron.data.AronData"):
+    def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
         d = aronconv.from_aron(dto)
         d["tts_snapshot_id"] = d.pop("ttsSnapshotID")
         return cls(**d)

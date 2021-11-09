@@ -14,14 +14,14 @@ class SpeechToText:
             ):
         self.text = text
 
-    def to_aron(self) -> "armarx.aron.data.AronData":
+    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         dto = aronconv.to_aron({
             "text": self.text,
         })
         return dto
 
     @classmethod
-    def from_aron(cls, dto: "armarx.aron.data.AronData"):
+    def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
         d = aronconv.from_aron(dto)
         return cls(**d)
 
