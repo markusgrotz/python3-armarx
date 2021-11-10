@@ -40,33 +40,28 @@ try:
         NdArray = ns.NDArray
 
         @classmethod
-        def with_version(cls, data):
-            data.VERSION = cls.ARON_VERSION
-            return data
-
-        @classmethod
         def string(cls, value: str):
-            return cls.with_version(cls.String(value=value))
+            return cls.String(value=value, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def int(cls, value: int):
-            return cls.with_version(cls.Int(value=value))
+            return cls.Int(value=value, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def long(cls, value: int):
-            return cls.with_version(cls.Long(value=value))
+            return cls.Long(value=value, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def float(cls, value: float):
-            return cls.with_version(cls.Float(value=value))
+            return cls.Float(value=value, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def list(cls, elements: list):
-            return cls.with_version(cls.List(elements=elements))
+            return cls.List(elements=elements, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def dict(cls, elements: dict):
-            return cls.with_version(cls.Dict(elements=elements))
+            return cls.Dict(elements=elements, VERSION=cls.ARON_VERSION)
 
 
 
