@@ -14,11 +14,18 @@ from typing import Tuple
 
 import numpy as np
 
-from armarx.ice_manager import register_object, get_proxy, get_topic, using_topic
-from armarx.slice_loader import _load_armarx_slice
-_load_armarx_slice("VisionX", "core/PointCloudProcessorInterface.ice")
+from armarx.ice_manager import register_object
+from armarx.ice_manager import get_proxy
+from armarx.ice_manager import get_topic
+from armarx.ice_manager import using_topic
 
-import visionx as vx
+from visionx import PointCloudProviderInterfacePrx
+from visionx import PointCloudProviderInterface
+from visionx import PointCloudProcessorInterfacePrx
+from visionx import PointCloudProcessorInterface
+from visionx import MetaPointCloudFormat
+from visionx import PointContentType
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,44 +40,44 @@ dtype_point_xyz_color_label = np.dtype([('position', np.float32, (3,)), ('color'
 dtype_point_xyz_intensity = np.dtype([('position', np.float32, (3,)), ('intensity', np.float32)])
 
 
-def dtype_from_point_type(point_type: vx.PointContentType):
-    if point_type == vx.PointContentType.ePoints:
+def dtype_from_point_type(point_type: PointContentType):
+    if point_type == PointContentType.ePoints:
         return dtype_point_xyz
-    if point_type == vx.PointContentType.eColoredPoints:
+    if point_type == PointContentType.eColoredPoints:
         return dtype_point_color_xyz
-    if point_type == vx.PointContentType.eOrientedPoints:
+    if point_type == PointContentType.eOrientedPoints:
         return dtype_point_normal_xyz
-    if point_type == vx.PointContentType.eColoredOrientedPoints:
+    if point_type == PointContentType.eColoredOrientedPoints:
         return dtype_point_color_normal_xyz
-    if point_type == vx.PointContentType.eLabeledPoints:
+    if point_type == PointContentType.eLabeledPoints:
         return dtype_point_xyz_label
-    if point_type == vx.PointContentType.eColoredLabeledPoints:
+    if point_type == PointContentType.eColoredLabeledPoints:
         return dtype_point_xyz_color_label
-    if point_type == vx.PointContentType.eIntensity:
+    if point_type == PointContentType.eIntensity:
         return dtype_point_xyz_intensity
     raise Exception("PointContentType not yet implemented!", point_type)
 
 
 def point_type_from_dtype(dt: np.dtype):
     if dt == dtype_point_xyz:
-        return vx.PointContentType.ePoints
+        return PointContentType.ePoints
     if dt == dtype_point_color_xyz:
-        return vx.PointContentType.eColoredPoints
+        return PointContentType.eColoredPoints
     if dt == dtype_point_normal_xyz:
-        return vx.PointContentType.eOrientedPoints
+        return PointContentType.eOrientedPoints
     if dt == dtype_point_color_normal_xyz:
-        return vx.PointContentType.eColoredOrientedPoints
+        return PointContentType.eColoredOrientedPoints
     if dt == dtype_point_xyz_label:
-        return vx.PointContentType.eLabeledPoints
+        return PointContentType.eLabeledPoints
     if dt == dtype_point_xyz_color_label:
-        return vx.PointContentType.eColoredLabeledPoints
+        return PointContentType.eColoredLabeledPoints
     if dt == dtype_point_xyz_intensity:
-        return vx.PointContentType.eIntensity
+        return PointContentType.eIntensity
     raise Exception("Structured data type not known!", dt)
 
 
-def get_point_cloud_format(max_points: int, point_dt: np.dtype) -> vx.MetaPointCloudFormat:
-    result = vx.MetaPointCloudFormat()
+def get_point_cloud_format(max_points: int, point_dt: np.dtype) -> MetaPointCloudFormat:
+    result = MetaPointCloudFormat()
     result.size = max_points * point_dt.itemsize
     result.capacity = result.size
     result.timeProvided = 0
@@ -95,7 +102,7 @@ def uint32_to_rgb(color: int) -> Tuple[int, int, int]:
     return r, g, b
 
 
-class PointCloudProvider(vx.PointCloudProviderInterface):
+class PointCloudProvider(PointCloudProviderInterface):
     """
     A point cloud provider offers point clouds.
 
@@ -139,7 +146,7 @@ class PointCloudProvider(vx.PointCloudProviderInterface):
         """
         logger.debug('registering point cloud provider %s', self.name)
         self.proxy = register_object(self, self.name)
-        self.pc_topic = get_topic(vx.PointCloudProcessorInterfacePrx, f'{self.name}.PointCloudListener')
+        self.pc_topic = get_topic(PointCloudProcessorInterfacePrx, f'{self.name}.PointCloudListener')
 
     def on_disconnect(self):
         """
@@ -188,7 +195,7 @@ class PointCloudProvider(vx.PointCloudProviderInterface):
         return False
 
 
-class PointCloudReceiver(vx.PointCloudProcessorInterface):
+class PointCloudReceiver(PointCloudProcessorInterface):
     """
     A point cloud receiver connects to a PointCloudProvider and makes reads new point cloud data if available.
     """
@@ -226,7 +233,7 @@ class PointCloudReceiver(vx.PointCloudProcessorInterface):
             self.point_cloud_available = True
             self.cv.notify()
 
-    def wait_for_next_point_cloud(self) -> Tuple[np.array, vx.MetaPointCloudFormat]:
+    def wait_for_next_point_cloud(self) -> Tuple[np.array, MetaPointCloudFormat]:
         """
         Wait for the next point cloud from the source provider to arrive, then return it.
 
@@ -238,7 +245,7 @@ class PointCloudReceiver(vx.PointCloudProcessorInterface):
             self.cv.wait_for(lambda: self.point_cloud_available)
             return self.get_latest_point_cloud()
 
-    def get_latest_point_cloud(self) -> Tuple[np.array, vx.MetaPointCloudFormat]:
+    def get_latest_point_cloud(self) -> Tuple[np.array, MetaPointCloudFormat]:
         """
         Get the latest point cloud without waiting.
 
@@ -270,7 +277,7 @@ class PointCloudReceiver(vx.PointCloudProcessorInterface):
         """
         logger.debug('Registering point cloud processor')
         self.proxy = register_object(self, self.name)
-        self.source_provider_proxy = get_proxy(vx.PointCloudProviderInterfacePrx, self.source_provider_name)
+        self.source_provider_proxy = get_proxy(PointCloudProviderInterfacePrx, self.source_provider_name)
         self.source_format = self.source_provider_proxy.getPointCloudFormat()
 
         self.source_provider_topic = using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
