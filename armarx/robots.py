@@ -2,42 +2,51 @@ import sys
 import logging
 import threading
 import time
+from typing import Dict
+
+from abc import ABC
 
 from armarx import ice_manager
+
+from armarx import KinematicUnitInterfacePrx
+from armarx import KinematicUnitObserverInterfacePrx
+from armarx import ControlMode
+from armarx import HandUnitInterfacePrx
 
 from armarx import PlatformNavigatorInterfacePrx
 from armarx import GazeControlInterfacePrx
 from armarx import ElasticFusionInterfacePrx
 
-from armarx.slice_loader import load_armarx_slice
-load_armarx_slice('ArmarXCore', 'components/EmergencyStopInterface.ice')
-from armarx.ice_manager import get_proxy
-
 from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
 from armarx.speech import TextStateListener
 
+from armarx.statechart import StatechartExecutor
+
 logger = logging.getLogger(__name__)
 
-class Robot(object):
+
+class Robot(ABC):
     """
     Convenience class 
     """
 
     def __init__(self):
         self._text_state_listener = TextStateListener()
-        self._text_state_listener.register()
+        self._text_state_listener.on_connect()
 
 
         self.navigator = PlatformNavigatorInterfacePrx.get_proxy()
         self.gaze = GazeControlInterfacePrx.get_proxy()
         #self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
-        self.emergency_stop = get_proxy(EmergencyStopMasterInterfacePrx, 'EmergencyStopMaster')
+        self.emergency_stop = EmergencyStopMasterInterfacePrx.get_proxy()
+
+        self.profile_name = None
 
 
     def say(self, text):
-        self._text_state_listener.say(text)
+        self._text_state_listener.say(text) 
 
     def scan_scene(self):
         # self._fusion.reset()
@@ -50,10 +59,6 @@ class Robot(object):
         self.emergency_stop.setEmergencyStopState(EmergencyStopState.eEmergencyStopActive)
 
 
-from armarx import HandUnitInterfacePrx
-from armarx import KinematicUnitInterfacePrx
-from armarx import KinematicUnitObserverInterfacePrx
-from armarx import ControlMode
 
 
 
