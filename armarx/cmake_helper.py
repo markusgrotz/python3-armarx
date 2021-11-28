@@ -33,6 +33,7 @@ def get_data_path(package_name):
 
 def get_dependencies(package_name, include_self=False):
     dependencies = get_package_information(package_name, 'SOURCE_PACKAGE_DEPENDENCIES:')
+    dependencies.append("ArmarXCore")
     if include_self and is_armarx_package(package_name):
         dependencies.append(package_name)
         return dependencies

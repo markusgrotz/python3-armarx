@@ -124,6 +124,7 @@ def wait_for_proxy(cls, proxy_name, timeout=0):
     start_time = time.time()
     while not ice_communicator.isShutdown() and proxy is None:
         try:
+            print(f"Waiting for proxy {proxy_name}")
             proxy = ice_communicator.stringToProxy(proxy_name)
             proxy_cast = cls.checkedCast(proxy)
             return proxy_cast
