@@ -1,20 +1,24 @@
-import logging
-
-import time
 import os
+import time
+
+import logging
+from typing import Any
+from typing import TypeVar
 
 
 import Ice
 from IceGrid import ObjectExistsException, RegistryPrx
 from IceStorm import TopicManagerPrx, NoSuchTopic, AlreadySubscribed
 from Ice import NotRegisteredException
-from .config import get_ice_config_files
 
+from .config import get_ice_config_files
 
 logger = logging.getLogger(__name__)
 
 
-def register_object(ice_object, ice_object_name):
+T = TypeVar('T')
+
+def register_object(ice_object: Ice.Object, ice_object_name: str = None) -> Ice.ObjectPrx:
     """
     Register a local ice object under the given name
 
@@ -22,6 +26,12 @@ def register_object(ice_object, ice_object_name):
     :param ice_object_name: Name with which the object should be registered
     :return: Proxy to this object
     """
+    if not isinstance(ice_object, Ice.Object):
+        logger.error('ice object is not an Ice.Object')
+        raise ValueError('ice_object is not an Ice.Object')
+    if not ice_object_name:
+        ice_object_name = ice_object.__class__.__name__
+        logger.debug('Using class name %s to register the object', ice_object_name)
     adapter = ice_communicator.createObjectAdapterWithEndpoints(ice_object_name, 'tcp')
     ice_object_id = ice_communicator.stringToIdentity(ice_object_name)
     adapter.add(ice_object, ice_object_id)
@@ -29,15 +39,15 @@ def register_object(ice_object, ice_object_name):
     proxy = adapter.createProxy(ice_object_id)
     admin = get_admin()
     try:
-        logger.info('adding new object {}'.format(ice_object_name))
+        logger.info('adding new object %s', ice_object_name)
         admin.addObjectWithType(proxy, proxy.ice_id())
     except ObjectExistsException:
-        logger.info('updating new object {}'.format(ice_object_name))
+        logger.info('updating new object %s', ice_object_name)
         admin.updateObject(proxy)
     return proxy
 
 
-def get_topic(cls, topic_name):
+def get_topic(cls: T, topic_name: str) -> T:
     """
     Retrieve a topic proxy casted to the first parameter
 
@@ -52,12 +62,12 @@ def get_topic(cls, topic_name):
         topic = topic_manager.retrieve(topic_name)
     except NoSuchTopic:
         topic = topic_manager.create(topic_name)
-    logger.info("Publishing to topic " + topic_name)
+    logger.info('Publishing to topic %s', topic_name)
     pub = topic.getPublisher().ice_oneway()
     return cls.uncheckedCast(pub)
 
 
-def using_topic(proxy, topic_name):
+def using_topic(proxy, topic_name: str):
     """
     .. seealso:: :func:`register_object`
 
@@ -76,11 +86,11 @@ def using_topic(proxy, topic_name):
     except AlreadySubscribed:
         topic.unsubscribe(proxy)
         topic.subscribeAndGetPublisher(None, proxy)
-    logger.info("Subscribing to topic " + topic_name)
+    logger.info('Subscribing to topic %s', topic_name)
     return topic
 
 
-def wait_for_dependencies(proxy_names, timeout=0):
+def wait_for_dependencies(proxy_names, timeout: int = 0):
     """
     waits for a dependency list
 
@@ -93,7 +103,7 @@ def wait_for_dependencies(proxy_names, timeout=0):
     start_time = time.time()
     while not ice_communicator.isShutdown():
         if timeout and (start_time + timeout) < time.time():
-            logging.exception('Timeout while waiting for proxy {}'.format(proxy_name))
+            logging.exception('Timeout while waiting for proxies %s', proxy_names)
             return False
         dependencies_resolved = True
         for proxy_name in proxy_names:
@@ -108,15 +118,13 @@ def wait_for_dependencies(proxy_names, timeout=0):
             time.sleep(0.1)
 
 
-def wait_for_proxy(cls, proxy_name, timeout=0):
+def wait_for_proxy(cls, proxy_name: str, timeout: int = 0):
     """
     waits for a proxy.
 
     :param cls: the class definition of an ArmarXComponent
     :param proxy_name: name of the proxy
-    :type proxy_name: str
     :param timeout: timeout in seconds to wait for the proxy. Zero means to wait forever
-    :type timeout: int
     :returns: the retrieved proxy
     :rtype: an instance of cls
     """
@@ -129,15 +137,16 @@ def wait_for_proxy(cls, proxy_name, timeout=0):
             return proxy_cast
         except NotRegisteredException:
             proxy = None
+
         if timeout and (start_time + timeout) < time.time():
-            logging.exception('Timeout while waiting for proxy {}'.format(proxy_name))
-            return
+            logging.exception('Timeout while waiting for proxy %s', proxy_name)
+            return None
         else:
-            logger.debug('Waiting for proxy {}'.format(proxy_name))
+            logger.debug('Waiting for proxy %s', proxy_name)
             time.sleep(0.1)
 
 
-def get_proxy(cls, proxy_name):
+def get_proxy(cls: T, proxy_name: str) -> T:
     """
     Connects to a proxy.
 
@@ -152,21 +161,20 @@ def get_proxy(cls, proxy_name):
         proxy = ice_communicator.stringToProxy(proxy_name)
         return cls.checkedCast(proxy)
     except NotRegisteredException:
-        logging.exception('Proxy {} does not exist'.format(proxy_name))
-
+        logging.exception('Proxy %s does not exist', proxy_name)
 
 
 def get_admin():
     return ice_registry.createAdminSession('user', 'password').getAdmin()
 
 
-def is_connected(ice_node_name):
+def is_connected(ice_node_name: str) -> bool:
     return get_admin().pingNode(ice_node_name)
 
 
-def is_alive():
+def is_alive() -> bool:
     """
-    checks if shutdown has been invoked on the communicator. 
+    checks if shutdown has been invoked on the communicator.
 
     :returns: true if ice grid registry is alive
     """
@@ -175,7 +183,7 @@ def is_alive():
 
 def wait_for_shutdown():
     """
-    sleeps until the ice communicator receives a shutdown signal 
+    sleeps until the ice communicator receives a shutdown signal
     or the program receives a keyboard interrupt
     """
     try:
