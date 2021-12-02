@@ -4,10 +4,12 @@ import os
 import subprocess
 from functools import lru_cache
 
+from typing import List
+
 logger = logging.getLogger(__name__)
 
 @lru_cache(maxsize=32)
-def get_armarx_include_dirs(pkg_name):
+def get_armarx_include_dirs(pkg_name: str) -> List[str]:
     """
     find the include dir path for an armarx package
 
@@ -15,23 +17,23 @@ def get_armarx_include_dirs(pkg_name):
     :returns: the include path to the package if found
     :rtype: str
     """
-
-    cmd = ['cmake', '--find-package', '-DNAME=' + pkg_name, '-DCOMPILER_ID=GNU', '-DLANGUAGE=C',  '-DMODE=COMPILE']
+    cmd = ['cmake', '--find-package', f'-DNAME={pkg_name}', '-DCOMPILER_ID=GNU',
+           '-DLANGUAGE=C', '-DMODE=COMPILE']
     result = subprocess.check_output(cmd).decode('utf-8')
     includes = []
     path_list = result.split('-I')
     for path in path_list:
-        if len(path.strip()) > 0:
+        if path.strip():
             includes.append(path.strip())
     return includes
 
 
 @lru_cache(maxsize=32)
-def get_data_path(package_name):
+def get_data_path(package_name: str) -> List[str]:
     return get_package_information(package_name, 'DATA_DIR:')
 
 
-def get_dependencies(package_name, include_self=False):
+def get_dependencies(package_name: str, include_self=False) -> List[str]:
     dependencies = get_package_information(package_name, 'SOURCE_PACKAGE_DEPENDENCIES:')
     if include_self and is_armarx_package(package_name):
         dependencies.append(package_name)
@@ -40,11 +42,17 @@ def get_dependencies(package_name, include_self=False):
         return dependencies or []
 
 
-def get_include_path(package_name):
+@lru_cache(maxsize=32)
+def get_include_path(package_name: str) -> List[str]:
     return get_package_information(package_name, 'INTERFACE_DIRS:')
 
 
-def get_package_information(package_name, info):
+def get_build_path(package_name: str) -> List[str]:
+    return get_package_information(package_name, 'BUILD_DIR:')
+
+
+
+def get_package_information(package_name: str, info) -> List[str]:
     package_data = get_package_data(package_name)
     for l in package_data.split('\n'):
         if info in l:
@@ -55,7 +63,7 @@ def get_package_information(package_name, info):
 
 
 @lru_cache(maxsize=32)
-def get_package_data(package_name):
+def get_package_data(package_name: str):
     if not package_name:
         logger.error('package name is empty.')
         return
@@ -67,11 +75,10 @@ def get_package_data(package_name):
             armarx_cmake_script = cmake_script
             cmd = ['cmake', '-DPACKAGE={}'.format(package_name), '-P', armarx_cmake_script]
             return subprocess.check_output(cmd).decode('utf-8')
-    else:
-        logger.error('Could not find ' + rel_cmake_script + ' for ArmarXCore in ' + (', ').join(includes))
-        raise ValueError('Could not find a valid ArmarXCore path!')
+    logger.error('Could not find %s for ArmarXCore in %s', rel_cmake_script, includes)
+    raise ValueError('Could not find a valid ArmarXCore path!')
 
 
-def is_armarx_package(package_name):
+def is_armarx_package(package_name: str) -> bool:
     package_data = get_package_data(package_name)
     return package_data.strip()
