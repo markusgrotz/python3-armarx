@@ -34,6 +34,7 @@ try:
         Data = ns.GenericData
 
         String = ns.AronString
+        Bool = ns.AronBool
         Int = ns.AronInt
         Long = ns.AronLong
         Float = ns.AronFloat
@@ -46,6 +47,10 @@ try:
         @classmethod
         def string(cls, value: str):
             return cls.String(value=value, VERSION=cls.ARON_VERSION)
+
+        @classmethod
+        def bool(cls, value: int):
+            return cls.Bool(value=value, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def int(cls, value: int):
@@ -78,6 +83,7 @@ except AttributeError as e:
         Data = ns.AronData
 
         String = ns.AronString
+        Bool = ns.AronBool
         Int = ns.AronInt
         Long = ns.AronLong
         Float = ns.AronFloat
@@ -92,6 +98,8 @@ def to_aron(value) -> "armarx.aron.data.dto.GenericData":
 
     if isinstance(value, str):
         return Aron.string(value)
+    elif isinstance(value, bool):
+        return Aron.bool(value)
     elif isinstance(value, int) or isinstance(value, np.int32):
         return Aron.int(int(value))
     elif isinstance(value, np.int64):
