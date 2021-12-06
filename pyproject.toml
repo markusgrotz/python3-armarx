@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "armarx-dev"
-version = "0.14.3"
+version = "0.15.0"
 description = "Python bindings for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 packages = [{include = "armarx"}, {include = "visionx"}]
