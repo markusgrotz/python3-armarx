@@ -3,7 +3,9 @@ import time
 import math
 
 from armarx.ice_manager import is_alive
-from armarx.point_clouds import PointCloudProvider, dtype_point_color_xyz, rgb_to_uint32
+from visionx.pointcloud_provider import PointCloudProvider
+from visionx.pointcloud_provider import dtype_point_color_xyz
+from visionx.pointcloud_provider import rgb_to_uint32
 
 logger = logging.getLogger(__name__)
 

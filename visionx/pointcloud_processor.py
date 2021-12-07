@@ -8,17 +8,21 @@ Classes:
 
 import logging
 import threading
-import time
-from typing import Tuple
 
+from typing import Tuple
 
 import numpy as np
 
 from armarx.ice_manager import register_object
 from armarx.ice_manager import get_proxy
-from armarx.ice_manager import get_topic
 from armarx.ice_manager import using_topic
 
+
+from visionx.pointcloud_provider import PointCloudProvider
+from visionx.pointcloud_provider import dtype_from_point_type
+
+from visionx import PointCloudProcessorInterfacePrx
+from visionx import PointCloudProcessorInterface
 from visionx import PointCloudProviderInterfacePrx
 from visionx import PointCloudProviderInterface
 from visionx import MetaPointCloudFormat
@@ -26,78 +30,6 @@ from visionx import PointContentType
 
 
 logger = logging.getLogger(__name__)
-
-# Structured data types for point types defined in VisionX
-# These are binary compatible with the Blob data used by PointCloudProvider
-dtype_point_xyz = np.dtype([('position', np.float32, (3,))])
-dtype_point_color_xyz = np.dtype([('color', np.uint32), ('position', np.float32, (3,))])
-dtype_point_normal_xyz = np.dtype([('normal', np.float32, (3,)), ('position', np.float32, (3,))])
-dtype_point_color_normal_xyz = np.dtype([('color', np.uint32), ('normal', np.float32, (3,)), ('position', np.float32, (3,))])
-dtype_point_xyz_label = np.dtype([('position', np.float32, (3,)), ('label', np.int32)])
-dtype_point_xyz_color_label = np.dtype([('position', np.float32, (3,)), ('color', np.uint32), ('label', np.int32)])
-dtype_point_xyz_intensity = np.dtype([('position', np.float32, (3,)), ('intensity', np.float32)])
-
-
-def dtype_from_point_type(point_type: PointContentType):
-    if point_type == PointContentType.ePoints:
-        return dtype_point_xyz
-    if point_type == PointContentType.eColoredPoints:
-        return dtype_point_color_xyz
-    if point_type == PointContentType.eOrientedPoints:
-        return dtype_point_normal_xyz
-    if point_type == PointContentType.eColoredOrientedPoints:
-        return dtype_point_color_normal_xyz
-    if point_type == PointContentType.eLabeledPoints:
-        return dtype_point_xyz_label
-    if point_type == PointContentType.eColoredLabeledPoints:
-        return dtype_point_xyz_color_label
-    if point_type == PointContentType.eIntensity:
-        return dtype_point_xyz_intensity
-    raise Exception("PointContentType not yet implemented!", point_type)
-
-
-def point_type_from_dtype(dt: np.dtype):
-    if dt == dtype_point_xyz:
-        return PointContentType.ePoints
-    if dt == dtype_point_color_xyz:
-        return PointContentType.eColoredPoints
-    if dt == dtype_point_normal_xyz:
-        return PointContentType.eOrientedPoints
-    if dt == dtype_point_color_normal_xyz:
-        return PointContentType.eColoredOrientedPoints
-    if dt == dtype_point_xyz_label:
-        return PointContentType.eLabeledPoints
-    if dt == dtype_point_xyz_color_label:
-        return PointContentType.eColoredLabeledPoints
-    if dt == dtype_point_xyz_intensity:
-        return PointContentType.eIntensity
-    raise Exception("Structured data type not known!", dt)
-
-
-def get_point_cloud_format(max_points: int, point_dt: np.dtype) -> MetaPointCloudFormat:
-    result = MetaPointCloudFormat()
-    result.size = max_points * point_dt.itemsize
-    result.capacity = result.size
-    result.timeProvided = 0
-    result.width = max_points
-    result.height = 1
-    result.type = point_type_from_dtype(point_dt)
-    result.seq = 0
-    return result
-
-
-def rgb_to_uint32(r: int, g: int, b: int):
-    r, g, b = [np.clip(c, 0, 255) for c in [r, g, b]]
-    return r + g * 256 + b * 256 * 256
-
-
-def uint32_to_rgb(color: int) -> Tuple[int, int, int]:
-    r = color % 256
-    color //= 256
-    g = color % 256
-    color //= 256
-    b = color % 256
-    return r, g, b
 
 
 class PointCloudReceiver(PointCloudProcessorInterface):
