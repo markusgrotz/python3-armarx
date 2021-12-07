@@ -1,28 +1,31 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 
 
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
 import time
 import logging
 import numpy as np
 
+from visionx.image_provider import ImageProvider
+
 from armarx.ice_manager import is_alive
-from armarx.image_provider import ImageProvider
+from armarx.parser import ArmarXArgumentParser as ArgumentParser
 
 logger = logging.getLogger(__name__)
 
 
 def main():
     parser = ArgumentParser(description='Example Image Provider')
-    parser.parse_args()
+    parser.add_argument('-d', '--delay', default=0.1, type=float)
+    args = parser.parse_args()
 
-    result_image_provider = ImageProvider('ExampleImageProvider', 1, 128, 72)
+    result_image_provider = ImageProvider('ExampleImageProvider', 2, 640, 480)
     result_image_provider.register()
 
     try:
         while is_alive():
-            im = np.random.random(result_image_provider.data_dimensions) * 255.0
-            result_image_provider.update_image(im)
-            time.sleep(0.1)
+            random_images = np.random.random(result_image_provider.data_dimensions).astype('uint8') * 255.0
+            time_provided = time.time() * 1000.0 * 1000.0
+            time.sleep(args.delay)
+            result_image_provider.update_image(random_images, time_provided)
     except KeyboardInterrupt:
         logger.info('shutting down')
 
