@@ -9,12 +9,12 @@ from typing import Tuple
 from typing import Any
 from typing import Union
 
-from .ice_manager import using_topic
-from .ice_manager import get_proxy
-from .ice_manager import register_object
-from .ice_manager import ice_communicator
+from armarx.ice_manager import using_topic
+from armarx.ice_manager import get_proxy
+from armarx.ice_manager import register_object
+from armarx.ice_manager import ice_communicator
 
-from .image_provider import ImageProvider
+from visionx.image_provider import ImageProvider
 
 from visionx import ImageProviderInterfacePrx
 from visionx import ImageProcessorInterface
@@ -76,11 +76,14 @@ class ImageProcessor(ImageProcessorInterface, ABC):
 
                 if hasattr(self, 'process_image') and callable(self.process_image):
                     warnings.warn('Replaced with process_image(images, info)', DeprecationWarning)
-                    result = self.process_image(self, input_images)
+                    result = self.process_image(input_images)
                 else:
                     result = self.process_images(input_images, info)
 
-                if isinstance(result, tuple):
+                if not result:
+                    logger.warning('Unable to get images')
+                    return
+                elif isinstance(result, tuple):
                     result_images, info = result
                 else:
                     result_images = result
@@ -90,7 +93,7 @@ class ImageProcessor(ImageProcessorInterface, ABC):
 
 
     @abstractmethod
-    def process_images(self, images: np.ndarray, info: MetaInfoSizeBase) -> Union[np.ndarray, Tuple[np.ndarray, MetaInfoSizeBase]]: 
+    def process_images(self, images: np.ndarray, info: MetaInfoSizeBase) -> Union[np.ndarray, Tuple[np.ndarray, MetaInfoSizeBase]]:
         """
         This function is called everytime a new image is available.
         Results are automatically published.
