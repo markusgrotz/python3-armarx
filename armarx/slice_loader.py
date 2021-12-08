@@ -5,7 +5,6 @@ Module containing all the logic to handle and import slice files
 import os
 import sys
 import logging
-from collections import namedtuple
 
 import warnings
 
@@ -13,26 +12,23 @@ from importlib.abc import MetaPathFinder
 import importlib
 import types
 
-from lxml import etree
-
 import Ice
 
-from .cmake_helper import get_data_path
 
 from .ice_manager import get_proxy
 from .ice_manager import get_topic
+from .ice_manager import register_object
 from .ice_manager import wait_for_proxy
 
-from .cmake_helper import get_dependencies, get_include_path
 
-from .config import get_packages
+from .cmake_helper import get_include_path
+from .cmake_helper import get_dependencies
 
+from .name_helper import slice_mapping
 
 logger = logging.getLogger(__name__)
 
 
-ArmarXProxyInfo = namedtuple('ArmarXProxyInfo', ['package_name', 'fullname',
-                                                 'include_path', 'default_name'])
 
 def load_armarx_slice(armarx_package_name: str, filename: str):
     """
@@ -90,46 +86,10 @@ class ArmarXProxyFinder(MetaPathFinder):
         # all patched interfaces
         self.patched_definitions = set()
         # mapping between fullname of the proxies/topics and variant info
-        self.mapping = self._build_mapping()
-
-    def _build_mapping(self):
-        global_mapping = dict()
-        armarx_packages = get_packages()
-        for package_name in armarx_packages.split(','):
-            global_mapping.update(self._load_variant_info(package_name))
-        return global_mapping
-
-
-    def _load_variant_info(self, armarx_package_name: str):
-        mapping = dict()
-        data_path = get_data_path(armarx_package_name)
-        if not data_path:
-            logger.warning('unable to get data path for package %s', armarx_package_name)
-            return mapping
-        variant_path = os.path.join(data_path[0], armarx_package_name,
-                                    'VariantInfo-{}.xml'.format(armarx_package_name))
-        if not os.path.isfile(variant_path):
-            logger.warning('variant info does not exists for package %s', armarx_package_name)
-            return mapping
-        tree = etree.parse(variant_path)
-        start_pos = len(armarx_package_name + '/interface/')
-        for definition_type in ['Proxy', 'Topic']:
-            for nav in tree.xpath('//VariantInfo/Lib/' + definition_type):
-                fullname = nav.get('typeName').replace('::', '.')
-                if not '.' in fullname:
-                    fullname = f'armarx.{fullname}'
-                python_package_name, _type_name = fullname.rsplit('.', 1)
-                self.package_namespaces.add(python_package_name)
-                # ..todo add sanity check. remove .h and and .ice
-                slice_include_path = nav.get('include')[start_pos:-2] + '.ice'
-                proxy_default_name = nav.get('propertyDefaultValue')
-                mapping[fullname] = ArmarXProxyInfo(armarx_package_name, fullname,
-                                                    slice_include_path, proxy_default_name)
-                if fullname.endswith('Prx'):
-                    fullname = fullname[:-3]
-                    mapping[fullname] = ArmarXProxyInfo(armarx_package_name, fullname,
-                                                        slice_include_path, proxy_default_name)
-        return mapping
+        self.mapping = slice_mapping
+        for _, v in self.mapping.items():
+            python_package_name, _type_name = v.fullname.rsplit('.', 1)
+            self.package_namespaces.add(python_package_name)
 
     def find_spec(self, fullname, path, target=None):
         """
@@ -172,13 +132,17 @@ class ArmarXProxyFinder(MetaPathFinder):
         cls = getattr(mod, type_name)
 
         def _get_default_topic(cls, name=None):
-            return get_topic(cls, name or default_name)
+            return get_topic(cls, name)
 
         def _get_default_proxy(cls, name=None):
-            return get_proxy(cls, name or default_name)
+            return get_proxy(cls, name)
 
         def _wait_for_default_proxy(cls, name=None, timeout=0):
-            return wait_for_proxy(cls, name or default_name, timeout)
+            return wait_for_proxy(cls, name, timeout)
+
+        def _register_object(self, name: str):
+            return register_object(self, name)
+
 
         if type_name.endswith('Prx'):
             proxy_class = cls
@@ -188,5 +152,7 @@ class ArmarXProxyFinder(MetaPathFinder):
         cls.get_topic = types.MethodType(_get_default_topic, proxy_class)
         cls.get_proxy = types.MethodType(_get_default_proxy, proxy_class)
         cls.wait_for_proxy = types.MethodType(_wait_for_default_proxy, proxy_class)
+        cls.default_name = default_name
+
 
         self.patched_definitions.add(variant_info.fullname)

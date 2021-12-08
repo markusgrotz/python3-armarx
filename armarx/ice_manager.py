@@ -12,6 +12,7 @@ from IceStorm import TopicManagerPrx, NoSuchTopic, AlreadySubscribed
 from Ice import NotRegisteredException
 
 from .config import get_ice_config_files
+from .name_helper import get_ice_default_name
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ def register_object(ice_object: Ice.Object, ice_object_name: str = None) -> Ice.
     return proxy
 
 
-def get_topic(cls: T, topic_name: str) -> T:
+def get_topic(cls: T, topic_name: str = None) -> T:
     """
     Retrieve a topic proxy casted to the first parameter
 
@@ -56,6 +57,7 @@ def get_topic(cls: T, topic_name: str) -> T:
     :type topic_name: str
     :return: a casted topic proxy
     """
+    topic_name = topic_name or get_ice_default_name(cls)
     topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager'))
     topic = None
     try:
@@ -67,7 +69,7 @@ def get_topic(cls: T, topic_name: str) -> T:
     return cls.uncheckedCast(pub)
 
 
-def using_topic(proxy, topic_name: str):
+def using_topic(proxy, topic_name: str = None):
     """
     .. seealso:: :func:`register_object`
 
@@ -77,6 +79,7 @@ def using_topic(proxy, topic_name: str):
     """
     topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager'))
     topic = None
+    topic_name = topic_name or get_ice_default_name(cls)
     try:
         topic = topic_manager.retrieve(topic_name)
     except NoSuchTopic:
@@ -118,7 +121,7 @@ def wait_for_dependencies(proxy_names, timeout: int = 0):
             time.sleep(0.1)
 
 
-def wait_for_proxy(cls, proxy_name: str, timeout: int = 0):
+def wait_for_proxy(cls, proxy_name: str = None, timeout: int = 0):
     """
     waits for a proxy.
 
@@ -129,6 +132,7 @@ def wait_for_proxy(cls, proxy_name: str, timeout: int = 0):
     :rtype: an instance of cls
     """
     proxy = None
+    proxy_name = proxy_name or get_ice_default_name(cls)
     start_time = time.time()
     while not ice_communicator.isShutdown() and proxy is None:
         try:
@@ -146,7 +150,7 @@ def wait_for_proxy(cls, proxy_name: str, timeout: int = 0):
             time.sleep(0.1)
 
 
-def get_proxy(cls: T, proxy_name: str) -> T:
+def get_proxy(cls: T, proxy_name: str = None) -> T:
     """
     Connects to a proxy.
 
@@ -157,6 +161,7 @@ def get_proxy(cls: T, proxy_name: str) -> T:
     :rtype: an instance of cls
     :raises: Ice::NotRegisteredException if the proxy is not available
     """
+    proxy_name = proxy_name or get_ice_default_name(cls)
     try:
         proxy = ice_communicator.stringToProxy(proxy_name)
         return cls.checkedCast(proxy)
