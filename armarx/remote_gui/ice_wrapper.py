@@ -1,10 +1,8 @@
-import numpy as np
 import copy
+import numpy as np
 
 from armarx import RemoteGuiInterfacePrx
-import armarx.RemoteGui
-
-rg = armarx.RemoteGui
+from armarx import RemoteGui as rg
 
 
 def make_value_variant(py_value) -> rg.ValueVariant:

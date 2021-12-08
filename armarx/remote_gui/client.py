@@ -7,6 +7,8 @@ Classes:
 """
 
 from armarx import RemoteGuiInterfacePrx
+from armarx import RemoteGui as rg
+
 from armarx.remote_gui.ice_wrapper import TabProxy
 from armarx.remote_gui.widgets import Widget
 

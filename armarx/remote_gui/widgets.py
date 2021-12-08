@@ -19,10 +19,14 @@ Widget classes:
  - VSpacer: Add vertical spacing to fill a layout.
  - HSpacer: Add horizontal spacing to fill a layout.
 """
-
-from armarx.remote_gui.ice_wrapper import rg, make_value_variant, make_widget_state, TabProxy
-
 from typing import List, Tuple
+
+from armarx import RemoteGuiInterfacePrx
+from armarx import RemoteGui as rg
+from armarx.remote_gui.ice_wrapper import make_value_variant
+from armarx.remote_gui.ice_wrapper import make_widget_state
+from armarx.remote_gui.ice_wrapper import TabProxy
+
 
 
 class Widget:
@@ -130,18 +134,20 @@ class LineEdit(ValueWidget):
 
 
 class ComboBox(ValueWidget):
-    """A combo box displays its value as a text string selected from a list of predefined options."""
+    """
+    A combo box displays its value as a text string selected from a list of
+    predefined options.
+    """
 
     def __init__(self, options: List[str] = None):
         super().__init__(rg.ComboBox())
         if options is None:
             self.desc.options = []
+        elif not options:
+            raise Exception("Options must not be empty", options)
         else:
             self.desc.options = options
-            if len(options) == 0:
-                raise Exception("Options must not be empty", options)
-            else:
-                self.value = options[0]
+            self.value = options[0]
 
     def add_option(self, option: str):
         """Add an option to the list of predefined values of this combo box."""
@@ -187,7 +193,8 @@ class IntSpinBox(ValueWidget):
     """
     An int spin box displays its value as an integer in a text box with up-down arrows for editing.
 
-    The 'range' property defines the allowed range of values by specifying a minimum and maximum value.
+    The 'range' property defines the allowed range of values by specifying a
+    minimum and maximum value.
     The current value of the widget can only be set between these two values.
     The GUI does not allow the user to change the value outside of the defined range.
     """
@@ -213,7 +220,8 @@ class IntSlider(ValueWidget):
     """
     An int slider displays its value as a horizontal slider.
 
-    The 'range' property defines the allowed range of values by specifying a minimum and maximum value.
+    The 'range' property defines the allowed range of values by specifying a
+    minimum and maximum value.
     The current value of the widget can only be set between these two values.
     The GUI does not allow the user to change the value outside of the defined range.
     """
@@ -293,11 +301,13 @@ class FloatSlider(ValueWidget):
     """
     A float slider displays its value as a horizontal slider.
 
-    The 'range' property defines the allowed range of values by specifying a minimum and maximum value.
+    The 'range' property defines the allowed range of values by specifying a
+    minimum and maximum value.
     The current value of the widget can only be set between these two values.
     The GUI does not allow the user to change the value outside of the defined range.
 
-    The 'steps' property defines in how many steps the value can be changed from its minimum to its maximum.
+    The 'steps' property defines in how many steps the value can be changed
+    from its minimum to its maximum.
     """
 
     def __init__(self, value: float = 0.0,
