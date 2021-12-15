@@ -6,8 +6,8 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/client/MemoryListenerInterface
 
 from armarx import armem
 
-from armarx.mem.core.MemoryID import MemoryID
-from armarx.mem.client.MemoryNameSystem import MemoryNameSystem
+from armarx_memory.core.MemoryID import MemoryID
+from armarx_memory.client.MemoryNameSystem import MemoryNameSystem
 
 
 logger = logging.getLogger(__file__)

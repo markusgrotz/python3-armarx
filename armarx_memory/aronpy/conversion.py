@@ -118,6 +118,10 @@ def to_aron(value) -> "armarx.aron.data.dto.GenericData":
     elif isinstance(value, Aron.Dict):
         return value
 
+    elif isinstance(value, np.ndarray):
+         return Aron.NDArray(shape=value.shape, type='float', data=value.astype(np.int8).tobytes())
+
+
     try:
         return value.to_aron()
     except TypeError:

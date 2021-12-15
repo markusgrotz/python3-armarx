@@ -1,6 +1,6 @@
 from armarx import slice_loader
 
-from armarx.ice_conv.ice_twin import IceTwin
+from armarx_memory.ice_conv.ice_twin import IceTwin
 
 
 class ObjectID(IceTwin):

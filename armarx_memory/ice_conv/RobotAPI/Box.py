@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from armarx import slice_loader
 
-from armarx.ice_conv.ice_twin import IceTwin
-from armarx.ice_conv.RobotAPI.PoseBase import Vector3BaseConv, QuaternionBaseConv
+from armarx_memory.ice_conv.ice_twin import IceTwin
+from armarx_memory.ice_conv.RobotAPI.PoseBase import Vector3BaseConv, QuaternionBaseConv
 
 
 class Box(IceTwin):

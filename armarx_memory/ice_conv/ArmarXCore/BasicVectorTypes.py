@@ -2,7 +2,7 @@ import numpy as np
 
 from typing import List, Optional, Union
 
-from armarx.ice_conv.ice_converter import IceConverter
+from armarx_memory.ice_conv.ice_converter import IceConverter
 
 
 SLICE_INCLUDE = ("ArmarXCore", "core/BasicVectorTypes.ice")

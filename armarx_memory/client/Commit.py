@@ -1,12 +1,13 @@
 from typing import List, Optional
 
-from armarx.ice_conv import ice_twin
-from armarx.mem.core import MemoryID, time_usec
+from armarx_memory.ice_conv import ice_twin
+from armarx_memory.aronpy.conversion import Aron
+from armarx_memory.core import MemoryID
+from armarx_memory.core import time_usec
 
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 
-from armarx.aronpy.conversion import aronconv
 import armarx.armem as armem
 
 
@@ -15,7 +16,7 @@ class EntityUpdate(ice_twin.IceTwin):
     def __init__(
             self,
             entity_id: MemoryID = None,
-            instances_data: List[aronconv.Data] = None,
+            instances_data: List[Aron.Data] = None,
             time_created_usec: Optional[int] = None,
             confidence: Optional[float] = None,
             time_sent_usec: Optional[int] = None,

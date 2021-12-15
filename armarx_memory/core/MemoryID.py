@@ -6,8 +6,8 @@ from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
 from armarx import armem
 
-from armarx.ice_conv import ice_twin
-from armarx.aronpy import conversion as aronconv
+from armarx_memory.ice_conv import ice_twin
+from armarx_memory.aronpy import conversion as aronconv
 
 
 class MemoryID(ice_twin.IceTwin):

@@ -2,7 +2,7 @@ from typing import List
 import numpy as np
 
 from armarx import slice_loader
-from armarx.ice_conv.ice_converter import IceConverter
+from armarx_memory.ice_conv.ice_converter import IceConverter
 
 SLICE_INCLUDE = ("RobotAPI", "core/PoseBase.ice")
 

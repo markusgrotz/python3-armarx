@@ -10,9 +10,9 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/mns/MemoryNameSystemInterface.
 from armarx import armem
 
 
-from armarx.mem.core import MemoryID, error as armem_error
-from armarx.mem.client.Reader import Reader
-from armarx.mem.client.Writer import Writer
+from armarx_memory.core import MemoryID, error as armem_error
+from armarx_memory.client.Reader import Reader
+from armarx_memory.client.Writer import Writer
 
 
 class ServerProxies:

@@ -2,8 +2,8 @@ from typing import Dict, Any, List, Optional, Callable, Union
 
 import armarx.armem as armem
 
-from armarx.mem.core import MemoryID, time_usec
-from armarx.mem.client.Commit import Commit, EntityUpdate
+from armarx_memory.core import MemoryID, time_usec
+from armarx_memory.client.Commit import Commit, EntityUpdate
 
 
 class Writer:

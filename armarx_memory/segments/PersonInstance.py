@@ -1,23 +1,19 @@
 from typing import Dict, List, Optional
 
-from armarx.aronpy import conversion as aronconv
+import numpy as np
 
-from armarx_memory.core import MemoryID
+from armarx_memory.aronpy import conversion as aronconv
+
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
+from armarx_memory.core import MemoryID
 
+class PersonInstance(object):
 
-class TextToSpeech:
-
-    def __init__(
-            self,
-            text: str,
-            ):
-        self.text = text
+    def __init__(self, pose: np.ndarray):
+        self.pose = pose
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({
-            "text": self.text,
-        })
+        dto = aronconv.to_aron({ "pose": self.pose, })
         return dto
 
     @classmethod
@@ -25,16 +21,10 @@ class TextToSpeech:
         d = aronconv.from_aron(dto)
         return cls(**d)
 
-    def __repr__(self):
-        return "<{c} text='{t}'>".format(
-            c=self.__class__.__name__, t=self.text
-        )
 
+class PersonInstanceClientBase:
 
-
-class TextToSpeechClientBase:
-
-    core_segment_id = MemoryID("Speech", "TextToSpeech")
+    core_segment_id = MemoryID("Human", "PersonInstance")
 
     def __init__(self):
         pass
@@ -45,20 +35,20 @@ class TextToSpeechClientBase:
                 .with_entity_name(entity_name))
 
 
-class TextToSpeechWriter(TextToSpeechClientBase):
+class PersonInstanceWriter(PersonInstanceClientBase):
 
     def __init__(self, writer: Writer):
         super().__init__()
         self.writer = writer
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "TextToSpeechWriter":
+    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonInstanceWriter":
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
     def commit(self,
                entity_id: MemoryID,
-               text: str,
+               pose: np.ndarray,
                time_created_usec=None,
                **kwargs,
                ):
@@ -67,14 +57,14 @@ class TextToSpeechWriter(TextToSpeechClientBase):
             entity_id = entity_id,
             time_created_usec=time_created_usec,
             instances_data=[
-                TextToSpeech(text=text).to_aron()
+                PersonInstance(pose=pose).to_aron()
             ],
             **kwargs,
         )
         return self.writer.commit(commit)
 
 
-class TextToSpeechReader(TextToSpeechClientBase):
+class PersonInstanceReader(PersonInstanceClientBase):
 
     def __init__(self, reader: Reader):
         super().__init__()
@@ -111,6 +101,6 @@ class TextToSpeechReader(TextToSpeechClientBase):
 
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "TextToSpeechReader":
+    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonInstanceReader":
         return cls(mns.wait_for_reader(cls.core_segment_id)
                    if wait else mns.get_reader(cls.core_segment_id))

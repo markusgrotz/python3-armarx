@@ -4,10 +4,10 @@ from typing import Dict, Optional
 
 from armarx import slice_loader
 
-from armarx.ice_conv.ice_twin import IceTwin
-from armarx.ice_conv.RobotAPI.Box import Box
-from armarx.ice_conv.RobotAPI.ObjectID import ObjectID
-from armarx.ice_conv.RobotAPI.PoseBase import PoseBaseConv
+from armarx_memory.ice_conv.ice_twin import IceTwin
+from armarx_memory.ice_conv.RobotAPI.Box import Box
+from armarx_memory.ice_conv.RobotAPI.ObjectID import ObjectID
+from armarx_memory.ice_conv.RobotAPI.PoseBase import PoseBaseConv
 
 
 class ObjectPose(IceTwin):

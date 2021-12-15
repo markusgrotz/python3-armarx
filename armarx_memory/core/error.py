@@ -1,4 +1,4 @@
-from armarx.mem.core.MemoryID import MemoryID
+from armarx_memory.core.MemoryID import MemoryID
 
 
 class ArMemError(Exception):

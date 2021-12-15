@@ -5,7 +5,7 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/query.ice")
 
 from armarx import armem
 
-from armarx.mem.core import MemoryID
+from armarx_memory.core import MemoryID
 
 
 class Reader:
