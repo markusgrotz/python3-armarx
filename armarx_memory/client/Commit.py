@@ -6,7 +6,7 @@ from armarx.mem.core import MemoryID, time_usec
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 
-from armarx.aronpy.conversion import Aron
+from armarx.aronpy.conversion import aronconv
 import armarx.armem as armem
 
 
@@ -15,7 +15,7 @@ class EntityUpdate(ice_twin.IceTwin):
     def __init__(
             self,
             entity_id: MemoryID = None,
-            instances_data: List[Aron.Data] = None,
+            instances_data: List[aronconv.Data] = None,
             time_created_usec: Optional[int] = None,
             confidence: Optional[float] = None,
             time_sent_usec: Optional[int] = None,
