@@ -9,13 +9,14 @@ from armarx_memory.aronpy import conversion as aronconv
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 from armarx_memory.core import MemoryID
 
-class PersonInstance(object):
+class Person(object):
 
-    def __init__(self, pose: np.ndarray):
-        self.pose = pose
+    def __init__(self, given_name: str, family_name: str):
+        self.given_name = given_name
+        self.family_name = family_name
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({"pose": self.pose})
+        dto = aronconv.to_aron({"given_name": self.given_name, "family_name": self.family_name})
         return dto
 
     @classmethod
@@ -24,38 +25,39 @@ class PersonInstance(object):
         return cls(**d)
 
 
-class PersonInstanceClientBase:
+class PersonClientBase:
 
-    core_segment_id = MemoryID("Human", "PersonInstance")
+    core_segment_id = MemoryID("Human", "Person")
 
     def __init__(self):
         pass
 
-    def make_entity_name(self, provider_name: str, entity_name: str = "person_instance"):
-        return (self.core_segment_id.with_provider_segment_name(provider_name)
+    def make_entity_name(self, provider_name: str, entity_name: str = "person"):
+        return (self.core_segment_id
+                .with_provider_segment_name(provider_name)
                 .with_entity_name(entity_name))
 
 
-class PersonInstanceWriter(PersonInstanceClientBase):
+class PersonWriter(PersonClientBase):
 
     def __init__(self, writer: Writer):
         super().__init__()
         self.writer = writer
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonInstanceWriter":
+    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonWriter":
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
-    def commit(self, entity_id: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
-        person_instance = PersonInstance(pose=pose)
+    def commit(self, entity_id: MemoryID, given_name: str, family_name: str, time_created_usec=None, **kwargs):
+        person = Person(given_name=given_name, family_name=family_name)
         commit = Commit()
         commit.add(entity_id = entity_id, time_created_usec=time_created_usec,
-                   instances_data=[person_instance.to_aron()], **kwargs)
+                   instances_data=[person.to_aron()], **kwargs,)
         return self.writer.commit(commit)
 
 
-class PersonInstanceReader(PersonInstanceClientBase):
+class PersonReader(PersonClientBase):
 
     def __init__(self, reader: Reader):
         super().__init__()
@@ -63,10 +65,6 @@ class PersonInstanceReader(PersonInstanceClientBase):
 
 
     def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
-        """
-        Query the latest snapshot of the given updated IDs and
-        return its first instance.
-        """
         if updated_ids is None:
             memory = self.reader.query_latest(self.core_segment_id)
 
@@ -92,6 +90,6 @@ class PersonInstanceReader(PersonInstanceClientBase):
 
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonInstanceReader":
+    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonReader":
         return cls(mns.wait_for_reader(cls.core_segment_id)
                    if wait else mns.get_reader(cls.core_segment_id))
