@@ -42,7 +42,7 @@ try:
         List = ns.List
         Dict = ns.Dict
 
-        NdArray = ns.NDArray
+        NDArray = ns.NDArray
 
         @classmethod
         def string(cls, value: str):
@@ -119,8 +119,8 @@ def to_aron(value) -> "armarx.aron.data.dto.GenericData":
         return value
 
     elif isinstance(value, np.ndarray):
-         return Aron.NDArray(shape=value.shape, type='float', data=value.astype(np.int8).tobytes())
-
+        shape = (*value.shape, value.itemsize())
+        return Aron.NDArray(shape=shape, type=value.dtype, data=value.tobytes())
 
     try:
         return value.to_aron()
@@ -141,7 +141,7 @@ def from_aron(a: "armarx.aron.data.dto.GenericData"):
         return handle_list(a)
     elif isinstance(a, dict):
         return handle_dict(a)
-    elif isinstance(a, str) or isinstance(a, int) or isinstance(a, float):
+    elif isinstance(a, (float, int, str)):
         return a
 
     if isinstance(a, Aron.NdArray):
@@ -168,7 +168,6 @@ def from_aron(a: "armarx.aron.data.dto.GenericData"):
         elements = a.elements
     except AttributeError:
         print("no elements")
-        pass
     else:
         print(f"type(elements): {type(elements)}")
         if isinstance(elements, list):
