@@ -3,7 +3,7 @@ name = "armarx-dev"
 version = "0.15.4"
 description = "Python bindings for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
-packages = [{include = "armarx"}, {include = "visionx"}]
+packages = [{include = "armarx"}, {include = "visionx"}, {include = "armarx_memory"}]
 readme = "README.md"
 repository = "http://gitlab.com/ArmarX/python3-armarx"
 documentation = "https://armarx.humanoids.kit.edu/python/"
