@@ -11,11 +11,12 @@ from armarx_memory.core import MemoryID
 
 class PersonInstance(object):
 
-    def __init__(self, pose: np.ndarray):
+    def __init__(self, person_id: MemoryID, pose: np.ndarray):
+        self.person_id = person_id
         self.pose = pose
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({"pose": self.pose})
+        dto = aronconv.to_aron({"personID": self.person_id, "pose": self.pose})
         return dto
 
     @classmethod
@@ -47,8 +48,8 @@ class PersonInstanceWriter(PersonInstanceClientBase):
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
-    def commit(self, entity_id: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
-        person_instance = PersonInstance(pose=pose)
+    def commit(self, entity_id: MemoryID, person_id: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
+        person_instance = PersonInstance(person_id=person_id, pose=pose)
         commit = Commit()
         commit.add(entity_id = entity_id, time_created_usec=time_created_usec,
                    instances_data=[person_instance.to_aron()], **kwargs)
