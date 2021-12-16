@@ -79,7 +79,7 @@ class A6(Robot):
         self.profile_name = 'Armar6Real'
         self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
         self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
-        self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy('Armar6KinematicUnit')
+        self.kinematic_unit = ice_manager.get_proxy(KinematicUnitInterfacePrx, 'Armar6KinematicUnit')
         self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
         self.both_arms_joint_names = ["ArmL1_Cla1", "ArmL2_Sho1", "ArmL3_Sho2",
                 "ArmL4_Sho3", "ArmL5_Elb1", "ArmL6_Elb2", "ArmL7_Wri1",
