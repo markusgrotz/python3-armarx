@@ -97,6 +97,9 @@ class Mesh(Element):
         face) has. The vertex positions and color values are specified by
         the `vertices` and `colors` arrays.
 
+        Indices created by this function match the order of vertices
+        produced by `armarx.arviz.grids.make_grid()` and related functions.
+
         :param num_x:
             The number of vertices in first dimension.
         :param num_y:
@@ -119,17 +122,18 @@ class Mesh(Element):
                        |f2\ |
                  (y+1) *----*
                 """
-                v0 = c0 = x * num_y + y
-                v1 = c1 = (x + 1) * num_y + (y + 1)
-                v2 = c2 = (x + 1) * num_y + y
+                v0 = c0 = y * num_x + x
+                v1 = c1 = (y + 1) * num_x + (x + 1)
+                v2 = c2 = (y + 1) * num_x + x
                 faces[i] = v0, v1, v2, c0, c1, c2
                 i += 1
 
-                v0 = c0 = x * num_y + y
-                v1 = c1 = x * num_y + (y + 1)
-                v2 = c2 = (x + 1) * num_y + (y + 1)
+                v0 = c0 = y * num_x + x
+                v1 = c1 = y * num_x + (x + 1)
+                v2 = c2 = (y + 1) * num_x + (x + 1)
                 faces[i] = v0, v1, v2, c0, c1, c2
                 i += 1
+
         assert i == num_faces
 
         return faces
