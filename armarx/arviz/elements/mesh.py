@@ -12,9 +12,24 @@ from .Element import Element
 
 
 class Mesh(Element):
+    """
+    A 3D mesh made of triangular faces.
 
-    def __init__(self, id,
-                 **kwargs):
+    A mesh is specified by:
+
+    * an array `vertices` of 3D vertex positions (x, y, z) with shape (V, 3),
+    * an array `colors` of colors (r, g, b) or (r, g, b, a) with shape (C, 3) or (C, 4), and
+    * an array `faces` of shape (F, 6), where each entry (v1, v2, v3, c1, c2, c3) specifies
+      the indices of the three adjacent vertices (indexing the `vertices` array) and indices
+      of adjacent vertex colors (indexing the `colors` array).
+
+    """
+
+    def __init__(
+            self,
+            id,
+            **kwargs,
+            ):
         super().__init__(ice_data_cls=viz.data.ElementMesh, id=id, **kwargs)
 
         self.vertices = []
@@ -69,7 +84,27 @@ class Mesh(Element):
         ice_data.faces = [viz.data.Face(*map(int, f)) for f in self.faces]
 
     @staticmethod
-    def make_grid2d_faces(num_x: int, num_y: int) -> np.ndarray:
+    def make_grid2d_faces(
+            num_x: int,
+            num_y: int,
+            ) -> np.ndarray:
+        """
+        Make vertex and color indices of triangular faces of a 2D grid.
+
+        Note that the vertex and color indices are independent of concrete
+        vertex positions and color values. They merely state which vertices
+        are connected to triangular faces and which color each vertex (in each
+        face) has. The vertex positions and color values are specified by
+        the `vertices` and `colors` arrays.
+
+        :param num_x:
+            The number of vertices in first dimension.
+        :param num_y:
+            The number of vertices in second dimension.
+        :return:
+            An array f of shape (num_faces, 3+3) with f[i] = (v1, v2, v3, c1, c2, c3)
+            are the vertex and color indices of a triangular face.
+        """
         num_faces = 2 * (num_x - 1) * (num_y - 1)
         faces = np.zeros((num_faces, 6))
 
