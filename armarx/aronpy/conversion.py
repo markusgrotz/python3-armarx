@@ -133,6 +133,8 @@ def from_aron(a: "armarx.aron.data.dto.GenericData"):
     def handle_list(elements):
         return list(map(from_aron, elements))
 
+    if a is None:
+        return None
     if isinstance(a, list):
         return handle_list(a)
     elif isinstance(a, dict):
@@ -163,10 +165,10 @@ def from_aron(a: "armarx.aron.data.dto.GenericData"):
     try:
         elements = a.elements
     except AttributeError:
-        print("no elements")
+        # print("no elements")
         pass
     else:
-        print(f"type(elements): {type(elements)}")
+        # print(f"type(elements): {type(elements)}")
         if isinstance(elements, list):
             return handle_list(elements)
         elif isinstance(elements, dict):
