@@ -89,7 +89,7 @@ class Box(IceTwin):
     def _vec3_conv(self) -> Vector3BaseConv:
         if self.__vec3_conv is None:
             self.__vec3_conv = Vector3BaseConv()
-        return self._vec3_conv
+        return self.__vec3_conv
 
     @property
     def _quat_conv(self) -> QuaternionBaseConv:
@@ -102,4 +102,3 @@ class Box(IceTwin):
             c=self.__class__.__name__,
             p=self.position, o=self.orientation, e=self.extents
         )
-
