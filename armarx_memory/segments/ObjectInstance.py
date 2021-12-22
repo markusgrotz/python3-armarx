@@ -29,7 +29,7 @@ class ObjectInstance(object):
 
 class ObjectInstanceClientBase:
 
-    core_segment_id = MemoryID("Object", "ObjectInstance")
+    core_segment_id = MemoryID("Object", "Instance")
 
     def __init__(self):
         pass
