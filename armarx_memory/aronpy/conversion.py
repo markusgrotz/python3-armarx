@@ -119,8 +119,8 @@ def to_aron(value) -> "armarx.aron.data.dto.GenericData":
         return value
 
     elif isinstance(value, np.ndarray):
-        shape = (*value.shape, value.itemsize())
-        return Aron.NDArray(shape=shape, type=value.dtype, data=value.tobytes())
+        shape = (*value.shape, value.itemsize)
+        return Aron.NDArray(shape=shape, type=str(value.dtype), data=value.tobytes())
 
     try:
         return value.to_aron()
