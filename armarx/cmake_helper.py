@@ -36,6 +36,9 @@ def get_data_path(package_name: str) -> List[str]:
 
 def get_dependencies(package_name: str, include_self=False) -> List[str]:
     dependencies = get_package_information(package_name, 'SOURCE_PACKAGE_DEPENDENCIES:')
+    # manually add ArmarXCore
+    if not 'ArmarXCore' in dependencies:
+        dependencies.append('ArmarXCore')
     if include_self and is_armarx_package(package_name):
         dependencies.append(package_name)
         return dependencies
