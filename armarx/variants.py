@@ -1,25 +1,28 @@
+from datetime import datetime
+
+import numpy as np
+
 from .slice_loader import load_armarx_slice
 load_armarx_slice('ArmarXCore', 'observers/ObserverInterface.ice')
 
 from armarx import VariantBase
 from armarx import TimedVariantBase
 
-from datetime import datetime
-import numpy as np
+from armarx import StringVariantData
+from armarx import FloatVariantData
+from armarx import BoolVariantData
+from armarx import IntVariantData
 
-
-def hash_type_name(type_id):
+def hash_type_name(type_id: str) -> int:
     """
     converts an ice id to a variant's type id
 
     ..see:: c++ implementation in ArmarXCore/observers/variants/Variants.cpp::hashTypeName()
 
-    The implementation uses a normal int, thus the value can be larger than 2 ** 31 - 1 
+    The implementation uses a normal int, thus the value can be larger than 2 ** 31 - 1
 
     :param type_id:: the type id
-    :type type_id:: basestring
     :returns: the hash value of type_id
-    :rtype: int
     """
     prev_error_level = np.geterr()
     np.seterr(over='ignore')
@@ -28,6 +31,20 @@ def hash_type_name(type_id):
         hash_value = ((np.int32(hash_value) << np.int32(5)) + np.int32(hash_value)) ^ np.int32(ord(ch))
     np.seterr(over=prev_error_level['over'])
     return hash_value
+
+def convert_to_variant_data(data):
+    """
+    Wraps python data into an ArmarX variant
+    """
+    if isinstance(data, str):
+        return StringVariantData(data)
+    elif isinstance(data, float):
+        return FloatVariantData(data)
+    elif isinstance(data, bool):
+        return BoolVariantData(data)
+    elif isinstance(data, int):
+        return IntVariantData(data)
+    return data
 
 
 class TimedVariant(TimedVariantBase):
