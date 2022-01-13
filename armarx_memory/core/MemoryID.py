@@ -7,7 +7,6 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
 from armarx import armem
 
 from armarx_memory.ice_conv import ice_twin
-from armarx_memory.aronpy import conversion as aronconv
 
 
 class MemoryID(ice_twin.IceTwin):
@@ -222,7 +221,8 @@ class MemoryID(ice_twin.IceTwin):
 
     @classmethod
     def from_aron(cls, aron: "armarx.aron.data.dto.GenericData") -> "MemoryID":
-        data = aronconv.from_aron(aron)
+        from armarx_memory.aron.conversion import from_aron
+        data = from_aron(aron)
         self = cls()
         self.memory_name = data["memoryName"]
         self.core_segment_name = data["coreSegmentName"]
@@ -235,6 +235,7 @@ class MemoryID(ice_twin.IceTwin):
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         import numpy as np
+        from armarx_memory.aron.conversion import to_aron
 
         data = {
             "memoryName": self.memory_name,
@@ -244,4 +245,4 @@ class MemoryID(ice_twin.IceTwin):
             "timestamp": np.int64(self.timestamp_usec),
             "instanceIndex": self.instance_index
         }
-        return aronconv.to_aron(data)
+        return to_aron(data)

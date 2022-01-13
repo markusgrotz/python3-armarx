@@ -1,13 +1,11 @@
-from typing import Dict
 from typing import List
 from typing import Optional
 
 import numpy as np
 
-from armarx_memory.aronpy import conversion as aronconv
-
-from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 from armarx_memory.core import MemoryID
+from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
+
 
 class ObjectInstance(object):
 
@@ -16,14 +14,19 @@ class ObjectInstance(object):
         self.provider_id = provider_id
         self.pose = pose
 
-    def to_aron(self) -> "armarx.aron.data.dto.GenericData": 
-        dto = aronconv.to_aron({"objectID": self.object_id, "providerID":
-            self.provider_id, "pose": self.pose})
+    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
+        from armarx_memory.aron.conversion import to_aron
+        dto = to_aron({
+            "objectID": self.object_id,
+            "providerID": self.provider_id,
+            "pose": self.pose,
+        })
         return dto
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        d = aronconv.from_aron(dto)
+        from armarx_memory.aron.conversion import from_aron
+        d = from_aron(dto)
         return cls(**d)
 
 
