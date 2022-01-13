@@ -86,6 +86,10 @@ class PersonReader(PersonClientBase):
             latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
             latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
 
+
+        if not latest_snapshot:
+            return None
+
         latest_instance = latest_snapshot.instances[0]
         return latest_instance
 
