@@ -3,6 +3,8 @@ from typing import Iterable, Union, List
 
 import numpy as np
 
+from armarx.arviz import conversions as conv
+
 
 class ElementFlags(enum.IntFlag):
     NONE = 0
@@ -123,7 +125,7 @@ class Element:
 
         c = ice_data.color
         c.r, c.g, c.b, c.a = map(int, self.color)
-        ice_data.scale = float(self.scale)
+        ice_data.scale = conv.vector3f_from_numpy(np.array([self.scale, self.scale, self.scale]))
         ice_data.flags = int(self.flags)
 
 
