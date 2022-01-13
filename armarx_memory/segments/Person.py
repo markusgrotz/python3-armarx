@@ -11,12 +11,13 @@ from armarx_memory.core import MemoryID
 
 class Person(object):
 
-    def __init__(self, given_name: str, family_name: str):
+    def __init__(self, given_name: str, family_name: str, roles: List):
+        self.roles = roles
         self.given_name = given_name
         self.family_name = family_name
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({"given_name": self.given_name, "family_name": self.family_name})
+        dto = aronconv.to_aron({"given_name": self.given_name, "family_name": self.family_name, "roles": self.roles})
         return dto
 
     @classmethod
@@ -49,8 +50,8 @@ class PersonWriter(PersonClientBase):
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
-    def commit(self, entity_id: MemoryID, given_name: str, family_name: str, time_created_usec=None, **kwargs):
-        person = Person(given_name=given_name, family_name=family_name)
+        def commit(self, entity_id: MemoryID, given_name: str, family_name: str, roles: List, time_created_usec=None, **kwargs):
+        person = Person(given_name=given_name, family_name=family_name, roles=roles)
         commit = Commit()
         commit.add(entity_id = entity_id, time_created_usec=time_created_usec,
                    instances_data=[person.to_aron()], **kwargs,)
@@ -76,7 +77,7 @@ class PersonReader(PersonClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestamp_usec < latest_snapshot.id.timestamp_usec:
+                        elif latest_snapshot.id.timestampMicroSeconds < latest_snapshot.id.timestampMicroSeconds:
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:

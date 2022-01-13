@@ -79,7 +79,7 @@ class PersonInstanceReader(PersonInstanceClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestamp_usec < latest_snapshot.id.timestamp_usec:
+                        elif latest_snapshot.id.timestampMicroSeconds < latest_snapshot.id.timestampMicroSeconds:
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
