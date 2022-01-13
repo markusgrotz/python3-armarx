@@ -1,3 +1,5 @@
+import os
+
 from armarx import slice_loader
 
 from armarx.ice_conv.ice_twin import IceTwin
@@ -9,6 +11,8 @@ class ObjectID(IceTwin):
     from `ArmarXObjects/ArmarXObjectsTypes.ice` in RobotAPI.
     """
 
+    DEFAULT_PRIOR_KNOWLEDGE_PACKAGE = "PriorKnowledgeData"
+
     def __init__(
             self,
             dataset="",
@@ -17,6 +21,21 @@ class ObjectID(IceTwin):
         self.dataset = dataset
         self.class_name = class_name
         self.instance_name = instance_name
+
+    def get_dir(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
+        return os.path.join(package, "object", self.dataset, self.class_name)
+
+    def get_filename(self, extension: str, suffix=""):
+        if not extension.startswith("."):
+            extension = "." + extension
+        return f"{self.class_name}{suffix}{extension}"
+
+    def get_filepath(self, extension: str, suffix="", package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
+        return os.path.join(self.get_dir(package=package),
+                            self.get_filename(extension=extension, suffix=suffix))
+
+    def get_viz_kwargs(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
+        return dict(project=package, filename=self.get_filename(".xml"))
 
     @classmethod
     def _get_ice_cls(cls):
