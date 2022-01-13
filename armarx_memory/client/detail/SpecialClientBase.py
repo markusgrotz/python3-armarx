@@ -2,8 +2,8 @@ import abc
 
 from typing import ClassVar, Optional
 
-from armarx.mem.core import MemoryID
-from armarx.mem.client import MemoryNameSystem, Reader, Writer, Commit, EntityUpdate
+from armarx_memory.core import MemoryID
+from armarx_memory.client import MemoryNameSystem, Reader, Writer, Commit, EntityUpdate
 
 
 class SpecialClientBase(abc.ABC):
