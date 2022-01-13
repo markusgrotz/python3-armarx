@@ -7,7 +7,9 @@ dtype_rgb = [("r", "i1"), ("g", "i1"), ("b", "i1")]
 
 dtypes_dict = {
     "float": np.float32,
+    "float32": np.float32,
     "double": np.float64,
+    "float64": np.float64,
     "16": dtype_rgb,  # "16" == OpenCV 8UC3 = RGB image
     # "16": np.float32,  # "16" == OpenCV F1C1 = Depth image
 }
@@ -146,7 +148,7 @@ def from_aron(a: "armarx.aron.data.dto.GenericData"):
     elif isinstance(a, (float, int, str)):
         return a
 
-    if isinstance(a, Aron.NdArray):
+    if isinstance(a, Aron.NDArray):
         # Last entry is #bytes per entry
         data: bytes = a.data
         dtype = dtypes_dict[a.type]
