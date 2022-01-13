@@ -11,12 +11,12 @@ from armarx_memory.core import MemoryID
 
 class PersonInstance(object):
 
-    def __init__(self, person_id: MemoryID, pose: np.ndarray):
-        self.person_id = person_id
+    def __init__(self, personID: MemoryID, pose: np.ndarray):
+        self.personID = personID
         self.pose = pose
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({"personID": self.person_id, "pose": self.pose})
+        dto = aronconv.to_aron({"personID": self.personID, "pose": self.pose})
         return dto
 
     @classmethod
@@ -48,8 +48,8 @@ class PersonInstanceWriter(PersonInstanceClientBase):
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
-    def commit(self, entity_id: MemoryID, person_id: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
-        person_instance = PersonInstance(person_id=person_id, pose=pose)
+    def commit(self, entity_id: MemoryID, personID: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
+        person_instance = PersonInstance(personID=personID, pose=pose)
         commit = Commit()
         commit.add(entity_id = entity_id, time_created_usec=time_created_usec,
                    instances_data=[person_instance.to_aron()], **kwargs)
@@ -79,7 +79,7 @@ class PersonInstanceReader(PersonInstanceClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestampMicroSeconds < latest_snapshot.id.timestampMicroSeconds:
+                        elif latest_snapshot.id.timestampMicroSeconds < snapshot.id.timestampMicroSeconds:
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:

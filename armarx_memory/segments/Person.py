@@ -50,7 +50,7 @@ class PersonWriter(PersonClientBase):
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
-        def commit(self, entity_id: MemoryID, given_name: str, family_name: str, roles: List, time_created_usec=None, **kwargs):
+    def commit(self, entity_id: MemoryID, given_name: str, family_name: str, roles: List, time_created_usec=None, **kwargs):
         person = Person(given_name=given_name, family_name=family_name, roles=roles)
         commit = Commit()
         commit.add(entity_id = entity_id, time_created_usec=time_created_usec,
@@ -77,7 +77,7 @@ class PersonReader(PersonClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestampMicroSeconds < latest_snapshot.id.timestampMicroSeconds:
+                        elif latest_snapshot.id.timestampMicroSeconds < snapshot.id.timestampMicroSeconds:
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
