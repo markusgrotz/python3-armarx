@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from armarx.aronpy import conversion as aronconv
+from armarx_memory.aronpy import conversion as aronconv
 
 from armarx_memory.core import MemoryID
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
