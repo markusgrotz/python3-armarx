@@ -81,7 +81,7 @@ class ObjectInstanceReader(ObjectInstanceClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestamp_usec < latest_snapshot.id.timestamp_usec:
+                        elif latest_snapshot.id.timestampMicroSeconds < snapshot.id.timestampMicroSeconds:
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
@@ -89,6 +89,9 @@ class ObjectInstanceReader(ObjectInstanceClientBase):
 
             latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
             latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
+
+        if not latest_snapshot:
+            return None
 
         latest_instance = latest_snapshot.instances[0]
         return latest_instance
