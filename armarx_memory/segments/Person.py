@@ -1,15 +1,12 @@
-from typing import Dict
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
-import numpy as np
-
-from armarx_memory.aronpy import conversion as aronconv
+from armarx_memory.aron import conversion as aronconv
 
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 from armarx_memory.core import MemoryID
 
-class Person(object):
+
+class Person:
 
     def __init__(self, given_name: str, family_name: str, roles: List):
         self.roles = roles
@@ -17,12 +14,18 @@ class Person(object):
         self.family_name = family_name
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({"given_name": self.given_name, "family_name": self.family_name, "roles": self.roles})
+        from armarx_memory.aron.conversion import to_aron
+        dto = to_aron({
+            "given_name": self.given_name,
+            "family_name": self.family_name,
+            "roles": self.roles,
+        })
         return dto
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        d = aronconv.from_aron(dto)
+        from armarx_memory.aron.conversion import from_aron
+        d = from_aron(dto)
         return cls(**d)
 
 

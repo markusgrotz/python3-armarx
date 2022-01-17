@@ -1,27 +1,26 @@
-from typing import Dict
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
-
-from armarx_memory.aronpy import conversion as aronconv
 
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 from armarx_memory.core import MemoryID
 
-class PersonInstance(object):
+
+class PersonInstance:
 
     def __init__(self, personID: MemoryID, pose: np.ndarray):
         self.personID = personID
         self.pose = pose
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({"personID": self.personID, "pose": self.pose})
+        from armarx_memory.aron.conversion import to_aron
+        dto = to_aron({"personID": self.personID, "pose": self.pose})
         return dto
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        d = aronconv.from_aron(dto)
+        from armarx_memory.aron.conversion import from_aron
+        d = from_aron(dto)
         return cls(**d)
 
 

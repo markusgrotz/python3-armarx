@@ -1,9 +1,9 @@
 from typing import List, Optional
 
+from armarx_memory.aron.conversion import Aron
+from armarx_memory.core import MemoryID, time_usec
 from armarx_memory.ice_conv import ice_twin
-from armarx_memory.aronpy.conversion import Aron
-from armarx_memory.core import MemoryID
-from armarx_memory.core import time_usec
+
 
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")

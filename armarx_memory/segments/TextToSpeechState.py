@@ -1,7 +1,4 @@
 import enum
-from typing import Dict, List, Optional
-
-from armarx_memory.aronpy import conversion as aronconv
 
 from armarx_memory.core import MemoryID
 from armarx_memory.client.detail import SpecialClientBase as scb
@@ -52,7 +49,8 @@ class TextToSpeechState:
         self.tts_snapshot_id = tts_snapshot_id
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({
+        from armarx_memory.aron.conversion import to_aron
+        dto = to_aron({
             "event": self.event,
             "text": self.text,
             "ttsSnapshotID": self.tts_snapshot_id,
@@ -61,7 +59,8 @@ class TextToSpeechState:
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        d = aronconv.from_aron(dto)
+        from armarx_memory.aron.conversion import from_aron
+        d = from_aron(dto)
         d["tts_snapshot_id"] = d.pop("ttsSnapshotID")
         return cls(**d)
 

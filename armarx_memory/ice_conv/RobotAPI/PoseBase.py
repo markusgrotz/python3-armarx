@@ -1,5 +1,5 @@
-from typing import List
 import numpy as np
+import transforms3d as tf3d
 
 from armarx import slice_loader
 from armarx_memory.ice_conv.ice_converter import IceConverter
@@ -10,7 +10,7 @@ SLICE_INCLUDE = ("RobotAPI", "core/PoseBase.ice")
 class Vector3BaseConv(IceConverter):
 
     @classmethod
-    def import_dto(cls):
+    def _import_dto(cls):
         slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         import armarx
         return armarx.Vector3Base
@@ -19,7 +19,7 @@ class Vector3BaseConv(IceConverter):
         return np.array([dto.x, dto.y, dto.z])
 
     def _to_ice(self, bo: np.ndarray) -> "armarx.Vector3Base":
-        Vector3Base = self.import_dto()
+        Vector3Base = self.get_dto()
         x, y, z = bo
         return Vector3Base(x, y, z)
 
@@ -27,7 +27,7 @@ class Vector3BaseConv(IceConverter):
 class QuaternionBaseConv(IceConverter):
 
     @classmethod
-    def import_dto(cls):
+    def _import_dto(cls):
         slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         import armarx
         return armarx.QuaternionBase
@@ -37,7 +37,7 @@ class QuaternionBaseConv(IceConverter):
 
     def _to_ice(self, bo: np.ndarray) -> "armarx.QuaternionBase":
         import transforms3d as tf3d
-        QuaternionBase = self.import_dto()
+        QuaternionBase = self.get_dto()
 
         ori = np.array(bo)
         if ori.shape == (3, 3):
@@ -56,7 +56,7 @@ class PoseBaseConv(IceConverter):
         self.quaternion_conv = QuaternionBaseConv()
 
     @classmethod
-    def import_dto(cls):
+    def _import_dto(cls):
         slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         import armarx
         return armarx.PoseBase
@@ -74,8 +74,7 @@ class PoseBaseConv(IceConverter):
         return mat
 
     def _to_ice(self, bo: np.ndarray) -> "armarx.PoseBase":
-        PoseBase = self.import_dto()
-        import transforms3d as tf3d
+        PoseBase = self.get_dto()
         T, R, _, _ = tf3d.affines.decompose(bo)
         pos = self.vector3_conv.to_ice(T)
         ori = self.quaternion_conv.to_ice(R)

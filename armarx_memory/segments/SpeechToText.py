@@ -1,7 +1,5 @@
 from typing import Dict, List, Optional
 
-from armarx_memory.aronpy import conversion as aronconv
-
 from armarx_memory.core import MemoryID
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 
@@ -15,14 +13,16 @@ class SpeechToText:
         self.text = text
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        dto = aronconv.to_aron({
+        from armarx_memory.aron.conversion import to_aron
+        dto = to_aron({
             "text": self.text,
         })
         return dto
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        d = aronconv.from_aron(dto)
+        from armarx_memory.aron.conversion import from_aron
+        d = from_aron(dto)
         return cls(**d)
 
     def __repr__(self):

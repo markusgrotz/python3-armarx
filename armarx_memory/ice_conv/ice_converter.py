@@ -36,6 +36,8 @@ class IceConverter(abc.ABC):
         ...
     """
 
+    _dto = None
+
     def __init__(self):
         self._handlers_from_ice: Dict[Type, Callable] = dict()
         self._handlers_to_ice: Dict[Type, Callable] = dict()
@@ -71,6 +73,12 @@ class IceConverter(abc.ABC):
     def set_handler_to_ice(self, type: Type, handler: Callable):
         self._handlers_to_ice[type] = handler
 
+    @classmethod
+    def get_dto(cls):
+        if cls._dto is None:
+            cls._dto = cls._import_dto()
+        return cls._dto
+
     @abc.abstractmethod
     def _from_ice(self, dto, *args, **kwargs):
         """Convert the Ice DTO to a Python BO."""
@@ -79,4 +87,10 @@ class IceConverter(abc.ABC):
     @abc.abstractmethod
     def _to_ice(self, bo, *args, **kwargs):
         """Convert the Python BO to an Ice DTO."""
+        ...
+
+    @classmethod
+    @abc.abstractmethod
+    def _import_dto(cls):
+        """Load, import and return the DTO type."""
         ...
