@@ -457,13 +457,26 @@ class PointCloud(Element):
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
+
+        dtype = np.dtype([
+            ('position', np.float32, (3,)),
+            ('a', np.uint8),
+            ('r', np.uint8),
+            ('g', np.uint8),
+            ('b', np.uint8),
+        ])
+        buffer = np.zeros(self.points.shape[0], dtype=dtype)
+
+        assert self.points.shape[1] == 7
+        buffer["position"] = self.points[:, :3]
+        buffer["r"] = self.points[:, 3]
+        buffer["g"] = self.points[:, 4]
+        buffer["b"] = self.points[:, 5]
+        buffer["a"] = self.points[:, 6]
+
+        ice_data.points = buffer
         ice_data.transparency = self.transparency
         ice_data.point_size = self.point_size
-
-        ice_data.points = [viz.data.ColoredPoint() for _ in range(len(self.points))]
-        for cp, array in zip(ice_data.points, self.points):
-            cp.x, cp.y, cp.z = map(float, array[:3])
-            conv.set_viz_color(cp.color, array[3:])
 
 
 class Polygon(Element):
