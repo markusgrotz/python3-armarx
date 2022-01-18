@@ -4,4 +4,5 @@ from .elements import \
     PointCloud, Polygon, Pose, Robot, Sphere, Text, Mesh
 from .layer import Layer
 from .stage import Stage
-from .client import Client, InteractionFeedback, InteractionFeedbackType
+from .interaction_feedback import InteractionFeedback, InteractionFeedbackType, CommitResult
+from .client import Client

@@ -3,11 +3,8 @@ import numpy as np
 
 from typing import Iterable, Union, List
 
-from armarx import slice_loader
+import armarx.arviz.load_slice
 from armarx.arviz import conversions as conv
-
-
-slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
 
 
 class ElementFlags(enum.IntFlag):
@@ -271,4 +268,3 @@ class Element:
             raise ValueError("Expected {} of shape {}, but got array of shape {}.".format(
                 name, shape_str, value.shape))
         return value
-

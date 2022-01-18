@@ -308,7 +308,10 @@ class SpawnersState:
             pass
 
 
+# MAIN
+
 class ArVizInteractExample:
+
     @classmethod
     def get_name(cls):
         return "ArVizInteractExample"
