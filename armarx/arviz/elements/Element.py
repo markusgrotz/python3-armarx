@@ -193,10 +193,10 @@ class Element:
 
         if translation:
             for char, flag in [
-                "x", Flags.TRANSLATION_X,
-                "y", Flags.TRANSLATION_Y,
-                "z", Flags.TRANSLATION_Z,
-                "l", Flags.TRANSLATION_LOCAL,
+                ("x", Flags.TRANSLATION_X),
+                ("y", Flags.TRANSLATION_Y),
+                ("z", Flags.TRANSLATION_Z),
+                ("l", Flags.TRANSLATION_LOCAL),
             ]:
                 if char in translation:
                     flags |= flag
@@ -204,10 +204,10 @@ class Element:
 
         if rotation:
             for char, flag in [
-                "x", Flags.ROTATION_X,
-                "y", Flags.ROTATION_Y,
-                "z", Flags.ROTATION_Z,
-                "l", Flags.ROTATION_LOCAL,
+                ("x", Flags.ROTATION_X),
+                ("y", Flags.ROTATION_Y),
+                ("z", Flags.ROTATION_Z),
+                ("l", Flags.ROTATION_LOCAL),
             ]:
                 if char in rotation:
                     flags |= flag
@@ -215,10 +215,10 @@ class Element:
 
         if scaling:
             for char, flag in [
-                "x", Flags.SCALING_X,
-                "y", Flags.SCALING_Y,
-                "z", Flags.SCALING_Z,
-                "l", Flags.SCALING_LOCAL,
+                ("x", Flags.SCALING_X),
+                ("y", Flags.SCALING_Y),
+                ("z", Flags.SCALING_Z),
+                ("l", Flags.SCALING_LOCAL),
             ]:
                 if char in scaling:
                     flags |= flag
