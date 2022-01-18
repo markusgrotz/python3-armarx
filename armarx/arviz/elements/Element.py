@@ -1,9 +1,12 @@
 import enum
-from typing import Iterable, Union, List
-
 import numpy as np
 
+from typing import Iterable, Union, List
+
+from armarx import slice_loader
 from armarx.arviz import conversions as conv
+slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+
 
 
 class ElementFlags(enum.IntFlag):
@@ -32,6 +35,10 @@ class Element:
 
         self.scale: float = scale
         self.flags: ElementFlags = ElementFlags.NONE
+
+        from armarx.viz.data import InteractionDescription
+        self._interaction = InteractionDescription()
+
 
     @property
     def pose(self) -> np.ndarray:
@@ -108,9 +115,101 @@ class Element:
         else:
             self._color = value
 
+    # Interaction
+
+    def enable_interaction(
+            self,
+            selection: bool = False,
+            context_menu_options: List[str] = None,
+            translation: str = None,
+            rotation: str = None,
+            scaling: str = None,
+            transform: bool = False,
+            hide_during_transform: bool = False,
+        ):
+        """
+        Enable one or more interaction features.
+
+        :param selection:
+            Enable selection / deselection. Implied by most other features.
+        :param context_menu_options:
+            Enable a context menu showing the given options.
+        :param translation:
+            Enable translation along a set of axis, specified by a subset
+            of "xyzl" (with l for local axes).
+        :param rotation:
+            Enable rotation around a set of axis, specified by a subset
+            of "xyzl" (with l for local axes).
+        :param scaling:
+            Enable scaling along a set of axis, specified by a subset
+            of "xyzl" (with l for local axes).
+        :param transform:
+            Implies translation = "xyz" and rotation = "xyz".
+        :param hide_during_transform:
+            Hide the original element while a ghost is shown during interaction.
+            If False, both the original element and the ghost are visible.
+        :return: None
+        """
+        from armarx.viz.data import InteractionEnableFlags as Flags
+
+        flags: int = self._interaction.enableFlags
+
+        if context_menu_options:
+            flags |= Flags.CONTEXT_MENU
+            selection = True
+
+        if transform:
+            translation = "xyz"
+            rotation = "xyz"
+
+        if translation:
+            for char, flag in [
+                "x", Flags.TRANSLATION_X,
+                "y", Flags.TRANSLATION_Y,
+                "z", Flags.TRANSLATION_Z,
+                "l", Flags.TRANSLATION_LOCAL,
+            ]:
+                if char in translation:
+                    flags |= flag
+            selection = True
+
+        if rotation:
+            for char, flag in [
+                "x", Flags.ROTATION_X,
+                "y", Flags.ROTATION_Y,
+                "z", Flags.ROTATION_Z,
+                "l", Flags.ROTATION_LOCAL,
+            ]:
+                if char in rotation:
+                    flags |= flag
+            selection = True
+
+        if scaling:
+            for char, flag in [
+                "x", Flags.SCALING_X,
+                "y", Flags.SCALING_Y,
+                "z", Flags.SCALING_Z,
+                "l", Flags.SCALING_LOCAL,
+            ]:
+                if char in scaling:
+                    flags |= flag
+            selection = True
+
+        if selection:
+            flags |= Flags.SELECT
+
+        if hide_during_transform:
+            flags |= Flags.TRANSFORM_HIDE
+
+        self._interaction.enableFlags = flags
+        self._interaction.contextMenuOptions = context_menu_options or []
+
+
+    # Behind the scenes
+
     def get_ice_data(self):
         """Get the Ice data for committing."""
-        ice_data = self.ice_data_cls(id=self.id)
+        ice_data = self.ice_data_cls(id=self.id, interaction=self._interaction)
         self._update_ice_data(ice_data)
         return ice_data
 
