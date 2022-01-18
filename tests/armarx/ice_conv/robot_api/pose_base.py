@@ -4,7 +4,7 @@ import numpy as np
 import transforms3d as tf3d
 
 from armarx import slice_loader
-from armarx.ice_conv.RobotAPI import PoseBase as conv
+from armarx.ice_conv.robot_api import pose_base as conv
 
 slice_loader.load_armarx_slice("RobotAPI", "core/PoseBase.ice")
 from armarx import Vector3Base, QuaternionBase, PoseBase

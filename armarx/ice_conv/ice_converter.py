@@ -1,14 +1,12 @@
 import abc
-
-from typing import Dict, Callable, Type
+from typing import Union, List, Dict, Any, Callable, Type
 
 
 class IceConverter(abc.ABC):
     """
-    Allows to define the conversion between a Python Business Object (BO;
-    i.e. of a python type) and an Ice Data Transfer Object (DTO; i.e. an
-    object of classes defined in Ice) and provides additional handling for
-    containers of that type.
+    Allows to define the conversion between a Python Business Object (BO; i.e. of a python type)
+    and an Ice Data Transfer Object (DTO; i.e. an object of classes defined in Ice)
+    and provides additional handling for containers of that type.
 
     Usage:
 
