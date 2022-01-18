@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import time
 from typing import Optional
 
 import numpy as np
@@ -15,8 +15,8 @@ class SingleSlider:
         self.box = viz.Box(name)
         self.color = color
 
-        self.initial = np.zeros(3, float)
-        self.translation = np.zeros(3, float)
+        self.initial: np.ndarray = np.zeros(3, float)
+        self.translation: np.ndarray = np.zeros(3, float)
 
 
 class SlidersState:
@@ -43,7 +43,7 @@ class SlidersState:
         self.x.box.position = self.x.initial
         self.x.box.color = self.x.color
         self.x.box.size = box_size
-        self.x.box.enable_interaction(translation="x", hide_during_transform=True)
+        self.x.box.enable_interaction(translation="xyzl", hide_during_transform=True)
 
         self.y.initial = self.origin + (0, arrow_length, 0.0)
         self.y.box.position = self.y.initial
@@ -96,92 +96,45 @@ class SlidersState:
         self.layer_result.add(self.sphere)
 
     def handle(self, interaction: viz.InteractionFeedback, stage: viz.Stage):
-        interaction.element
+        element = interaction.element
         transform = interaction.transformation
-        translation = transform.position
+        translation = transform.translation
 
-
-        """
-        SingleSlider* slider = nullptr
-        if (element == "BoxX")
-        {
-            slider = &x
-        }
-        else if (element == "BoxY")
-        {
-            slider = &y
-        }
-        else if (element == "BoxZ")
-        {
-            slider = &z
-        }
-        else
-        {
-            ARMARX_WARNING << "Unknown interaction: " << element
+        slider_dict = {slider.box.id: slider for slider in [self.x, self.y, self.z]}
+        slider: Optional[SingleSlider] = slider_dict.get(element, None)
+        if slider is None:
+            print(f"Unknown interaction: '{element}'")
             return
-        }
 
-        switch (interaction.type())
-        {
-        case viz.InteractionFeedbackType.Transform:
-        {
-            slider->translation = translation
+        type = interaction.type
+        Types = viz.InteractionFeedbackType
 
-            Eigen.Vector3f spherePosition(
-                        x.initial.x() + x.translation.x(),
-                        y.initial.y() + y.translation.y(),
-                        z.initial.z() + z.translation.z())
-            sphere.position(spherePosition)
+        if type == Types.Transform:
+            slider.translation = translation
+            self.sphere.position = (
+                self.x.initial[0] + self.x.translation[0],
+                self.y.initial[1] + self.y.translation[1],
+                self.z.initial[2] + self.z.translation[2],
+            )
+            stage.add(self.layer_result)
 
-            stage->add(layerResult)
-        } break
+        elif type == Types.Select:
+            pass  # Do nothing
 
-        case viz.InteractionFeedbackType.Select:
-        {
-            // Do nothing
-        } break
+        elif type == Types.Deselect:
+            # If an object is deselected, we apply the transformation
+            slider.initial = slider.initial + slider.translation
+            slider.translation = np.zeros(3, float)
+            print(f"Setting position to {slider.initial.T}")
+            slider.box.position = slider.initial
 
-        case viz.InteractionFeedbackType.Deselect:
-        {
-            // If an object is deselected, we apply the transformation
-            slider->initial = slider->initial + slider->translation
-            slider->translation = Eigen.Vector3f.Zero()
-            ARMARX_IMPORTANT << "Setting position to "
-                             << slider->initial.transpose()
-            slider->box.position(slider->initial)
+            stage.add(self.layer_interact)
 
-            stage->add(layerInteract)
-        } break
+        else:
+            pass  # Do nothing for the other interaction types
 
-        default:
-        {
-            // Do nothing for the other interaction types
-        } break
-        }
-        """
 
 """
-struct SlidersState
-{
-    void handle(viz.InteractionFeedback const& interaction,
-                viz.StagedCommit* stage)
-    {
-        
-
-    }
-
-    Eigen.Vector3f origin
-    SingleSlider x
-    SingleSlider y
-    SingleSlider z
-
-    viz.Sphere sphere
-
-    viz.Layer layerInteract
-    viz.Layer layerResult
-}
-
-
 enum class SpawnerType
 {
     Box,
@@ -256,18 +209,18 @@ struct SpawnedObject
         std.string name = "Object_" + std.to_string(index)
 
         Eigen.Matrix4f initial = Eigen.Matrix4f.Identity()
-        initial.block<3, 1>(0, 3) = source->position
+        initial.block<3, 1>(0, 3) = source.position
         Eigen.Matrix4f pose = transform * initial
 
-        switch (source->type)
+        switch (source.type)
         {
         case SpawnerType.Box:
         {
             viz.Box box = viz.Box(name)
                            .pose(pose)
                            .scale(scale)
-                           .size(source->size)
-                           .color(source->color)
+                           .size(source.size)
+                           .color(source.color)
                            .enable(interaction)
             layer.add(box)
         } break
@@ -276,9 +229,9 @@ struct SpawnedObject
             viz.Cylinder cylinder = viz.Cylinder(name)
                                      .pose(pose)
                                      .scale(scale)
-                                     .radius(source->size * 0.5f)
-                                     .height(source->size)
-                                     .color(source->color)
+                                     .radius(source.size * 0.5f)
+                                     .height(source.size)
+                                     .color(source.color)
                                      .enable(interaction)
             layer.add(cylinder)
         } break
@@ -287,8 +240,8 @@ struct SpawnedObject
             viz.Sphere sphere = viz.Sphere(name)
                                  .pose(pose)
                                  .scale(scale)
-                                 .radius(source->size * 0.5f)
-                                 .color(source->color)
+                                 .radius(source.size * 0.5f)
+                                 .color(source.color)
                                  .enable(interaction)
             layer.add(sphere)
         } break
@@ -353,7 +306,7 @@ struct SpawnersState
         {
         case viz.InteractionFeedbackType.Select:
         {
-            // Create a spawned object
+            # Create a spawned object
             spawnedObject.index = spawnedObjectCounter++
             spawnedObject.source = spawner
             spawnedObject.transform = Eigen.Matrix4f.Identity()
@@ -362,29 +315,29 @@ struct SpawnersState
 
         case viz.InteractionFeedbackType.Transform:
         {
-            // Update state of spawned object
+            # Update state of spawned object
             spawnedObject.transform = interaction.transformation()
             spawnedObject.scale = interaction.scale()
             if (interaction.isTransformBegin() || interaction.isTransformDuring())
             {
-                // Visualize all other objects except the currently spawned one
+                # Visualize all other objects except the currently spawned one
                 layerObjects.clear()
                 for (auto& object : objects)
                 {
                     object.visualize(layerObjects)
                 }
-                stage->add(layerObjects)
+                stage.add(layerObjects)
             }
             if (interaction.isTransformEnd())
             {
                 spawnedObject.visualize(layerObjects)
-                stage->add(layerObjects)
+                stage.add(layerObjects)
             }
         } break
 
         case viz.InteractionFeedbackType.Deselect:
         {
-            // Save state of spawned object
+            # Save state of spawned object
             objects.push_back(spawnedObject)
         } break
 
@@ -398,7 +351,7 @@ struct SpawnersState
                 objects.clear()
                 layerObjects.clear()
 
-                stage->add(layerObjects)
+                stage.add(layerObjects)
             } break
             case SpawnerOption.DeleteType:
             {
@@ -415,14 +368,14 @@ struct SpawnersState
                     object.visualize(layerObjects)
                 }
 
-                stage->add(layerObjects)
+                stage.add(layerObjects)
             } break
             }
         }
 
         default:
         {
-            // Ignore other interaction types
+            # Ignore other interaction types
         } break
         }
     }
@@ -437,9 +390,8 @@ struct SpawnersState
     viz.Layer layerSpawners
     viz.Layer layerObjects
 }
-
-
 """
+
 
 class ArVizInteractExample:
     @classmethod
@@ -476,41 +428,46 @@ class ArVizInteractExample:
         spawners.visualize(arviz)
         stage.add(spawners.layerSpawners)
         stage.add(spawners.layerObjects)
-
         """
+
         result = self.arviz.commit(stage)
-        print(f"Initial commit at revision: {result.revision()}")
+        print(f"Initial commit at revision: {result.revision}")
 
-        """
-        CycleUtil c(25.0f)
-        while (!task->isStopped())
-        {
-            result = arviz.commit(stage)
+        cycle_duration = 0.025  # s
+        try:
+            print("Press Ctrl+C to interrupt...")
+            while True:
+                cycle_start = time.time()
 
-            // Reset the stage, so that it can be rebuild during the interaction handling
-            stage.reset()
+                result = self.arviz.commit(stage)
 
-            stage.requestInteraction(sliders.layerInteract)
-            stage.requestInteraction(spawners.layerSpawners)
+                # Reset the stage, so that it can be rebuild during the interaction handling
+                stage.reset()
 
-            viz.InteractionFeedbackRange interactions = result.interactions()
-            for (viz.InteractionFeedback const& interaction : interactions)
-            {
-                if (interaction.layer() == "Sliders")
-                {
-                    sliders.handle(interaction, &stage)
-                }
-                if (interaction.layer() == "Spawners")
-                {
-                    spawners.handle(interaction, &stage)
-                }
-            }
+                stage.request_interaction(sliders.layer_interact)
+                """
+                stage.request_interaction(spawners.layerSpawners)
+                """
 
-            c.waitForCycleDuration()
-        }
-        """
+                for interaction in result.interactions:
+                    if interaction.layer == "Sliders":
+                        print(f"Processing slider interactions ... (revision {result.revision})")
+                        sliders.handle(interaction, stage)
+
+                    """
+                    if (interaction.layer() == "Spawners")
+                        spawners.handle(interaction, &stage)
+                    """
+
+                cycle_remaining = cycle_duration - (time.time() - cycle_start)
+                if cycle_remaining > 0:
+                    time.sleep(cycle_remaining)
+
+        except KeyboardInterrupt:
+            pass
 
 
 if __name__ == '__main__':
     example = ArVizInteractExample()
     example.run()
+    print("Finished.")
