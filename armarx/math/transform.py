@@ -85,6 +85,33 @@ class Transform:
             print("Quaternion to rotation matrix: \n{}".format(value))
             raise
 
+    def inverted(self) -> "Transform":
+        """
+        Return the inverted transform of self.
+        :return: self^(-1)
+        """
+        return Transform(rotation=self.rot_mat.T,
+                         translation=-self.rot_mat.T @ self.translation)
+
+    def __mul__(self, other: "Transform"):
+        """
+        Return (self * other) with * being the matrix multiplication.
+        :param other: Another transform.
+        :return: self * other
+        """
+        if not isinstance(other, Transform):
+            raise TypeError(f"Unsupported operator * between {type(self)} and {type(other)}.")
+        return Transform(self.transform @ other.transform)
+
+    def is_close_to(self, other: "Transform", **kwargs):
+        """
+        Return true of other is close to self.
+        :param other: Another transform.
+        :param kwargs: Keyword arguments passed to np.allclose()
+        :return: self == other
+        """
+        return np.allclose(self.transform, other.transform, **kwargs)
+
     @classmethod
     def _match_shape(cls, shape: Iterable[int], shape_pattern: Iterable[Union[int, None]]):
         """
