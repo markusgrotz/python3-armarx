@@ -145,17 +145,23 @@ class SpawnerType(enum.IntEnum):
 
 
 class SpawnerOption(enum.IntEnum):
-    DeleteAll = 1
-    DeleteType = 2
+    DeleteAll = 0
+    DeleteType = 1
 
 
 class Spawner:
 
-    def __init__(self):
-        self.type: SpawnerType = SpawnerType.Box
-        self.position = np.zeros(3, float)
-        self.size = 100.
-        self.color = (0, 0, 0)
+    def __init__(
+            self,
+            type: SpawnerType = SpawnerType.Box,
+            position: Optional[np.ndarray] = None,
+            size=100.0,
+            color=(0, 0, 0)
+    ):
+        self.type = type
+        self.position = np.zeros(3, float) if position is None else position
+        self.size = size
+        self.color = color
 
     def visualize(self, i: int, layer: viz.Layer):
         interaction_kwargs = dict(selection=True, transform=True, scaling="xyz",
@@ -176,11 +182,17 @@ class Spawner:
 
 class SpawnedObject:
 
-    def __init__(self):
-        self.index = 0
-        self.source: Optional[Spawner] = None
-        self.transform = Transform()
-        self.scale = np.ones(3, float)
+    def __init__(
+            self,
+            index=0,
+            source: Spawner = None,
+            transform: Optional[Transform] = None,
+            scale: np.ndarray = None,
+    ):
+        self.index = index
+        self.source = source
+        self.transform = Transform() if transform is None else Transform
+        self.scale = np.ones(3, float) if scale is None else scale
 
     def visualize(self, layer: viz.Layer):
         name = f"Object_{self.index}"
@@ -204,155 +216,96 @@ class SpawnersState:
     def __init__(self, origin: np.ndarray):
         self.origin = origin
 
-        spawners: List[Spawner] = []
-        
-        """
-            Eigen.Vector3f origin
+        self.spawners: List[Spawner] = []
+        self.spawned_object: Optional[SpawnedObject] = None
+        self.spawned_object_counter = 0
+        self.objects: List[SpawnedObject] = []
 
-            std.vector<Spawner> spawners
-            SpawnedObject spawnedObject
-            int spawnedObjectCounter = 0
-            std.vector<SpawnedObject> objects
+        self.layer_spawners: Optional[viz.Layer] = None
+        self.layer_objects: Optional[viz.Layer] = None
 
-            viz.Layer layerSpawners
-            viz.Layer layerObjects
-        """
-"""
+        # Initialize
+        size = 100.0
 
-struct SpawnersState
-{
-    SpawnersState(Eigen.Vector3f origin)
-        : origin(origin)
-    {
-        float size = 100.0f
-        {
-            Spawner& spawner = spawners.emplace_back()
-            spawner.type = SpawnerType.Box
-            spawner.position = origin + Eigen.Vector3f(750.0f, 500.0f, 0.5f * size)
-            spawner.color = viz.Color.cyan()
-        }
-        {
-            Spawner& spawner = spawners.emplace_back()
-            spawner.type = SpawnerType.Cylinder
-            spawner.position = origin + Eigen.Vector3f(1250.0f, 500.0f, 0.5f * size)
-            spawner.color = viz.Color.magenta()
-        }
-        {
-            Spawner& spawner = spawners.emplace_back()
-            spawner.type = SpawnerType.Sphere
-            spawner.position = origin + Eigen.Vector3f(1000.0f, 750.0f, 0.5f * size)
-            spawner.color = viz.Color.yellow()
-        }
-    }
+        self.spawners += [
+            Spawner(type=SpawnerType.Box,
+                    position=origin + (750, 500, 0.5 * size),
+                    color=(0, 255, 255)),
+            Spawner(type=SpawnerType.Cylinder,
+                    position=origin + (1250, 500, 0.5 * size),
+                    color=(255, 0, 128)),
+            Spawner(type=SpawnerType.Sphere,
+                    position=origin + (1000, 750, 0.5 * size),
+                    color=(255, 255, 0)),
+        ]
 
-    void visualize(viz.Client& arviz)
-    {
-        layerSpawners = arviz.layer("Spawners")
+    def visualize(self, arviz: viz.Client):
+        self.layer_spawners = arviz.layer("Spawners")
 
-        int index = 0
-        for (Spawner& spawner: spawners)
-        {
-            spawner.visualize(index, layerSpawners)
-            index += 1
-        }
+        for index, spawner in enumerate(self.spawners):
+            spawner.visualize(index, self.layer_spawners)
 
-        layerObjects = arviz.layer("SpawnedObjects")
-    }
+        self.layer_objects = arviz.layer("Spawned Objects")
 
-    void handle(viz.InteractionFeedback const& interaction,
-                viz.StagedCommit* stage)
-    {
-        Spawner* spawner = nullptr
-        for (int i = 0 i < (int)spawners.size() ++i)
-        {
-            std.string name = "Spawner_" + std.to_string(i)
-            if (interaction.element() == name)
-            {
-                spawner = &spawners[i]
-            }
-        }
+    def handle(self, interaction: viz.InteractionFeedback, stage: viz.Stage):
+        spawner: Optional[Spawner] = None
+        for i in range(len(self.spawners)):
+            name = f"Spawner_{i}"
+            if interaction.element == name:
+                spawner = self.spawners[i]
+                break
 
-        switch (interaction.type())
-        {
-        case viz.InteractionFeedbackType.Select:
-        {
-            # Create a spawned object
-            spawnedObject.index = spawnedObjectCounter++
-            spawnedObject.source = spawner
-            spawnedObject.transform = Eigen.Matrix4f.Identity()
-            spawnedObject.scale.setOnes()
-        } break
+        Types = viz.InteractionFeedbackType
+        if interaction.type == Types.Select:
+            # Create a spawned object.
+            self.spawned_object = SpawnedObject(
+                index=self.spawned_object_counter,
+                source=spawner,
+                transform=Transform(),
+                scale=np.ones(3, float)
+            )
+            self.spawned_object_counter += 1
 
-        case viz.InteractionFeedbackType.Transform:
-        {
-            # Update state of spawned object
-            spawnedObject.transform = interaction.transformation()
-            spawnedObject.scale = interaction.scale()
-            if (interaction.isTransformBegin() || interaction.isTransformDuring())
-            {
-                # Visualize all other objects except the currently spawned one
-                layerObjects.clear()
-                for (auto& object : objects)
-                {
-                    object.visualize(layerObjects)
-                }
-                stage.add(layerObjects)
-            }
-            if (interaction.isTransformEnd())
-            {
-                spawnedObject.visualize(layerObjects)
-                stage.add(layerObjects)
-            }
-        } break
+        elif interaction.type == Types.Transform:
+            # Update state of spawned object.
+            assert self.spawned_object is not None
+            self.spawned_object.transform = interaction.transformation
+            self.spawned_object.scale = interaction.scale
+            if interaction.is_transform_begin:
+                self.layer_objects.clear()
+                for obj in self.objects:
+                    obj.visualize(self.layer_objects)
+                stage.add(self.layer_objects)
+            if interaction.is_transform_end:
+                self.spawned_object.visualize(self.layer_objects)
+                stage.add(self.layer_objects)
 
-        case viz.InteractionFeedbackType.Deselect:
-        {
-            # Save state of spawned object
-            objects.push_back(spawnedObject)
-        } break
+        elif interaction.type == Types.Deselect:
+            assert self.spawned_object is not None
+            self.objects.append(self.spawned_object)
+            self.spawned_object = None
 
-        case viz.InteractionFeedbackType.ContextMenuChosen:
-        {
-            SpawnerOption option = (SpawnerOption)(interaction.chosenContextMenuEntry())
-            switch (option)
-            {
-            case SpawnerOption.DeleteAll:
-            {
-                objects.clear()
-                layerObjects.clear()
+        elif interaction.type == Types.ContextMenuChosen:
+            option = interaction.chosen_context_menu_entry
+            if option == SpawnerOption.DeleteAll:
+                self.objects.clear()
+                self.layer_objects.clear()
 
-                stage.add(layerObjects)
-            } break
-            case SpawnerOption.DeleteType:
-            {
-                auto newEnd = std.remove_if(objects.begin(), objects.end(),
-                               [spawner](SpawnedObject const& obj)
-                {
-                   return obj.source == spawner
-                })
-                objects.erase(newEnd, objects.end())
+                stage.add(self.layer_objects)
 
-                layerObjects.clear()
-                for (auto& object : objects)
-                {
-                    object.visualize(layerObjects)
-                }
+            elif option == SpawnerOption.DeleteType:
+                self.objects = [obj for obj in self.objects
+                                if obj.source is not spawner]
 
-                stage.add(layerObjects)
-            } break
-            }
-        }
+                self.layer_objects.clear()
+                for obj in self.objects:
+                    obj.visualize(self.layer_objects)
 
-        default:
-        {
-            # Ignore other interaction types
-        } break
-        }
-    }
+                stage.add(self.layer_objects)
 
-
-}
-"""
+        else:
+            # Ignore other interaction types.
+            pass
 
 
 class ArVizInteractExample:
@@ -378,19 +331,14 @@ class ArVizInteractExample:
         regions.add(viz.Cylinder("SeparatorY", from_to=(origin4, origin4 + (0, 4000, 0)), radius=5))
 
         sliders = SlidersState(origin=origin1 + (500, 500, 0))
-
-        """
-        SpawnersState spawners(origin2)
-        """
+        spawners = SpawnersState(origin2)
 
         sliders.visualize(self.arviz)
         stage.add([sliders.layer_interact, sliders.layer_result])
 
-        """
-        spawners.visualize(arviz)
-        stage.add(spawners.layerSpawners)
-        stage.add(spawners.layerObjects)
-        """
+        spawners.visualize(self.arviz)
+        stage.add(spawners.layer_spawners)
+        stage.add(spawners.layer_objects)
 
         result = self.arviz.commit(stage)
         print(f"Initial commit at revision: {result.revision}")
@@ -407,19 +355,15 @@ class ArVizInteractExample:
                 stage.reset()
 
                 stage.request_interaction(sliders.layer_interact)
-                """
-                stage.request_interaction(spawners.layerSpawners)
-                """
+                stage.request_interaction(spawners.layer_spawners)
 
                 for interaction in result.interactions:
                     if interaction.layer == "Sliders":
                         print(f"Processing slider interactions ... (revision {result.revision})")
                         sliders.handle(interaction, stage)
 
-                    """
-                    if (interaction.layer() == "Spawners")
-                        spawners.handle(interaction, &stage)
-                    """
+                    if interaction.layer == "Spawners":
+                        spawners.handle(interaction, stage)
 
                 cycle_remaining = cycle_duration - (time.time() - cycle_start)
                 if cycle_remaining > 0:
