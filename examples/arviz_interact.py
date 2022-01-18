@@ -19,7 +19,7 @@ class SingleSlider:
         self.translation = np.zeros(3, float)
 
 
-class SliderState:
+class SlidersState:
 
     ARROW_LENGTH = 1000.0
 
@@ -438,119 +438,50 @@ struct SpawnersState
     viz.Layer layerObjects
 }
 
-/**
- * @defgroup Component-ArVizInteractExample ArVizInteractExample
- * @ingroup RobotAPI-Components
- *
- * An example for how to visualize 3D elements via the 3D visualization
- * framework ArViz.
- *
- * The example creates several layers, fills them with visualization
- * elements, and commits them to ArViz.
- *
- * To see the result:
- * \li Start the component `ArVizStorage`
- * \li Open the gui plugin `ArViz`
- * \li Start the component `ArVizInteractExample`
- *
- * The scenario `ArVizInteractExample` starts the necessary components,
- * including the example component.
- *
- *
- * A component which wants to visualize data via ArViz should:
- * \li `#include <RobotAPI/libraries/RobotAPIComponentPlugins/ArVizComponentPlugin.h>`
- * \li Inherit from the `armarx.ArVizComponentPluginUser`. This adds the
- *     necessary properties (e.g. the topic name) and provides a
- *     ready-to-use ArViz client called `arviz`.
- * \li Use the inherited ArViz client variable `arviz` of type `viz.Client`
- *     to create layers, add visualization elements to the layers,
- *     and commit the layers to the ArViz topic.
- *
- * \see ArVizInteractExample
- *
- *
- * @class ArVizInteractExample
- * @ingroup Component-ArVizInteractExample
- *
- * @brief An example for how to use ArViz.
- *
- * @see @ref Component-ArVizInteractExample
- */
-struct ArVizInteractExample :
-    virtual armarx.Component,
-    // Deriving from armarx.ArVizComponentPluginUser adds necessary properties
-    // and provides a ready-to-use ArViz client called `arviz`.
-    virtual armarx.ArVizComponentPluginUser
-{
-    std.string getDefaultName() const override
-    {
+
+"""
+
+class ArVizInteractExample:
+    @classmethod
+    def get_name(cls):
         return "ArVizInteractExample"
-    }
 
-    armarx.PropertyDefinitionsPtr createPropertyDefinitions() override
-    {
-        armarx.PropertyDefinitionsPtr defs(new ComponentPropertyDefinitions(getConfigIdentifier()))
-        return defs
-    }
+    def __init__(self, name: str = None):
+        self.name = name or self.get_name()
+        self.arviz = viz.Client(self.get_name())
 
-    void onInitComponent() override
-    { }
+    def run(self):
+        stage = self.arviz.begin_stage()
 
-    void onConnectComponent() override
-    {
-        task = new RunningTask<ArVizInteractExample>(this, &ArVizInteractExample.run)
-        task->start()
-    }
+        regions = stage.layer("Regions")
 
-    void onDisconnectComponent() override
-    {
-        const bool join = true
-        task->stop(join)
-        task = nullptr
-    }
+        origin1 = np.array([-2000.0, 0.0, 0.0])
+        origin2 = np.array([0.0, 0.0, 0.0])
+        origin3 = np.array([-2000.0, -2000.0, 0.0])
+        origin4 = np.array([0.0, -2000.0, 0.0])
 
-    void onExitComponent() override
-    { }
+        regions.add(viz.Cylinder("SeparatorX", from_to=(origin1, origin1 + (4000, 0, 0)), radius=5))
+        regions.add(viz.Cylinder("SeparatorY", from_to=(origin4, origin4 + (0, 4000, 0)), radius=5))
 
+        sliders = SlidersState(origin=origin1 + (500, 500, 0))
 
-    void run()
-    {
-        viz.StagedCommit stage
-
-        viz.Layer regions = arviz.layer("Regions")
-        Eigen.Vector3f origin1(-2000.0f, 0.0f, 0.0f)
-        Eigen.Vector3f origin2(0.0f, 0.0f, 0.0f)
-        Eigen.Vector3f origin3(-2000.0f, -2000.0f, 0.0f)
-        Eigen.Vector3f origin4(0.0f, -2000.0f, 0.0f)
-        {
-            viz.Cylinder separatorX = viz.Cylinder("SeparatorX")
-                                       .fromTo(origin1, origin1 + 4000.0f * Eigen.Vector3f.UnitX())
-                                       .radius(5.0f)
-            regions.add(separatorX)
-
-            viz.Cylinder separatorY = viz.Cylinder("SeparatorY")
-                                       .fromTo(origin4, origin4 + 4000.0f * Eigen.Vector3f.UnitY())
-                                       .radius(5.0f)
-            regions.add(separatorY)
-
-            stage.add(regions)
-        }
-
-
-        SlidersState sliders(origin1 + Eigen.Vector3f(500.0f, 500.0f, 0.0f))
+        """
         SpawnersState spawners(origin2)
+        """
 
-        sliders.visualize(arviz)
-        stage.add(sliders.layerInteract)
-        stage.add(sliders.layerResult)
+        sliders.visualize(self.arviz)
+        stage.add([sliders.layer_interact, sliders.layer_result])
 
+        """
         spawners.visualize(arviz)
         stage.add(spawners.layerSpawners)
         stage.add(spawners.layerObjects)
 
-        viz.CommitResult result = arviz.commit(stage)
-        ARMARX_INFO << "Initial commit at revision: " << result.revision()
+        """
+        result = self.arviz.commit(stage)
+        print(f"Initial commit at revision: {result.revision()}")
 
+        """
         CycleUtil c(25.0f)
         while (!task->isStopped())
         {
@@ -577,20 +508,9 @@ struct ArVizInteractExample :
 
             c.waitForCycleDuration()
         }
-    }
-
-    RunningTask<ArVizInteractExample>.pointer_type task
-
-}
-
-ARMARX_DECOUPLED_REGISTER_COMPONENT(ArVizInteractExample)
+        """
 
 
-int main(int argc, char* argv[])
-{
-    return armarx.DecoupledMain(argc, argv)
-}
-
-
-
-"""
+if __name__ == '__main__':
+    example = ArVizInteractExample()
+    example.run()
