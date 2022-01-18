@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
+import enum
+
 import time
-from typing import Optional
-
 import numpy as np
-import transforms3d as tf3d
+from typing import List, Optional
 
-import armarx
 import armarx.arviz as viz
+from armarx.math.transform import Transform
 
+
+# SLIDER EXAMPLE
 
 class SingleSlider:
 
@@ -134,120 +136,88 @@ class SlidersState:
             pass  # Do nothing for the other interaction types
 
 
+# SPAWNER EXAMPLE
+
+class SpawnerType(enum.IntEnum):
+    Box = 1
+    Cylinder = 2
+    Sphere = 3
+
+
+class SpawnerOption(enum.IntEnum):
+    DeleteAll = 1
+    DeleteType = 2
+
+
+class Spawner:
+
+    def __init__(self):
+        self.type: SpawnerType = SpawnerType.Box
+        self.position = np.zeros(3, float)
+        self.size = 100.
+        self.color = (0, 0, 0)
+
+    def visualize(self, i: int, layer: viz.Layer):
+        interaction_kwargs = dict(selection=True, transform=True, scaling="xyz",
+                                  context_menu_options=["Delete All", "Delete All of Type"])
+        name = f"Spawner_{i}"
+
+        if type == SpawnerType.Box:
+            layer.add(viz.Box(name, position=self.position, size=self.size, color=self.color)
+                      .enable_interaction(**interaction_kwargs))
+        elif type == SpawnerType.Cylinder:
+            layer.add(viz.Cylinder(name, position=self.position, radius=0.5 * self.size, height=self.size, color=self.color)
+                      .enable_interaction(**interaction_kwargs))
+        elif type == SpawnerType.Sphere:
+            layer.add(
+                viz.Sphere(name, position=self.position, radius=0.5 * self.size, color=self.color)
+                .enable_interaction(**interaction_kwargs))
+
+
+class SpawnedObject:
+
+    def __init__(self):
+        self.index = 0
+        self.source: Optional[Spawner] = None
+        self.transform = Transform()
+        self.scale = np.ones(3, float)
+
+    def visualize(self, layer: viz.Layer):
+        name = f"Object_{self.index}"
+
+        initial = Transform()
+        initial.translation = self.source.position
+        pose = self.transform * initial
+
+        source = self.source
+        if source.type == SpawnerType.Box:
+            layer.add(viz.Box(id=name, pose=pose, scale=self.scale, size=source.size, color=source.color))
+        elif source.type == SpawnerType.Cylinder:
+            layer.add(viz.Cylinder(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, height=source.size,
+                                   color=source.color))
+        elif source.type == SpawnerType.Sphere:
+            layer.add(viz.Cylinder(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, color=source.color))
+
+
+class SpawnersState:
+
+    def __init__(self, origin: np.ndarray):
+        self.origin = origin
+
+        spawners: List[Spawner] = []
+        
+        """
+            Eigen.Vector3f origin
+
+            std.vector<Spawner> spawners
+            SpawnedObject spawnedObject
+            int spawnedObjectCounter = 0
+            std.vector<SpawnedObject> objects
+
+            viz.Layer layerSpawners
+            viz.Layer layerObjects
+        """
 """
-enum class SpawnerType
-{
-    Box,
-    Cylinder,
-    Sphere,
-}
-
-enum class SpawnerOption
-{
-    DeleteAll = 0,
-    DeleteType = 1,
-}
-
-struct Spawner
-{
-    SpawnerType type = SpawnerType.Box
-
-    Eigen.Vector3f position = Eigen.Vector3f.Zero()
-    float size = 100.0f
-    viz.Color color = viz.Color.black()
-
-    void visualize(int i, viz.Layer& layer)
-    {
-        viz.InteractionDescription interaction = viz.interaction()
-                                                  .selection().transform().scaling()
-                                                  .contextMenu({"Delete All", "Delete All of Type"})
-        std.string name = "Spawner_" + std.to_string(i)
-        switch (type)
-        {
-        case SpawnerType.Box:
-        {
-            viz.Box box = viz.Box(name)
-                           .position(position)
-                           .size(size)
-                           .color(color)
-                           .enable(interaction)
-            layer.add(box)
-        } break
-        case SpawnerType.Cylinder:
-        {
-            viz.Cylinder cylinder = viz.Cylinder(name)
-                                     .position(position)
-                                     .radius(size*0.5f)
-                                     .height(size)
-                                     .color(color)
-                                     .enable(interaction)
-            layer.add(cylinder)
-        } break
-        case SpawnerType.Sphere:
-        {
-            viz.Sphere sphere = viz.Sphere(name)
-                                 .position(position)
-                                 .radius(size*0.5f)
-                                 .color(color)
-                                 .enable(interaction)
-            layer.add(sphere)
-        } break
-        }
-    }
-}
-
-struct SpawnedObject
-{
-    int index = 0
-    Spawner* source = nullptr
-    Eigen.Matrix4f transform = Eigen.Matrix4f.Identity()
-    Eigen.Vector3f scale = Eigen.Vector3f.Ones()
-
-    void visualize(viz.Layer& layer)
-    {
-        viz.InteractionDescription interaction = viz.interaction().none()
-        std.string name = "Object_" + std.to_string(index)
-
-        Eigen.Matrix4f initial = Eigen.Matrix4f.Identity()
-        initial.block<3, 1>(0, 3) = source.position
-        Eigen.Matrix4f pose = transform * initial
-
-        switch (source.type)
-        {
-        case SpawnerType.Box:
-        {
-            viz.Box box = viz.Box(name)
-                           .pose(pose)
-                           .scale(scale)
-                           .size(source.size)
-                           .color(source.color)
-                           .enable(interaction)
-            layer.add(box)
-        } break
-        case SpawnerType.Cylinder:
-        {
-            viz.Cylinder cylinder = viz.Cylinder(name)
-                                     .pose(pose)
-                                     .scale(scale)
-                                     .radius(source.size * 0.5f)
-                                     .height(source.size)
-                                     .color(source.color)
-                                     .enable(interaction)
-            layer.add(cylinder)
-        } break
-        case SpawnerType.Sphere:
-        {
-            viz.Sphere sphere = viz.Sphere(name)
-                                 .pose(pose)
-                                 .scale(scale)
-                                 .radius(source.size * 0.5f)
-                                 .color(source.color)
-                                 .enable(interaction)
-            layer.add(sphere)
-        } break
-        }
-    }
-}
 
 struct SpawnersState
 {
@@ -380,15 +350,7 @@ struct SpawnersState
         }
     }
 
-    Eigen.Vector3f origin
 
-    std.vector<Spawner> spawners
-    SpawnedObject spawnedObject
-    int spawnedObjectCounter = 0
-    std.vector<SpawnedObject> objects
-
-    viz.Layer layerSpawners
-    viz.Layer layerObjects
 }
 """
 
