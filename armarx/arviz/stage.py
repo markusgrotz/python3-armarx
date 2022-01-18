@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from .layer import Layer
 
@@ -10,6 +10,14 @@ class Stage:
         self.layers: List[Layer] = []
         self.commit_on_exit = commit_on_exit
         self.client = client
+
+    def add(self, layer_or_layers: Union[Layer, List[Layer]]):
+        if isinstance(layer_or_layers, Layer):
+            layer = layer_or_layers
+            self.layers.append(layer)
+        else:
+            layers = list(layer_or_layers)
+            self.layers += layers
 
     def layer(self, name) -> Layer:
         """
