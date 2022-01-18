@@ -127,7 +127,7 @@ class Element:
             scaling: str = None,
             transform: bool = False,
             hide_during_transform: bool = False,
-        ):
+        ) -> "Element":
         """
         Enable one or more interaction features.
 
@@ -205,6 +205,7 @@ class Element:
         self._interaction.enableFlags = flags
         self._interaction.contextMenuOptions = context_menu_options or []
 
+        return self
 
     # Behind the scenes
 
