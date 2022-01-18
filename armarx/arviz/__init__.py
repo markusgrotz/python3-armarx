@@ -1,4 +1,5 @@
-from .elements import Element, \
+from .elements import \
+    Element, InteractionFeedback, \
     Arrow, ArrowCircle, Box, Cylinder, Ellipsoid, Line, Object, \
     PointCloud, Polygon, Pose, Robot, Sphere, Text, Mesh
 from .layer import Layer

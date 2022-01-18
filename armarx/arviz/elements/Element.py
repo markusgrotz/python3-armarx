@@ -5,7 +5,36 @@ from typing import Iterable, Union, List
 
 from armarx import slice_loader
 from armarx.arviz import conversions as conv
+from armarx.math.transform import Transform
+
 slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+
+
+class InteractionFeedback:
+
+    def __init__(
+            self,
+            type: int = 0,
+            component: str = "",
+            layer: str = "",
+            element: str = "",
+            revision: int = 0,
+            chosen_context_menu_entry: int = 0,
+            transformation: Transform = None,
+            scale: np.ndarray = None,
+    ):
+        self.type = type
+
+        self.component = component
+        self.layer = layer
+        self.element = element
+
+        self.revision = revision
+
+        self.chosen_context_menu_entry = chosen_context_menu_entry
+
+        self.transformation = Transform() if transformation is None else transformation
+        self.scale = np.zeros(0, float) if scale is None else scale
 
 
 
