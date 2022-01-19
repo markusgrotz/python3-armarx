@@ -206,14 +206,12 @@ class SpawnedObject:
 
         source = self.source
         if source.type == SpawnerType.Box:
-            layer.add(viz.Box(id=name, pose=pose, scale=self.scale, size=source.size, color=source.color)
-                      .enable_interaction())
+            layer.add(viz.Box(id=name, pose=pose, scale=self.scale, size=source.size, color=source.color))
         elif source.type == SpawnerType.Cylinder:
             layer.add(viz.Cylinder(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, height=source.size,
-                                   color=source.color).enable_interaction())
+                                   color=source.color))
         elif source.type == SpawnerType.Sphere:
-            layer.add(viz.Sphere(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, color=source.color)
-                      .enable_interaction())
+            layer.add(viz.Sphere(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, color=source.color))
         else:
             raise ValueError(f"Unexpected enum value: {source.type}.")
 
@@ -292,11 +290,13 @@ class SpawnersState:
             print(f"\tUpdate spawned object {self.spawned_object}.")
             self.spawned_object.transform = interaction.transformation
             self.spawned_object.scale = interaction.scale
+
             if interaction.is_transform_begin:
                 self.layer_objects.clear()
                 for obj in self.objects:
                     obj.visualize(self.layer_objects)
                 stage.add(self.layer_objects)
+
             if interaction.is_transform_end:
                 self.spawned_object.visualize(self.layer_objects)
                 stage.add(self.layer_objects)
@@ -329,7 +329,7 @@ class SpawnersState:
 
         else:
             # Ignore other interaction types.
-            pass
+            print(f"Ignoring interaction of type {interaction.type.name}.")
 
 
 # MAIN
@@ -372,7 +372,7 @@ class ArVizInteractExample:
         try:
             print("Press Ctrl+C to interrupt...")
 
-            cycle = CycleClock(duration_seconds=0.025)
+            cycle = CycleClock(duration_seconds=0.01)
             while True:
 
                 result = self.arviz.commit(stage)
@@ -395,6 +395,8 @@ class ArVizInteractExample:
                         print(f"Processing spawner interaction ... (revision {result.revision})")
                         spawners.handle(interaction, stage)
 
+                if cycle.remaining_seconds <= 0:
+                    print("Remaining: ", cycle.remaining_seconds)
                 cycle.wait_for_next_cycle()
 
         except KeyboardInterrupt:
