@@ -5,6 +5,8 @@ from typing import Iterable, Union, List
 
 import armarx.arviz.load_slice
 from armarx.arviz import conversions as conv
+from armarx.math.transform import Transform
+from armarx.ice_conv.armarx_core.basic_vector_types import Vector3fConv
 
 
 class ElementFlags(enum.IntFlag):
@@ -15,9 +17,18 @@ class ElementFlags(enum.IntFlag):
 
 class Element:
 
-    def __init__(self, ice_data_cls, id,
-                 pose=None, position=None, orientation=None,
-                 color=None, scale=1.0):
+    _vector3f_conv = Vector3fConv()
+
+    def __init__(
+            self,
+            ice_data_cls,
+            id,
+            pose=None,
+            position=None,
+            orientation=None,
+            color=None,
+            scale=1.0,
+    ):
         self.ice_data_cls = ice_data_cls
         self.id: str = str(id)
 
@@ -31,7 +42,7 @@ class Element:
 
         self.color = color if color is not None else (100, 100, 100, 255)
 
-        self.scale: float = scale
+        self.scale = scale
         self.flags: ElementFlags = ElementFlags.NONE
 
         from armarx.viz.data import InteractionDescription
@@ -45,6 +56,9 @@ class Element:
 
     @pose.setter
     def pose(self, value):
+        if isinstance(value, Transform):
+            value = value.transform
+
         value = self._to_array_checked(value, (4, 4), "pose matrix", dtype=np.float)
         self._pose = value
 
@@ -112,6 +126,25 @@ class Element:
             self._color = np.concatenate([value, [255]])
         else:
             self._color = value
+
+    @property
+    def scale(self) -> np.ndarray:
+        """
+        :return: A scaling vector [x, y, z] of shape (3,).
+        """
+        return self._scale
+
+    @scale.setter
+    def scale(self, value: Union[float, np.ndarray]):
+        if isinstance(value, float):
+            self._scale = np.array([value, value, value])
+        else:
+            value = np.array(value)
+            if not value.shape == (3,):
+                raise ValueError(f"Expected scale to be scalar or an array of shape (3,), "
+                                 f"but got shape ({value.shape}).")
+            self._scale = value
+
 
     # Interaction
 
@@ -223,7 +256,13 @@ class Element:
 
         c = ice_data.color
         c.r, c.g, c.b, c.a = map(int, self.color)
-        ice_data.scale = conv.vector3f_from_numpy(np.array([self.scale, self.scale, self.scale]))
+        if isinstance(self.scale, float):
+            scale = np.array([self.scale, self.scale, self.scale])
+        else:
+            assert self.scale.shape == (3,), f"Expected scale of shape {(3,)}, but got {self.scale.shape}."
+            scale = self.scale
+        ice_data.scale = self._vector3f_conv.to_ice(scale)
+
         ice_data.flags = int(self.flags)
 
 

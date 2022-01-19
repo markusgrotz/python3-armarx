@@ -53,15 +53,15 @@ class InteractionFeedback:
 
     @property
     def is_transform_begin(self) -> bool:
-        return self._data.type & armarx.arviz.data.InteractionFeedbackType.TRANSFORM_BEGIN_FLAG
+        return self._data.type & armarx.viz.data.InteractionFeedbackType.TRANSFORM_BEGIN_FLAG
 
     @property
     def is_transform_during(self) -> bool:
-        return self._data.type & armarx.arviz.data.InteractionFeedbackType.TRANSFORM_DURING_FLAG
+        return self._data.type & armarx.viz.data.InteractionFeedbackType.TRANSFORM_DURING_FLAG
 
     @property
     def is_transform_end(self) -> bool:
-        return self._data.type & armarx.arviz.data.InteractionFeedbackType.TRANSFORM_ENDFLAG
+        return self._data.type & armarx.viz.data.InteractionFeedbackType.TRANSFORM_END_FLAG
 
     @property
     def layer(self) -> str:

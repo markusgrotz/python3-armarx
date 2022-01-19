@@ -81,13 +81,20 @@ class Vector3fConv(IceConverter):
 
     def _from_ice(
             self,
-            dto_points: List["armarx.Vector2f"],
+            dto_points: Union["armarx.Vector3f", List["armarx.Vector3f"]],
             scaling: Optional[float] = None,
             ) -> np.ndarray:
 
-        bo = np.array([(p.e0, p.e1, p.e2) for p in dto_points])
-        assert bo.shape == (len(dto_points), 3), \
-            "Shape should be {}, but was {}.\n\tPoints: {}".format((len(dto_points), 3), bo.shape, dto_points)
+        try:
+            iter(dto_points)
+        except TypeError:
+            p = dto_points
+            bo = np.array([p.e0, p.e1, p.e2])
+
+        else:
+            bo = np.array([(p.e0, p.e1, p.e2) for p in dto_points])
+            assert bo.shape == (len(dto_points), 3), \
+                "Shape should be {}, but was {}.\n\tPoints: {}".format((len(dto_points), 3), bo.shape, dto_points)
 
         bo = scale(bo, scaling)
         return bo
@@ -110,4 +117,5 @@ class Vector3fConv(IceConverter):
 
 
 def scale(points: np.ndarray, scaling: Optional[float] = None) -> np.ndarray:
+    points = np.array(points)
     return points if scaling is None else points * scaling

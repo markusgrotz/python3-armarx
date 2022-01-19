@@ -168,16 +168,18 @@ class Spawner:
                                   context_menu_options=["Delete All", "Delete All of Type"])
         name = f"Spawner_{i}"
 
-        if type == SpawnerType.Box:
+        if self.type == SpawnerType.Box:
             layer.add(viz.Box(name, position=self.position, size=self.size, color=self.color)
                       .enable_interaction(**interaction_kwargs))
-        elif type == SpawnerType.Cylinder:
+        elif self.type == SpawnerType.Cylinder:
             layer.add(viz.Cylinder(name, position=self.position, radius=0.5 * self.size, height=self.size, color=self.color)
                       .enable_interaction(**interaction_kwargs))
-        elif type == SpawnerType.Sphere:
+        elif self.type == SpawnerType.Sphere:
             layer.add(
                 viz.Sphere(name, position=self.position, radius=0.5 * self.size, color=self.color)
                 .enable_interaction(**interaction_kwargs))
+        else:
+            raise ValueError(f"Unexcpected enum value {self.type}.")
 
 
 class SpawnedObject:
@@ -191,7 +193,7 @@ class SpawnedObject:
     ):
         self.index = index
         self.source = source
-        self.transform = Transform() if transform is None else Transform
+        self.transform = Transform() if transform is None else transform
         self.scale = np.ones(3, float) if scale is None else scale
 
     def visualize(self, layer: viz.Layer):
@@ -203,12 +205,25 @@ class SpawnedObject:
 
         source = self.source
         if source.type == SpawnerType.Box:
-            layer.add(viz.Box(id=name, pose=pose, scale=self.scale, size=source.size, color=source.color))
+            layer.add(viz.Box(id=name, pose=pose, scale=self.scale, size=source.size, color=source.color)
+                      .enable_interaction())
         elif source.type == SpawnerType.Cylinder:
             layer.add(viz.Cylinder(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, height=source.size,
-                                   color=source.color))
+                                   color=source.color).enable_interaction())
         elif source.type == SpawnerType.Sphere:
-            layer.add(viz.Cylinder(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, color=source.color))
+            layer.add(viz.Sphere(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, color=source.color)
+                      .enable_interaction())
+        else:
+            raise ValueError(f"Unexpected enum value: {source.type}.")
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} "
+            f"index={self.index} "
+            f"source type={self.source.type.name} "
+            f"pos={np.round(self.transform.translation, 3)} "
+            f"scale={np.round(self.scale, 3)}>"
+        )
 
 
 class SpawnersState:
@@ -254,10 +269,13 @@ class SpawnersState:
             if interaction.element == name:
                 spawner = self.spawners[i]
                 break
+        assert spawner is not None, f"Interaction element: {interaction.element}"
+        print(f"\tInteraction with spawner: {spawner.type.name}")
 
         Types = viz.InteractionFeedbackType
         if interaction.type == Types.Select:
             # Create a spawned object.
+            assert self.spawned_object is None, f"Already spawned object: {self.spawned_object}"
             self.spawned_object = SpawnedObject(
                 index=self.spawned_object_counter,
                 source=spawner,
@@ -265,10 +283,11 @@ class SpawnersState:
                 scale=np.ones(3, float)
             )
             self.spawned_object_counter += 1
+            print(f"\tSpawned object {self.spawned_object}.")
 
-        elif interaction.type == Types.Transform:
+        elif interaction.type == Types.Transform and self.spawned_object is not None:
             # Update state of spawned object.
-            assert self.spawned_object is not None
+            print(f"\tUpdate spawned object {self.spawned_object}.")
             self.spawned_object.transform = interaction.transformation
             self.spawned_object.scale = interaction.scale
             if interaction.is_transform_begin:
@@ -280,8 +299,9 @@ class SpawnersState:
                 self.spawned_object.visualize(self.layer_objects)
                 stage.add(self.layer_objects)
 
-        elif interaction.type == Types.Deselect:
-            assert self.spawned_object is not None
+        elif interaction.type == Types.Deselect and self.spawned_object is not None:
+            # Store spawned object.
+            print(f"\tStore spawned object {self.spawned_object}.")
             self.objects.append(self.spawned_object)
             self.spawned_object = None
 
@@ -340,8 +360,7 @@ class ArVizInteractExample:
         stage.add([sliders.layer_interact, sliders.layer_result])
 
         spawners.visualize(self.arviz)
-        stage.add(spawners.layer_spawners)
-        stage.add(spawners.layer_objects)
+        stage.add([spawners.layer_spawners, spawners.layer_objects])
 
         result = self.arviz.commit(stage)
         print(f"Initial commit at revision: {result.revision}")
@@ -366,6 +385,7 @@ class ArVizInteractExample:
                         sliders.handle(interaction, stage)
 
                     if interaction.layer == "Spawners":
+                        print(f"Processing spawner interactions ... (revision {result.revision})")
                         spawners.handle(interaction, stage)
 
                 cycle_remaining = cycle_duration - (time.time() - cycle_start)
