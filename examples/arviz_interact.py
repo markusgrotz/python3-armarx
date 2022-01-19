@@ -221,7 +221,7 @@ class SpawnedObject:
             f"<{self.__class__.__name__} "
             f"index={self.index} "
             f"source type={self.source.type.name} "
-            f"pos={np.round(self.transform.translation, 3)} "
+            f"transl={np.round(self.transform.translation, 3)} "
             f"scale={np.round(self.scale, 3)}>"
         )
 
@@ -270,11 +270,11 @@ class SpawnersState:
                 spawner = self.spawners[i]
                 break
         assert spawner is not None, f"Interaction element: {interaction.element}"
-        print(f"\tInteraction with spawner: {spawner.type.name}")
 
         Types = viz.InteractionFeedbackType
         if interaction.type == Types.Select:
             # Create a spawned object.
+            print(f"\tSelected {spawner.type.name}.")
             assert self.spawned_object is None, f"Already spawned object: {self.spawned_object}"
             self.spawned_object = SpawnedObject(
                 index=self.spawned_object_counter,
@@ -286,6 +286,7 @@ class SpawnersState:
             print(f"\tSpawned object {self.spawned_object}.")
 
         elif interaction.type == Types.Transform and self.spawned_object is not None:
+            print(f"\tTransformed {spawner.type.name}.")
             # Update state of spawned object.
             print(f"\tUpdate spawned object {self.spawned_object}.")
             self.spawned_object.transform = interaction.transformation
@@ -300,12 +301,14 @@ class SpawnersState:
                 stage.add(self.layer_objects)
 
         elif interaction.type == Types.Deselect and self.spawned_object is not None:
+            print(f"\tDeselected {spawner.type.name}.")
             # Store spawned object.
             print(f"\tStore spawned object {self.spawned_object}.")
             self.objects.append(self.spawned_object)
             self.spawned_object = None
 
         elif interaction.type == Types.ContextMenuChosen:
+            print(f"\tContext menu #{interaction.chosen_context_menu_entry}.")
             option = interaction.chosen_context_menu_entry
             if option == SpawnerOption.DeleteAll:
                 self.objects.clear()
@@ -379,13 +382,16 @@ class ArVizInteractExample:
                 stage.request_interaction(sliders.layer_interact)
                 stage.request_interaction(spawners.layer_spawners)
 
+                if len(result.interactions) > 0:
+                    print(f"Received {len(result.interactions)} interactions.")
+
                 for interaction in result.interactions:
                     if interaction.layer == "Sliders":
-                        print(f"Processing slider interactions ... (revision {result.revision})")
+                        print(f"Processing slider interaction ... (revision {result.revision})")
                         sliders.handle(interaction, stage)
 
                     if interaction.layer == "Spawners":
-                        print(f"Processing spawner interactions ... (revision {result.revision})")
+                        print(f"Processing spawner interaction ... (revision {result.revision})")
                         spawners.handle(interaction, stage)
 
                 cycle_remaining = cycle_duration - (time.time() - cycle_start)
