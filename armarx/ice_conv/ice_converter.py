@@ -1,5 +1,5 @@
 import abc
-from typing import Union, List, Dict, Any, Callable, Type
+from typing import Callable, Dict, Type
 
 
 class IceConverter(abc.ABC):
@@ -13,23 +13,29 @@ class IceConverter(abc.ABC):
     class MyClassConv(IceConverter):  # Derive from IceConverter
 
         # Override _protected functions
-        def _from_ice(self, dto: armarx.icedto.MyClass) -> MyClass:
+
+        @classmethod
+        def _import_dto(cls):
+            slice_loader.load_armarx_slice(...)
+            return armarx.dto.MyClass
+
+        def _from_ice(self, dto: armarx.dto.MyClass) -> MyClass:
             return MyClass(data=dto.data)
 
-        def _to_ice(self, bo: MyClass) -> armarx.icedto.MyClass:
+        def _to_ice(self, bo: MyClass) -> armarx.dto.MyClass:
             return MyClass(data=bo.data)
 
 
     def foo():
         # Get an Ice DTO from somewhere.
-        dto: armarx.icedto.MyClass = get_ice_dto()
+        dto: armarx.dto.MyClass = get_ice_dto()
 
         # Create the converter and use it to convert the DTO to a BO.
         conv = MyClassConv()
         bo: MyClass = conv.from_ice(dto)
 
         # Use the same converter to convert the BO back to Ice.
-        dto2: armarx.icetdo.MyClass = conv.to_ice(bo)
+        dto2: armarx.dto.MyClass = conv.to_ice(bo)
 
         # Use the same methods to convert lists or dictionaries:
         bos = conv.from_ice([dto, dto2])
@@ -76,7 +82,8 @@ class IceConverter(abc.ABC):
     @classmethod
     def get_dto(cls):
         if cls._dto is None:
-            cls._dto = cls._import_dto()
+            # Dunno why yet, but we need to pass cls explicitly here ...
+            cls._dto = cls._import_dto(cls)
         return cls._dto
 
     @abc.abstractmethod

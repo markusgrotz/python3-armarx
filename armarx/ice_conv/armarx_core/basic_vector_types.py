@@ -2,24 +2,11 @@ import numpy as np
 
 from typing import List, Optional, Union
 
+import armarx
+from armarx import slice_loader
 from armarx_memory.ice_conv.ice_converter import IceConverter
 
-
 SLICE_INCLUDE = ("ArmarXCore", "core/BasicVectorTypes.ice")
-
-
-def import_vector2f():
-    from armarx import slice_loader
-    slice_loader.load_armarx_slice(*SLICE_INCLUDE)
-    import armarx
-    return armarx.Vector2f
-
-
-def import_vector3f():
-    from armarx import slice_loader
-    slice_loader.load_armarx_slice(*SLICE_INCLUDE)
-    import armarx
-    return armarx.Vector3f
 
 
 class Vector2fConv(IceConverter):
@@ -30,6 +17,7 @@ class Vector2fConv(IceConverter):
         self.set_handler_to_ice(np.ndarray, self._to_ice)
 
     def _import_dto(cls):
+        slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         return armarx.Vector2f
 
     def _from_ice(
@@ -56,7 +44,7 @@ class Vector2fConv(IceConverter):
             bo: np.ndarray,
             scaling: Optional[float] = None,
             ) -> "armarx.Vector2f":
-        Vector2f = import_vector2f()
+        Vector2f = self.get_dto()
 
         bo = np.array(bo)
         bo = scale(bo, scaling)
@@ -77,6 +65,7 @@ class Vector3fConv(IceConverter):
         self.set_handler_to_ice(np.ndarray, self._to_ice)
 
     def _import_dto(cls):
+        slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         return armarx.Vector3f
 
     def _from_ice(
@@ -104,7 +93,7 @@ class Vector3fConv(IceConverter):
             bo: np.ndarray,
             scaling: Optional[float] = None,
             ) -> "armarx.Vector3f":
-        Vector3f = import_vector3f()
+        Vector3f = self.get_dto()
 
         bo = scale(bo, scaling)
 
