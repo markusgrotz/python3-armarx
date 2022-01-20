@@ -1,17 +1,13 @@
 import enum
-from typing import Any, Dict, List, Union, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 
-from armarx import slice_loader
-slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
-
-import armarx
+import armarx.arviz.load_slice
 import armarx.viz as viz
 
-
 from armarx.arviz import conversions as conv
-from .Element import Element
+from armarx.arviz.elements.Element import Element
 
 
 def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
@@ -32,15 +28,20 @@ def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
 
 class Arrow(Element):
     """
-    An arrow element for ArViz
+    An arrow.
     """
 
     natural_dir = np.array((0, 1, 0))
 
-    def __init__(self, id,
-                 length=100.0, width=10.0,
-                 direction=None, from_to=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            length=100.0,
+            width=10.0,
+            direction=None,
+            from_to=None,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementArrow, id=id, **kwargs)
         self.length: float = length
         self.width: float = width
@@ -78,15 +79,20 @@ class Arrow(Element):
 
 class ArrowCircle(Element):
     """
-    An arrow circle element for ArViz
+    An arrow circle.
     """
 
     natural_normal = np.array((0, 1, 0))
 
-    def __init__(self, id,
-                 radius=100., completion=1.0, width=10.,
-                 normal=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            radius=100.,
+            completion=1.0,
+            width=10.,
+            normal=None,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementArrowCircle, id=id, **kwargs)
         self.radius: float = radius
         self.completion: float = completion
@@ -111,10 +117,15 @@ class ArrowCircle(Element):
 
 class Box(Element):
     """
-    A box element for ArViz
+    A box.
     """
 
-    def __init__(self, id, size=1.0, **kwargs):
+    def __init__(
+            self,
+            id,
+            size=1.0,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementBox, id=id, **kwargs)
 
         self.size = size
@@ -139,15 +150,20 @@ class Box(Element):
 
 class Cylinder(Element):
     """
-    A cylinder element for ArViz
+    A cylinder.
     """
 
     natural_dir = np.array((0, 1, 0))
 
-    def __init__(self, id,
-                 radius=10., height=10.,
-                 direction=None, from_to=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            radius=10.,
+            height=10.,
+            direction=None,
+            from_to=None,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementCylinder, id=id, **kwargs)
         self.radius: float = radius
         self.height: float = height
@@ -188,10 +204,15 @@ class Cylinder(Element):
 
 class Sphere(Element):
     """
-    A sphere element for ArViz
+    A sphere.
     """
 
-    def __init__(self, id, radius=10., **kwargs):
+    def __init__(
+            self,
+            id,
+            radius=10.,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementSphere, id=id, **kwargs)
         self.radius: float = radius
 
@@ -202,10 +223,16 @@ class Sphere(Element):
 
 class Ellipsoid(Element):
     """
-    An ellipsoid element for ArViz
+    An ellipsoid.
     """
 
-    def __init__(self, id, axis_lengths=None, curvature=None, **kwargs):
+    def __init__(
+            self,
+            id,
+            axis_lengths=None,
+            curvature=None,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementEllipsoid, id=id, **kwargs)
 
         self.axis_lengths = (1, 1, 1) if axis_lengths is None else axis_lengths
@@ -241,10 +268,17 @@ class Ellipsoid(Element):
 
 class Line(Element):
     """
-    A line element for ArViz
+    A line.
     """
 
-    def __init__(self, id, start=None, end=None, line_width=10., **kwargs):
+    def __init__(
+            self,
+            id,
+            start=None,
+            end=None,
+            line_width=10.,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementLine, id=id, **kwargs)
 
         self.line_width: float = line_width
@@ -280,16 +314,25 @@ class Line(Element):
 
 class Pose(Element):
     """
-    A 6-D pose element for ArViz
+    A 6-D pose.
     """
 
-    def __init__(self, id, **kwargs):
+    def __init__(
+            self,
+            id,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementPose, id=id, **kwargs)
 
 
 class Text(Element):
 
-    def __init__(self, id, text="", **kwargs):
+    def __init__(
+            self,
+            id,
+            text="",
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementText, id=id, **kwargs)
         self.text: str = text
 
@@ -306,10 +349,16 @@ class ModelDrawStyle(enum.IntFlag):
 
 class Object(Element):
 
-    def __init__(self, id,
-                 project="", filename="", file=None,
-                 use_collision_model=False, override_color=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            project="",
+            filename="",
+            file=None,
+            use_collision_model=False,
+            override_color=None,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementObject, id=id, **kwargs)
         self.project: str = project
         self.filename: str = filename
@@ -361,12 +410,15 @@ class Object(Element):
 
 class Robot(Object):
     """
-    A robot element for ArViz
+    A robot.
     """
 
-    def __init__(self, id,
-                 joint_angles=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            joint_angles=None,
+            **kwargs,
+    ):
         super().__init__(id=id, **kwargs)
         self.ice_data_cls = viz.data.ElementRobot
 
@@ -380,13 +432,18 @@ class Robot(Object):
 
 class PointCloud(Element):
     """
-    A point cloud element for ArViz
+    A point cloud.
     """
 
-    def __init__(self, id,
-                 transparency=0.0, point_size=1.0,
-                 points=None, point_colors=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            transparency=0.0,
+            point_size=1.0,
+            points=None,
+            point_colors=None,
+            **kwargs,
+    ):
         """
         :param id:
         :param transparency:
@@ -457,22 +514,41 @@ class PointCloud(Element):
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
+
+        dtype = np.dtype([
+            ('position', np.float32, (3,)),
+            ('a', np.uint8),
+            ('r', np.uint8),
+            ('g', np.uint8),
+            ('b', np.uint8),
+        ])
+        buffer = np.zeros(self.points.shape[0], dtype=dtype)
+
+        assert self.points.shape[1] == 7
+        buffer["position"] = self.points[:, :3]
+        buffer["r"] = self.points[:, 3]
+        buffer["g"] = self.points[:, 4]
+        buffer["b"] = self.points[:, 5]
+        buffer["a"] = self.points[:, 6]
+
+        ice_data.points = buffer
         ice_data.transparency = self.transparency
         ice_data.point_size = self.point_size
-
-        ice_data.points = [viz.data.ColoredPoint() for _ in range(len(self.points))]
-        for cp, array in zip(ice_data.points, self.points):
-            cp.x, cp.y, cp.z = map(float, array[:3])
-            conv.set_viz_color(cp.color, array[3:])
 
 
 class Polygon(Element):
     """
-    A polygon element for arviz
+    A polygon.
     """
 
-    def __init__(self, id, line_width=0.0, line_color=None, points=None,
-                 **kwargs):
+    def __init__(
+            self,
+            id,
+            line_width=0.0,
+            line_color=None,
+            points=None,
+            **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementPolygon, id=id, **kwargs)
         self.points = []
 
@@ -514,4 +590,3 @@ class Polygon(Element):
         ice_data.line_width = float(self.line_width)
         ice_data.line_color = conv.to_viz_color(self.color)
         ice_data.points = conv.vector3fs_from_numpy(self.points)
-

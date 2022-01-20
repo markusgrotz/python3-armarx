@@ -5,6 +5,8 @@ class IceTwin:
     """
     A python class representing a python-twin of an class defined in Ice.
 
+    Hint: Kind of deprecated. Use IceConverter from armarx.ice_conv.ice_converter instead.
+
     Usage:
 
     class MyClass(IceTwin):  # Derive from IceTwin
