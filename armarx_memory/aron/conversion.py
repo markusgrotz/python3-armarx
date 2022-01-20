@@ -1,7 +1,7 @@
 import enum
 import numpy as np
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 dtype_rgb = [("r", "i1"), ("g", "i1"), ("b", "i1")]
 
@@ -151,13 +151,34 @@ def from_aron(a: "armarx.aron.data.dto.GenericData"):
     if isinstance(a, Aron.NDArray):
         # Last entry is #bytes per entry
         data: bytes = a.data
-        dtype = dtypes_dict[a.type]
 
-        shape: List[int]
+        shape: Tuple[int]
         try:
             shape = a.dimensions[:-1]
         except AttributeError:
             shape = a.shape[:-1]
+        shape = tuple(shape)
+
+        dtype = dtypes_dict.get(a.type, None)
+        if dtype is None:
+            size = np.product(shape)
+            if size == 0:
+                dtype = np.uint8
+            else:
+                dtype_size = len(data) // size
+                dtype_dict = {
+                    1: np.uint8,
+                    2: np.uint16,
+                    4: np.uint32,
+                    8: np.uint64
+                }
+                dtype = dtype_dict.get(dtype_size, None)
+                if dtype is None:
+                    # Build a structured dtype with sequence of bytes.
+                    dtype = np.dtype([("bytes", np.uint8, dtype_size)])
+
+            print(f"Unknown type '{a.type}' of array with shape {shape} and {len(data)} bytes. "
+                  f"Falling back to {dtype}.")
 
         array: np.ndarray = np.frombuffer(buffer=data, dtype=dtype)
         array = array.reshape(shape)
