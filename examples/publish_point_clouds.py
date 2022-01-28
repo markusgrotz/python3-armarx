@@ -5,6 +5,7 @@ import time
 import math
 
 from armarx.ice_manager import is_alive
+from armarx.parser import ArmarXArgumentParser as ArgumentParser
 from visionx.pointclouds import rgb_to_uint32
 from visionx.pointcloud_provider import PointCloudProvider
 from visionx.pointcloud_provider import dtype_point_color_xyz
@@ -53,4 +54,7 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser()
+    args = parser.parse_args()
+
     main()
