@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     receiver = PointCloudReceiver("ExamplePointCloudReceiver", source_provider_name="OpenNIPointCloudProvider")
-    receiver.on_connect()
+    receiver.on_connect(wait_for_provider=True)
 
     result_provider = PointCloudProvider("ExamplePointCloudResult", point_dtype=dtype_point_color_xyz, connect=True)
     # on_connect is called in the constructor if connect=True
