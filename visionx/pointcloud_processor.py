@@ -13,13 +13,10 @@ from typing import Tuple
 
 import numpy as np
 
-from armarx.ice_manager import register_object
-from armarx.ice_manager import get_proxy
-from armarx.ice_manager import using_topic
+from armarx import ice_manager
 
 
-from visionx.pointcloud_provider import PointCloudProvider
-from visionx.pointcloud_provider import dtype_from_point_type
+from visionx.pointcloud_provider import PointCloudProvider, dtype_from_point_type
 
 from visionx import PointCloudProcessorInterfacePrx
 from visionx import PointCloudProcessorInterface
@@ -106,16 +103,21 @@ class PointCloudReceiver(PointCloudProcessorInterface):
         """
         self.source_provider_topic.unsubscribe(self.proxy)
 
-    def on_connect(self):
+    def on_connect(self, wait_for_provider=True):
         """
         This function starts the connection with the source provider.
 
         After calling this function, wait_for_next_point_cloud() and get_latest_point_cloud() can be called.
         """
         logger.debug('Registering point cloud processor')
-        self.proxy = register_object(self, self.name)
-        self.source_provider_proxy = get_proxy(PointCloudProviderInterfacePrx, self.source_provider_name)
+        self.proxy = ice_manager.register_object(self, self.name)
+        if wait_for_provider:
+            self.source_provider_proxy = ice_manager.wait_for_proxy(
+                PointCloudProviderInterfacePrx, self.source_provider_name)
+        else:
+            self.source_provider_proxy = ice_manager.get_proxy(
+                PointCloudProviderInterfacePrx, self.source_provider_name)
         self.source_format = self.source_provider_proxy.getPointCloudFormat()
 
-        self.source_provider_topic = using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
+        self.source_provider_topic = ice_manager.using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
 
