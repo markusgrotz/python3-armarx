@@ -84,8 +84,6 @@ def vis_sphere_mesh(
     :return:
         The sphere mesh.
     """
-    from matplotlib import cm
-    from matplotlib.colors import Normalize
     from armarx.math import spherical
     from armarx import arviz as viz
 
@@ -105,6 +103,9 @@ def vis_sphere_mesh(
         colors[:] = color
 
     else:
+        from matplotlib import cm
+        from matplotlib.colors import Normalize
+
         cmap: Callable
         if isinstance(cmap, str):
             cmap = cm.get_cmap(cmap)
