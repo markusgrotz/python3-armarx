@@ -4,7 +4,9 @@ import os.path
 
 import numpy as np
 
+from armarx.parser import ArmarXArgumentParser as ArgumentParser
 from armarx.ice_manager import is_alive
+
 from visionx.pointcloud_processor import PointCloudReceiver
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,7 @@ class PointCloudRecorder:
             self,
             output_directory: str,
             source_provider_name: str,
-            name = "PointCloudRecorder",
+            name="PointCloudRecorder",
             max_fps=30,
     ):
         self.output_directory = output_directory
@@ -37,7 +39,7 @@ class PointCloudRecorder:
 
         # Prepare output dir.
         self.directory = os.path.join(output_directory, str(self.t_start))
-        logger.info(f"Storing point clouds in '{self.directory}'.")
+        logger.info(f"Storing point clouds in '{os.path.abspath(self.directory)}'.")
         os.makedirs(self.directory, exist_ok=True)
 
     def disconnect(self):
@@ -68,10 +70,27 @@ class PointCloudRecorder:
 
 def main():
 
+    parser = ArgumentParser()
+    parser.add_argument(
+        "-o", "--output_dir", default=".",
+        help="The (base) output directory. A sub-directory with a timestamp will be created inside."
+    )
+    parser.add_argument(
+        "-p", "--provider_name", default="OpenNIPointCloudProvider",
+        help="Name of the input point cloud provider "
+             "(e.g. 'OpenNIPointCloudProvider', 'DynamicSimulationDepthImageProvider')."
+    )
+    parser.add_argument(
+        "-n", "--name", default="PointCloudRecorder",
+        help="Name of the created ice object."
+    )
+
+    args = parser.parse_args()
+
     recorder = PointCloudRecorder(
-        output_directory=os.path.expandvars("$HOME/recorded-point-clouds"),
-        # source_provider_name="OpenNIPointCloudProvider",
-        source_provider_name="DynamicSimulationDepthImageProvider",
+        output_directory=os.path.expandvars(args.output_dir),
+        source_provider_name=args.provider_name,
+        name=args.name,
     )
 
     try:

@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import List, Optional
 
 from armarx.ice_manager import is_alive
+from armarx.parser import ArmarXArgumentParser as ArgumentParser
+
 from visionx.pointcloud_provider import PointCloudProvider
 from visionx.pointcloud_provider import dtype_point_color_xyz
 
@@ -108,9 +110,21 @@ class PointCloudReplayer:
 
 
 def main():
+    parser = ArgumentParser()
+    parser.add_argument(
+        "-i", "--input_dir",
+        help="The input directory containing *.npy files of point clouds."
+    )
+    parser.add_argument(
+        "-n", "--name", default="PointCloudReplayer",
+        help="Name of the created ice object and point cloud provider."
+    )
+
+    args = parser.parse_args()
 
     replayer = PointCloudReplayer(
-        input_directory=os.path.expandvars("$HOME/recorded-point-clouds/2022-01-27 18:57:33.987930"),
+        input_directory=os.path.expandvars(args.input_dir),
+        name=args.name,
     )
 
     print(f"Start replay of {len(replayer.files)} point clouds ...")
