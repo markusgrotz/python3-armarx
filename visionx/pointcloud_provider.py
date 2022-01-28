@@ -132,6 +132,24 @@ def rgb_to_uint32_array(rgba_array: np.ndarray) -> np.ndarray:
     return rgba_array.view(color_dtype)
 
 
+def crop_by_position(
+        pc: np.ndarray,
+        crop_min: Tuple[float, float, float],
+        crop_max: Tuple[float, float, float],
+) -> np.ndarray:
+    from functools import reduce
+
+    masks = [pc["position"][:, i] >= threshold for i, threshold in enumerate(crop_min)
+             if threshold is not None]
+    masks += [pc["position"][:, i] <= threshold for i, threshold in enumerate(crop_max)
+              if threshold is not None]
+
+    if len(masks) > 0:
+        mask = reduce(np.logical_and, masks[1:], masks[0])
+        return pc[mask]
+    else:
+        return pc
+
 
 class PointCloudProvider(PointCloudProviderInterface):
     """
