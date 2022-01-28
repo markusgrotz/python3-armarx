@@ -1,29 +1,23 @@
 """
-This module provides functionality for receiving and providing point clouds in ArmarX.
+This module provides functionality for receiving point clouds in ArmarX.
 
 Classes:
-- PointCloudProvider: Can provide point clouds as numpy arrays.
 - PointCloudReceiver: Can receive point clouds as numpy arrays.
 """
 
 import logging
 import threading
 
-from typing import Tuple
-
 import numpy as np
+
+from typing import Tuple
 
 from armarx import ice_manager
 
-
-from visionx.pointcloud_provider import PointCloudProvider, dtype_from_point_type
-
-from visionx import PointCloudProcessorInterfacePrx
-from visionx import PointCloudProcessorInterface
-from visionx import PointCloudProviderInterfacePrx
-from visionx import PointCloudProviderInterface
-from visionx import MetaPointCloudFormat
-from visionx import PointContentType
+from visionx.pointclouds import dtype_from_point_type
+from visionx.pointclouds import PointCloudProcessorInterface
+from visionx.pointclouds import PointCloudProviderInterfacePrx
+from visionx.pointclouds import MetaPointCloudFormat
 
 
 logger = logging.getLogger(__name__)
