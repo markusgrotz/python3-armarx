@@ -52,11 +52,11 @@ class PointCloudReplayer:
 
     def _init_files(self):
         self.files = sorted(glob.glob(os.path.join(self.input_directory, "*.npy")))
-        print(f"Found {len(self.files)} files.")
+        logger.info(f"Found {len(self.files)} files.")
 
         self.i = 0
         self.pc: np.ndarray = np.load(self.files[self.i])
-        print(f"Got shape {self.pc.shape}, dtype {self.pc.dtype}, first point: {self.pc[0]}")
+        logger.info(f"Got shape {self.pc.shape}, dtype {self.pc.dtype}, first point: {self.pc[0]}")
 
     def _init_provider(self):
         self.pc_provider = PointCloudProvider(
@@ -70,12 +70,12 @@ class PointCloudReplayer:
 
         # Prepare the next point cloud.
         if self.i == len(self.files) and not self.loop_back:
-            print(f"Finished replay.")
+            logger.info(f"Finished replay.")
             return False
 
         self.i = (self.i + 1) % len(self.files)
         if self.i == 0:
-            print(f"Loop back replay after {len(self.files)} point clouds.")
+            logger.info(f"Loop back replay after {len(self.files)} point clouds.")
             self.t_start = now
 
         # Load next point cloud.
@@ -127,7 +127,7 @@ def main():
         name=args.name,
     )
 
-    print(f"Start replay of {len(replayer.files)} point clouds ...")
+    logger.info(f"Start replay of {len(replayer.files)} point clouds ...")
     try:
         while is_alive():
             if not replayer.play_once():
