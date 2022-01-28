@@ -36,6 +36,30 @@ dtype_point_xyz_color_label = np.dtype([('position', np.float32, (3,)), ('color'
 dtype_point_xyz_intensity = np.dtype([('position', np.float32, (3,)), ('intensity', np.float32)])
 
 
+# Color as RGBA
+dtype_point_rgba_xyz = np.dtype([
+    ('r', np.uint8), ('g', np.uint8), ('b', np.uint8), ('a', np.uint8),
+    ('position', np.float32, (3,))
+])
+dtype_point_rgba_normal_xyz = np.dtype([
+    ('r', np.uint8), ('g', np.uint8), ('b', np.uint8), ('a', np.uint8),
+    ('normal', np.float32, (3,)), ('position', np.float32, (3,))
+])
+dtype_point_xyz_rgba_label = np.dtype([
+    ('position', np.float32, (3,)),
+    ('r', np.uint8), ('g', np.uint8), ('b', np.uint8), ('a', np.uint8),
+    ('label', np.int32)
+])
+
+
+dtype_color_to_rgba_dict = {
+    dtype_point_color_xyz: dtype_point_rgba_xyz,
+    dtype_point_color_normal_xyz: dtype_point_rgba_normal_xyz,
+    dtype_point_xyz_color_label: dtype_point_xyz_rgba_label,
+}
+dtype_rgba_to_color_dict = {v: k for k, v in dtype_color_to_rgba_dict.items()}
+
+
 def dtype_from_point_type(point_type: PointContentType):
     if point_type == PointContentType.ePoints:
         return dtype_point_xyz
@@ -96,6 +120,16 @@ def uint32_to_rgb(color: int) -> Tuple[int, int, int]:
     color //= 256
     b = color % 256
     return r, g, b
+
+
+def uint32_to_rgb_array(color_array: np.ndarray) -> np.ndarray:
+    rgba_dtype = dtype_color_to_rgba_dict[color_array.dtype]
+    return color_array.view(rgba_dtype)
+
+
+def rgb_to_uint32_array(rgba_array: np.ndarray) -> np.ndarray:
+    color_dtype = dtype_rgba_to_color_dict[rgba_array.dtype]
+    return rgba_array.view(color_dtype)
 
 
 
