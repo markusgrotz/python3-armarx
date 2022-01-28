@@ -49,6 +49,8 @@ def main():
                     index += 1
                     
             pc_provider.update_point_cloud(pc)
+            time.sleep(1e-3)
+
     except KeyboardInterrupt:
         logger.info('shutting down')
 
