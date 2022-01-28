@@ -2,7 +2,7 @@ import logging
 import numpy as np
 
 from armarx.ice_manager import is_alive
-from visionx.pointcloud_processor import PointCloudReceiver
+from visionx.pointcloud_receiver import PointCloudReceiver
 from visionx.pointcloud_provider import PointCloudProvider, dtype_point_color_xyz
 
 logger = logging.getLogger(__name__)

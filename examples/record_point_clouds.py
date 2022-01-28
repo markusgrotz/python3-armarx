@@ -9,7 +9,7 @@ import numpy as np
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
 from armarx.ice_manager import is_alive
 
-from visionx.pointcloud_processor import PointCloudReceiver
+from visionx.pointcloud_receiver import PointCloudReceiver
 
 logger = logging.getLogger(__name__)
 
