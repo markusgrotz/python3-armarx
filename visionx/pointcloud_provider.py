@@ -3,26 +3,24 @@ This module provides functionality for receiving and providing point clouds in A
 
 Classes:
 - PointCloudProvider: Can provide point clouds as numpy arrays.
-- PointCloudReceiver: Can receive point clouds as numpy arrays.
 """
 
 import logging
-import threading
 import time
 from typing import Tuple
 
 
 import numpy as np
 
-from armarx.ice_manager import register_object
-from armarx.ice_manager import get_proxy
-from armarx.ice_manager import get_topic
-from armarx.ice_manager import using_topic
+from armarx.ice_manager import get_topic, register_object
 
 from visionx import PointCloudProviderInterfacePrx
 from visionx import PointCloudProviderInterface
+from visionx import PointCloudProcessorInterfacePrx
+from visionx import PointCloudProcessorInterface
 from visionx import MetaPointCloudFormat
 from visionx import PointContentType
+
 
 
 logger = logging.getLogger(__name__)
@@ -100,90 +98,96 @@ def uint32_to_rgb(color: int) -> Tuple[int, int, int]:
     return r, g, b
 
 
-class PointCloudReceiver(PointCloudProcessorInterface):
+
+class PointCloudProvider(PointCloudProviderInterface):
     """
-    A point cloud receiver connects to a PointCloudProvider and makes reads new point cloud data if available.
+    A point cloud provider offers point clouds.
+
+    A new point cloud can be provided by update_point_cloud(). The point cloud should be created as
+    a numpy array with the respective structured data type that was specified in the constructor (point_dt).
+    You can use the create_point_cloud_array() method to create a compatible numpy array.
     """
 
     def __init__(self, name: str,
-                 source_provider_name: str = None,
+                 point_dtype: np.dtype = dtype_point_color_xyz,
+                 initial_capacity: int = 640*480,
                  connect: bool = False):
-        """
-        Constructs a point cloud reciever.
-
-        A point cloud receiver connects to a source point cloud provider.
-        It grants easy access to the source provider's point clouds as numpy arrays.
-
-        :param name: Name of the receiver component
-        :param source_provider_name: Name of the source point cloud provider (implements PointCloudProviderInterface)
-        :param connect: Indicates whether the constructor should automatically connect, i.e. call on_connect()
-        """
+        super().__init__()
         self.name = name
+        self.point_dtype = point_dtype
+        self.format = get_point_cloud_format(initial_capacity, point_dtype)
+        # The points array is pre-allocated.
+        # When update_point_cloud is called, the new data is copied into this array.
+        self.points = self.create_point_cloud_array(initial_capacity)
+
+        self.pc_topic = None
         self.proxy = None
-
-        self.cv = threading.Condition()
-        self.point_cloud_available = False
-
-        # Source provider is set in on_connect()
-        self.source_provider_name = source_provider_name
-        self.source_provider_proxy = None
-        self.source_provider_topic = None
-        self.source_format = None
 
         if connect:
             self.on_connect()
 
-    def reportPointCloudAvailable(self, provider_name: str, current=None):
-        with self.cv:
-            self.point_cloud_available = True
-            self.cv.notify()
-
-    def wait_for_next_point_cloud(self) -> Tuple[np.array, MetaPointCloudFormat]:
+    def create_point_cloud_array(self, shape):
         """
-        Wait for the next point cloud from the source provider to arrive, then return it.
+        Create a numpy array with compatible type to provide to update_point_cloud() later.
 
-        This function blocks until a new point cloud is provided.
-
-        :return: Tuple consisting of received point cloud data and format
+        :param shape: Shape of the array to be created.
+        :return: np.array with the desired shape and compatible dtype.
         """
-        with self.cv:
-            self.cv.wait_for(lambda: self.point_cloud_available)
-            return self.get_latest_point_cloud()
-
-    def get_latest_point_cloud(self) -> Tuple[np.array, MetaPointCloudFormat]:
-        """
-        Get the latest point cloud without waiting.
-
-        This function does not block but might return the same point cloud multiple times.
-
-        :return: Tuple consisting of received point cloud data and format
-        """
-        raw_point_cloud, pc_format = self.source_provider_proxy.getPointCloud()
-        # FIXME: Why can pc_format be not set here? It is an output parameter that should always be set.
-        if pc_format is None:
-            pc_format = self.source_format
-
-        point_dtype = dtype_from_point_type(pc_format.type)
-        point_cloud = np.frombuffer(raw_point_cloud, dtype=point_dtype)
-
-        return point_cloud, pc_format
-
-    def on_disconnect(self):
-        """
-        Call this function after you have finished receiving point clouds.
-        """
-        self.source_provider_topic.unsubscribe(self.proxy)
+        return np.zeros(shape, self.point_dtype)
 
     def on_connect(self):
         """
-        This function starts the connection with the source provider.
+        Register the point cloud provider in Ice.
 
-        After calling this function, wait_for_next_point_cloud() and get_latest_point_cloud() can be called.
+        Call this function before calling update_point_cloud().
         """
-        logger.debug('Registering point cloud processor')
+        logger.debug('registering point cloud provider %s', self.name)
         self.proxy = register_object(self, self.name)
-        self.source_provider_proxy = get_proxy(PointCloudProviderInterfacePrx, self.source_provider_name)
-        self.source_format = self.source_provider_proxy.getPointCloudFormat()
+        self.pc_topic = get_topic(PointCloudProcessorInterfacePrx, f'{self.name}.PointCloudListener')
 
-        self.source_provider_topic = using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
+    def on_disconnect(self):
+        """
+        Currently not implemented, but might be used to cleanup after the provider is no longer needed.
+        """
+        # Does nothing currently
+        pass
+
+    def update_point_cloud(self, points: np.ndarray, time_provided: int = 0):
+        """
+        Publish a new point cloud
+
+        :param points: np.array of points with compatible dtype.
+        :param time_provided: time stamp of the images. If zero the current time will be used
+        """
+        if points.dtype != self.point_dtype:
+            raise Exception("Array data type is not compatible!", points.dtype, self.point_dtype)
+
+        # Do we need to guard this with a mutex? Probably...
+        if points.shape[0] != self.points.shape[0]:
+            self.points = np.copy(points)
+        else:
+            np.copyto(self.points, points)
+        # format.size expects number of bytes (a point is np.float32 is 4 bytes)
+        number_of_points = points.shape[0]
+        new_size = number_of_points * points.dtype.itemsize
+
+        self.format.size = new_size
+        self.format.width = number_of_points
+        self.format.timeProvided = time_provided or int(time.time() * 1000.0 * 1000.0)
+
+        if self.pc_topic:
+            self.pc_topic.reportPointCloudAvailable(self.name)
+        else:
+            logger.warning('not connected. call on_connect() method')
+
+    def getPointCloudFormat(self, current=None):
+        logger.debug('getPointCloudFormat() %s', self.format)
+        return self.format
+
+    def getPointCloud(self, current=None):
+        logger.debug('getPointCloud() %s', self.format)
+        return self.points, self.format
+
+    def hasSharedMemorySupport(self, current=None):
+        return False
 
