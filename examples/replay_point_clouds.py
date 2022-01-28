@@ -74,6 +74,7 @@ class PointCloudReplayer:
         self.i = (self.i + 1) % len(self.files)
         if self.i == 0:
             print(f"Loop back replay after {len(self.files)} point clouds.")
+            self.t_start = now
 
         # Load next point cloud.
         self.pc = np.load(self.files[self.i])
