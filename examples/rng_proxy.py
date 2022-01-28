@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3#!/usr/bin/env python3
+
 
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
 from armarx import ice_manager
