@@ -6,7 +6,10 @@ from typing import Iterable, Union, List
 import armarx.arviz.load_slice
 from armarx.arviz import conversions as conv
 from armarx.math.transform import Transform
-from armarx.ice_conv.armarx_core.basic_vector_types import Vector3fConv
+
+from armarx import slice_loader
+slice_loader.load_armarx_slice("ArmarXCore", "core/BasicVectorTypes.ice")
+from armarx import Vector3f
 
 
 class ElementFlags(enum.IntFlag):
@@ -16,8 +19,6 @@ class ElementFlags(enum.IntFlag):
 
 
 class Element:
-
-    _vector3f_conv = Vector3fConv()
 
     def __init__(
             self,
@@ -261,7 +262,7 @@ class Element:
         else:
             assert self.scale.shape == (3,), f"Expected scale of shape {(3,)}, but got {self.scale.shape}."
             scale = self.scale
-        ice_data.scale = self._vector3f_conv.to_ice(scale)
+        ice_data.scale = Vector3f(*scale)
 
         ice_data.flags = int(self.flags)
 

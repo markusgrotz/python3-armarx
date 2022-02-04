@@ -6,6 +6,14 @@ from armarx.math.transform import Transform
 from armarx.arviz.conv import GlobalPoseConv
 import armarx.arviz.load_slice
 
+from armarx import slice_loader
+slice_loader.load_armarx_slice("ArmarXCore", "core/BasicVectorTypes.ice")
+from armarx import Vector3f
+
+
+
+
+
 
 class InteractionFeedbackType(enum.IntFlag):
     None_ = 0
@@ -26,8 +34,6 @@ class InteractionFeedback:
     ):
         self._data = data
 
-        from armarx.ice_conv.armarx_core.basic_vector_types import Vector3fConv
-        self.vector3f_conv = Vector3fConv()
         self.global_pose_conv = GlobalPoseConv()
 
 
@@ -89,8 +95,8 @@ class InteractionFeedback:
         """
         :return: The scale as [x, y, z] array.
         """
-        scale: armarx.Vector3f = self._data.scale
-        return self.vector3f_conv.from_ice(scale)
+        scale: Vector3f = self._data.scale
+        return Vector3f(*scale)
 
 
 class CommitResult:
