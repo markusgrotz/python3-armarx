@@ -58,7 +58,7 @@ def get_topic(cls: T, topic_name: str = None) -> T:
     :return: a casted topic proxy
     """
     topic_name = topic_name or get_ice_default_name(cls)
-    topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager'))
+    topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager -t -e 1.0'))
     topic = None
     try:
         topic = topic_manager.retrieve(topic_name)
@@ -77,7 +77,7 @@ def using_topic(proxy, topic_name: str = None):
     :param topic_name: the name of the topic to connect to
     :type topic_name: str
     """
-    topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager'))
+    topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager -t -e 1.0'))
     topic = None
     topic_name = topic_name or get_ice_default_name(cls)
     try:
