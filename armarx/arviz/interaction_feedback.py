@@ -4,16 +4,14 @@ import numpy as np
 from typing import List
 from armarx.math.transform import Transform
 from armarx.arviz.conv import GlobalPoseConv
-import armarx.arviz.load_slice
 
-from armarx import slice_loader
-slice_loader.load_armarx_slice("ArmarXCore", "core/BasicVectorTypes.ice")
+
 from armarx import Vector3f
-
-
-
-
-
+from armarx.viz.data import Element
+from armarx.viz.data import InteractionFeedback
+from armarx.viz.data import InteractionFeedbackType
+from armarx.viz.data import GlobalPose
+from armarx.viz.data import CommitResult
 
 class InteractionFeedbackType(enum.IntFlag):
     None_ = 0
@@ -30,7 +28,7 @@ class InteractionFeedback:
 
     def __init__(
             self,
-            data: armarx.viz.data.InteractionFeedback,
+            data: InteractionFeedback,
     ):
         self._data = data
 
@@ -42,7 +40,7 @@ class InteractionFeedback:
         # Mask out all the flags in the higher bits
         ice_type = self._data.type & 0x7
         Types = InteractionFeedbackType
-        IceTypes = armarx.viz.data.InteractionFeedbackType
+        IceTypes = InteractionFeedbackType
 
         type_dict = {
             IceTypes.NONE: Types.None_,
@@ -59,15 +57,15 @@ class InteractionFeedback:
 
     @property
     def is_transform_begin(self) -> bool:
-        return self._data.type & armarx.viz.data.InteractionFeedbackType.TRANSFORM_BEGIN_FLAG
+        return self._data.type & InteractionFeedbackType.TRANSFORM_BEGIN_FLAG
 
     @property
     def is_transform_during(self) -> bool:
-        return self._data.type & armarx.viz.data.InteractionFeedbackType.TRANSFORM_DURING_FLAG
+        return self._data.type & InteractionFeedbackType.TRANSFORM_DURING_FLAG
 
     @property
     def is_transform_end(self) -> bool:
-        return self._data.type & armarx.viz.data.InteractionFeedbackType.TRANSFORM_END_FLAG
+        return self._data.type & InteractionFeedbackType.TRANSFORM_END_FLAG
 
     @property
     def layer(self) -> str:
@@ -87,7 +85,7 @@ class InteractionFeedback:
 
     @property
     def transformation(self) -> Transform:
-        global_pose: armarx.viz.data.GlobalPose = self._data.transformation
+        global_pose: GlobalPose = self._data.transformation
         return self.global_pose_conv.from_ice(global_pose)
 
     @property
@@ -103,10 +101,10 @@ class CommitResult:
 
     def __init__(
             self,
-            data: armarx.viz.data.CommitResult,
+            data: CommitResult,
     ):
         self._data = data
-        ice_interactions: List[armarx.viz.data.InteractionFeedback] = self._data.interactions
+        ice_interactions: List[InteractionFeedback] = self._data.interactions
         self.interactions = [InteractionFeedback(data) for data in ice_interactions]
 
     @property
