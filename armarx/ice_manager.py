@@ -79,7 +79,7 @@ def using_topic(proxy, topic_name: str = None):
     """
     topic_manager = TopicManagerPrx.checkedCast(ice_communicator.stringToProxy('IceStorm/TopicManager'))
     topic = None
-    topic_name = topic_name or get_ice_default_name(cls)
+    topic_name = topic_name or get_ice_default_name(proxy.__class__)
     try:
         topic = topic_manager.retrieve(topic_name)
     except NoSuchTopic:
