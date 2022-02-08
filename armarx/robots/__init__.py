@@ -35,6 +35,7 @@ class Robot(ABC):
         self._text_state_listener = TextStateListener()
         self._text_state_listener.on_connect()
 
+        # self._init_default_names()
 
         self.navigator = PlatformNavigatorInterfacePrx.get_proxy()
         self.gaze = GazeControlInterfacePrx.get_proxy()
@@ -44,13 +45,20 @@ class Robot(ABC):
 
         self.profile_name = None
 
+    def what_can_you_see_now(self, state_parameters=None):
+        s = StatechartExecutor(self.profile_name, 'ScanLocationGroup', 'WhatCanYouSeeNow')
+        return s.run(state_parameters, True)
+
+    def handover(self, state_parameters=None):
+        s = StatechartExecutor(self.profile_name, 'HandOverGroup', 'ReceiveFromRobot')
+        return s.run(state_parameters, True)
 
     def say(self, text):
         self._text_state_listener.say(text) 
 
     def scan_scene(self):
         # self._fusion.reset()
-        for yaw in [-0.3, 0.0, 0.3]:
+        for yaw in [-0.3, 0.3]:
             self.gaze.setYaw(yaw)
             time.sleep(0.3)
         self.gaze.setYaw(0.0)
@@ -58,10 +66,30 @@ class Robot(ABC):
     def stop(self):
         self.emergency_stop.setEmergencyStopState(EmergencyStopState.eEmergencyStopActive)
 
+    def _init_default_names(self):
+        ax_loader = sys.meta_path[0]
+        sys.meta_path.insert(0, ArmarXVariantInfoFinder())
 
 
 
-
+#class AD(A6):
+#
+#    def __init__(self):
+#            super().__init__()
+#            self.profile_name = 'ArmarDEReal'
+#            self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
+#            self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
+#            self.kinematic_unit = ice_manager.get_proxy(KinematicUnitInterfacePrx, 'ArmarDEKinematicUnit')
+#            self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
+#            self.both_arms_joint_names = ["ArmL1_Cla1", "ArmL2_Sho1", "ArmL3_Sho2",
+#                        "ArmL4_Sho3", "ArmL5_Elb1", "ArmL6_Elb2", "ArmL7_Wri1",
+#                        "ArmL8_Wri2", "ArmR1_Cla1", "ArmR2_Sho1", "ArmR3_Sho2",
+#                        "ArmR4_Sho3", "ArmR5_Elb1", "ArmR6_Elb2", "ArmR7_Wri1",
+#                        "ArmR8_Wri2"]
+#
+#     
+        
+    
 class A6(Robot):
     """
     ARMAR-6
@@ -87,9 +115,8 @@ class A6(Robot):
                 "ArmR4_Sho3", "ArmR5_Elb1", "ArmR6_Elb2", "ArmR7_Wri1",
                 "ArmR8_Wri2"]
 
+        #self.poses = 
 
-    def grasp(self, object_name):
-        pass
 
     def open_hand(self, hand_name='left, right', shape_name=None):
         """
@@ -138,6 +165,17 @@ class A6(Robot):
                 "Neck_2_Pitch": 0.2, "TorsoJoint": 0.5}
         self.move_joints(joint_angles)
 
+
+    def save_pose(self, pose_name: str):
+        """
+        ..todo:: retrieve current pose and store under name
+        """
+        pass
+
+    def set_pose(self, pose_name: str):
+        """
+        """
+        pass
 
 
     def wait_for_joints(self, joint_angles: Dict[str, float], eps=0.1, timeout=5):
