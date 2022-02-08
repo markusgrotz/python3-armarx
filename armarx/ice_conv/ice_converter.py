@@ -82,8 +82,11 @@ class IceConverter(abc.ABC):
     @classmethod
     def get_dto(cls):
         if cls._dto is None:
-            # Dunno why yet, but we need to pass cls explicitly here ...
-            cls._dto = cls._import_dto(cls)
+            try:
+                # Dunno why yet, but sometimes we need to pass cls explicitly here ...
+                cls._dto = cls._import_dto(cls)
+            except TypeError:
+                cls._dto = cls._import_dto()
         return cls._dto
 
     @abc.abstractmethod
