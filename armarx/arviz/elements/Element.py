@@ -3,12 +3,11 @@ import numpy as np
 
 from typing import Iterable, Union, List
 
-import armarx.arviz.load_slice
-from armarx.arviz import conversions as conv
-from armarx.math.transform import Transform
+from armarx.viz.data import Element
 
-from armarx import slice_loader
-slice_loader.load_armarx_slice("ArmarXCore", "core/BasicVectorTypes.ice")
+from armarx.arviz import conversions
+
+from armarx.math.transform import Transform
 from armarx import Vector3f
 
 

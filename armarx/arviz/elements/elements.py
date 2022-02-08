@@ -3,10 +3,9 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-import armarx.arviz.load_slice
-import armarx.viz as viz
 
-from armarx.arviz import conversions as conv
+import armarx.viz as viz
+from armarx.arviz import conversions 
 from armarx.arviz.elements.Element import Element
 
 
@@ -145,7 +144,7 @@ class Box(Element):
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
-        ice_data.size = conv.vector3f_from_numpy(self.size)
+        ice_data.size = conversions.vector3f_from_numpy(self.size)
 
 
 class Cylinder(Element):
@@ -262,8 +261,8 @@ class Ellipsoid(Element):
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
-        ice_data.axisLengths = conv.vector3f_from_numpy(self.axis_lengths)
-        ice_data.curvature = conv.vector3f_from_numpy(self.curvature)
+        ice_data.axisLengths = conversions.vector3f_from_numpy(self.axis_lengths)
+        ice_data.curvature = conversions.vector3f_from_numpy(self.curvature)
 
 
 class Line(Element):
@@ -308,8 +307,8 @@ class Line(Element):
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
-        ice_data._from = conv.vector3f_from_numpy(self.start)
-        ice_data.to = conv.vector3f_from_numpy(self.end)
+        ice_data._from = conversions.vector3f_from_numpy(self.start)
+        ice_data.to = conversions.vector3f_from_numpy(self.end)
 
 
 class Pose(Element):
@@ -588,5 +587,5 @@ class Polygon(Element):
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
         ice_data.line_width = float(self.line_width)
-        ice_data.line_color = conv.to_viz_color(self.color)
-        ice_data.points = conv.vector3fs_from_numpy(self.points)
+        ice_data.line_color = conversions.to_viz_color(self.color)
+        ice_data.points = conversions.vector3fs_from_numpy(self.points)
