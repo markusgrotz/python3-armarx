@@ -1,4 +1,12 @@
+from typing import Dict
+
 from .basic_robot import Robot
+
+from armarx import ice_manager
+
+from armarx import HandUnitInterfacePrx
+from armarx import KinematicUnitInterfacePrx
+from armarx import KinematicUnitObserverInterfacePrx
 
 class A6(Robot):
     """
