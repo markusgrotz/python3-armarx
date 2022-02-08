@@ -2,8 +2,9 @@ from typing import List, Union, Tuple, Any
 
 import numpy as np
 
-from armarx import slice_loader
-slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+from armarx.viz.data import Element
+
+
 
 import armarx.viz as viz
 
