@@ -32,5 +32,6 @@ function. Default values for the proxy name will also be mapped.
 
 More examples can be found in the `examples` folder.
 
+## Documentation
 
-### Registering an object
+See `https://armarx.humanoids.kit.edu/python`
