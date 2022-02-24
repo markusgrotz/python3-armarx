@@ -5,8 +5,11 @@ Module containing all the logic to handle and import slice files
 import os
 import sys
 import logging
+import time
 
 import warnings
+
+import inspect
 
 from importlib.abc import MetaPathFinder
 import importlib
@@ -85,6 +88,7 @@ class ArmarXProxyFinder(MetaPathFinder):
         self.package_namespaces = {'armarx', 'visionx'}
         # all patched interfaces
         self.patched_definitions = set()
+        self.loaded_slice_files = set()
         # mapping between fullname of the proxies/topics and variant info
         self.mapping = slice_mapping
         for _, v in self.mapping.items():
@@ -99,7 +103,15 @@ class ArmarXProxyFinder(MetaPathFinder):
             return None
 
         variant_info = self.mapping.get(fullname)
+
+        loaded_slice = f'{variant_info.package_name}/{variant_info.include_path}'
+        if loaded_slice in self.loaded_slice_files:
+            return None
+
         load_armarx_slice(variant_info.package_name, variant_info.include_path)
+
+
+        self.loaded_slice_files.add(loaded_slice)
         self.patch_slice_definition(variant_info)
 
         for _, variant_info in self.mapping.items():
