@@ -2,7 +2,6 @@ import numpy as np
 import transforms3d as tf3d
 
 from armarx import RobotStateComponentInterfacePrx
-from armarx.robots import A6
 from armarx import FramedPositionBase
 from armarx import FramedPoseBase
 from armarx import FramedOrientationBase
