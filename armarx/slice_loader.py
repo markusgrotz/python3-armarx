@@ -58,7 +58,11 @@ def _load_armarx_slice(armarx_package_name: str, filename: str):
 
     for package_name in package_dependencies:
         interface_include_path = get_include_path(package_name)
-        include_paths.extend(interface_include_path)
+        if interface_include_path:
+            include_paths.extend(interface_include_path)
+        else:
+            logger.error('Include path for project %s is empty', package_name)
+            raise Exception(f'Invalid include path for project {package_name}')
 
     filename = os.path.join(include_paths[-1], armarx_package_name, 'interface', filename)
     filename = os.path.abspath(filename)
