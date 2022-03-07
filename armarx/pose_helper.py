@@ -25,7 +25,7 @@ def pose2mat(pose: FramedPoseBase) -> np.ndarray:
     transform_mat[1, 3] = position.y
     transform_mat[2, 3] = position.z
 
-    return transform_mat
+    return transform_mat.astype(np.float32)
 
 
 def convert_position_to_global(f: FramedPositionBase) -> np.ndarray:
