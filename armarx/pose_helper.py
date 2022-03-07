@@ -59,6 +59,8 @@ def convert_mat_to_root(pose: np.ndarray, frame: str) -> np.ndarray:
 
 def convert_pose_to_global(f: FramedPoseBase) -> np.ndarray:
     transform = pose2mat(f)
+    if f.frame == 'Global' or f.frame == 'armarx::Global':
+        return transform
     return convert_mat_to_global(transform, f.frame)
 
 def convert_pose_to_root(f: FramedPoseBase) -> np.ndarray:
