@@ -67,6 +67,25 @@ class ObjectInstanceReader(ObjectInstanceClientBase):
         super().__init__()
         self.reader = reader
 
+    def fetch_all_instances(self):
+        entities = []
+        memory = self.reader.query_latest(self.core_segment_id)
+
+
+        core_seg = memory.coreSegments[self.core_segment_id.core_segment_name]
+        for prov_seg in core_seg.providerSegments.values():
+            for entity in prov_seg.entities.values():
+                latest_snapshot = None
+                for snapshot in entity.history.values():
+                    if latest_snapshot is None:
+                        latest_snapshot = snapshot
+                    elif latest_snapshot.id.timestampMicroSeconds < snapshot.id.timestampMicroSeconds:
+                        latest_snapshot = snapshot
+
+                if latest_snapshot:
+                    entities.append(latest_snapshot.instances[0])
+
+        return entities
 
     def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
         """
