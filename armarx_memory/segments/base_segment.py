@@ -33,13 +33,7 @@ class BaseClient(ABC):
 
 
 
-
-
-class BaseReader(BaseClient, ABC):
-
-    def __init__(self, reader: Reader):
-        super().__init__()
-        self.reader = reader
+class BaseReader(Reader, BaseClient, ABC):
 
     def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
         """
@@ -75,11 +69,9 @@ class BaseReader(BaseClient, ABC):
     @classmethod
     def from_mns(cls, mns: MemoryNameSystem, wait=True):
         if wait:
-            mns_proxy = mns.wait_for_reader(cls.core_segment_id)
+            return cls(mns.wait_for_server(cls.core_segment_id).reading)
         else:
-            mns_proxy = mns.get_reader(cls.core_segment_id)
-        return cls(mns_proxy)
-
+            return cls(mns.resolve_server(cls.core_segment_id).reading)
 
 
 
@@ -89,7 +81,6 @@ class BaseWriter(BaseClient, ABC):
         super().__init__()
         self.writer = writer
 
-     
     def commit(self, entity_id: MemoryID, time_created_usec=None, **kwargs):
         from armarx_memory.aron.conversion import to_aron
         commit = Commit()
@@ -100,10 +91,7 @@ class BaseWriter(BaseClient, ABC):
     @classmethod
     def from_mns(cls, mns: MemoryNameSystem, wait=True):
         if wait:
-            mns_proxy = mns.wait_for_writer(cls.core_segment_id)
+            return cls(mns.wait_for_server(cls.core_segment_id).writing)
         else:
-            mns_proxy = mns.get_writer(cls.core_segment_id)
-        return cls(mns_proxy)
-
-
+            return cls(mns.resolve_server(cls.core_segment_id).writing)
 
