@@ -11,6 +11,20 @@ from armarx_memory.client import Commit
 from armarx_memory.client import Reader
 from armarx_memory.client import Writer
 
+class GenericDataClass:
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
+        from armarx_memory.aron.conversion import to_aron
+        return to_aron(self.__dict__)
+
+    @classmethod
+    def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
+        from armarx_memory.aron.conversion import from_aron
+        return cls(**from_aron(dto))
+
 
 class BaseClient(ABC):
 
@@ -24,13 +38,11 @@ class BaseClient(ABC):
     def default_entity_name(self):
         pass
 
-
     def make_entity_name(self, provider_name: str, entity_name: str = None):
         if not entity_name:
             entity_name = self.default_entity_name
         return (self.core_segment_id.with_provider_segment_name(provider_name)
                 .with_entity_name(entity_name))
-
 
 
 class BaseReader(Reader, BaseClient, ABC):
@@ -67,7 +79,9 @@ class BaseReader(Reader, BaseClient, ABC):
         return latest_instance
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True):
+    def from_mns(cls, mns: MemoryNameSystem=None, wait=True):
+        if not mns:
+            mns = MemoryNameSystem.get_mns()
         if wait:
             return cls(mns.wait_for_server(cls.core_segment_id).reading)
         else:
@@ -85,11 +99,13 @@ class BaseWriter(BaseClient, ABC):
         from armarx_memory.aron.conversion import to_aron
         commit = Commit()
         commit.add(entity_id=entity_id, time_created_usec=time_created_usec,
-                   instances_data=[to_aron(**kwargs)])
-        return self.commit(commit)
+                   instances_data=[to_aron(kwargs)])
+        return self.writer.commit(commit.to_ice())
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True):
+    def from_mns(cls, mns: MemoryNameSystem=None, wait=True):
+        if not mns:
+            mns = MemoryNameSystem.get_mns()
         if wait:
             return cls(mns.wait_for_server(cls.core_segment_id).writing)
         else:
