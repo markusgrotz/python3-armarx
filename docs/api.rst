@@ -26,14 +26,7 @@ API Reference for Perception
 ============================
 
 visionx\.image\_processor module
-----------------------=---------
-
-.. automodule:: visionx
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
+--------------------------------
 
 .. automodule:: visionx.image_processor
     :members:
@@ -41,7 +34,7 @@ visionx\.image\_processor module
     :show-inheritance:
 
 visionx\.image\_provider module
----------------------=---------
+-------------------------------
 
 .. automodule:: visionx.image_provider
     :members:
@@ -86,7 +79,7 @@ API Reference for Memory
     :members: 
     :inherited-members:
 
-.. automodule:: armarx_memory.segment
+.. automodule:: armarx_memory.segments
     :members: 
     :inherited-members:
 
