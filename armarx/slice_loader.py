@@ -114,6 +114,11 @@ class ArmarXProxyFinder(MetaPathFinder):
 
 
         self.loaded_slice_files.add(loaded_slice)
+
+        if variant_info.type == 'Class':
+            return None
+
+
         self.patch_slice_definition(variant_info)
 
         for _, variant_info in self.mapping.items():
