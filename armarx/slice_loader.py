@@ -1,7 +1,6 @@
 """
 Module containing all the logic to handle and import slice files
 """
-
 import os
 import sys
 import logging
@@ -22,7 +21,6 @@ from .ice_manager import get_proxy
 from .ice_manager import get_topic
 from .ice_manager import register_object
 from .ice_manager import wait_for_proxy
-
 
 from .cmake_helper import get_include_path
 from .cmake_helper import get_dependencies
