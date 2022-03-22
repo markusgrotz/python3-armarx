@@ -3,14 +3,12 @@ import numpy as np
 
 from typing import List
 from armarx.math.transform import Transform
-from armarx.arviz.conv import GlobalPoseConv
 
 
 from armarx import Vector3f
 from armarx.viz.data import Element
 from armarx.viz.data import InteractionFeedback
 from armarx.viz.data import InteractionFeedbackType
-from armarx.viz.data import GlobalPose
 from armarx.viz.data import CommitResult
 
 class InteractionFeedbackType(enum.IntFlag):
@@ -31,9 +29,6 @@ class InteractionFeedback:
             data: InteractionFeedback,
     ):
         self._data = data
-
-        self.global_pose_conv = GlobalPoseConv()
-
 
     @property
     def type(self) -> InteractionFeedbackType:
@@ -85,7 +80,9 @@ class InteractionFeedback:
 
     @property
     def transformation(self) -> Transform:
-        global_pose: GlobalPose = self._data.transformation
+
+        from armarx.arviz.conv import GlobalPoseConv
+        global_pose = self._data.transformation
         return self.global_pose_conv.from_ice(global_pose)
 
     @property
