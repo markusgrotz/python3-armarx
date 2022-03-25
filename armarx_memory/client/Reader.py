@@ -9,56 +9,6 @@ from armarx.armem import data as dto  # The ice type namespace.
 from armarx_memory.core import MemoryID
 
 
-def for_each_instance_data(
-        fn: ty.Callable[[MemoryID, ty.Dict[str, ty.Any]], ty.Any],
-        data: ty.Union[dto.Memory, dto.CoreSegment, dto.ProviderSegment,
-                       dto.Entity, dto.EntitySnapshot, dto.EntityInstance],
-) -> ty.List[ty.Any]:
-    """
-    Call `fn` on the data of each entity instance in `data`.
-
-    Iterate over a memory data structure and fall `fn` on the data of
-    each entity instance. The data is converted to python data structures
-    beforehand.
-
-    Example:
-
-    def process_instance_data(id: MemoryID, data: Dict):
-        print(id)
-        return id
-
-    memory = reader.query(...)
-    ids = reader.for_each_instances_data(process_instance_data, memory)
-
-    :param fn: The function to call on each instance data.
-    :param data: The data structure (e.g. the result of a query).
-    :return: The values returned by the calls to `fn`.
-    """
-    from armarx_memory.aron.conversion import from_aron
-
-    if isinstance(data, dto.EntityInstance):
-        pythonic_data: ty.Dict[str, ty.Any] = from_aron(data.data)
-        memory_id = MemoryID.from_ice(data.id)
-        return [fn(memory_id, pythonic_data)]
-
-    elif isinstance(data, dto.EntitySnapshot):
-        children = data.instances
-    elif isinstance(data, dto.Entity):
-        children = data.history.values()
-    elif isinstance(data, dto.ProviderSegment):
-        children = data.entities.values()
-    elif isinstance(data, dto.CoreSegment):
-        children = data.providerSegments.values()
-    elif isinstance(data, dto.Memory):
-        children = data.coreSegments.values()
-    else:
-        raise TypeError(f"Unexpected data of type {type(data)}: {data}")
-
-    results = []
-    for child in children:
-        results += for_each_instance_data(fn, child)
-    return results
-
 
 class Reader:
 
@@ -221,11 +171,57 @@ class Reader:
             fn: ty.Callable[[MemoryID, ty.Dict[str, ty.Any]], ty.Any],
             data: ty.Union[dto.Memory, dto.CoreSegment, dto.ProviderSegment,
                            dto.Entity, dto.EntitySnapshot, dto.EntityInstance],
+            discard_none=False,
     ) -> ty.List[ty.Any]:
-        """See for_each_instance_data()."""
-        return for_each_instance_data(fn, data)
+        """
+        Call `fn` on the data of each entity instance in `data`.
 
+        Iterate over a memory data structure and fall `fn` on the data of
+        each entity instance. The data is converted to python data structures
+        beforehand.
+
+        Example:
+
+        def process_instance_data(id: MemoryID, data: Dict):
+            print(id)
+            return id
+
+        memory = reader.query(...)
+        ids = reader.for_each_instances_data(process_instance_data, memory)
+
+        :param fn: The function to call on each instance data.
+        :param data: The data structure (e.g. the result of a query).
+        :param discard_none: If true, None return values are excluded from the result list.
+        :return: The values returned by the calls to `fn`.
+        """
+        from armarx_memory.aron.conversion import from_aron
+
+        if isinstance(data, dto.EntityInstance):
+            pythonic_data: ty.Dict[str, ty.Any] = from_aron(data.data)
+            memory_id = MemoryID.from_ice(data.id)
+            return [fn(memory_id, pythonic_data)]
+
+        elif isinstance(data, dto.EntitySnapshot):
+            children = data.instances
+        elif isinstance(data, dto.Entity):
+            children = data.history.values()
+        elif isinstance(data, dto.ProviderSegment):
+            children = data.entities.values()
+        elif isinstance(data, dto.CoreSegment):
+            children = data.providerSegments.values()
+        elif isinstance(data, dto.Memory):
+            children = data.coreSegments.values()
+        else:
+            raise TypeError(f"Unexpected data of type {type(data)}: {data}")
+
+        results = []
+        for child in children:
+            results += cls.for_each_instance_data(fn, child)
+
+        if discard_none:
+            results = list(filter(lambda r: r is not None, results))
+
+        return results
 
     def __bool__(self):
         return bool(self.server)
-
