@@ -1,11 +1,63 @@
-from typing import Dict, Any, List, Optional, Callable, Union
+import typing as ty
 
 from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/query.ice")
 
 from armarx import armem
+from armarx.armem import data as dto  # The ice type namespace.
 
 from armarx_memory.core import MemoryID
+
+
+def for_each_instance_data(
+        fn: ty.Callable[[MemoryID, ty.Dict[str, ty.Any]], ty.Any],
+        data: ty.Union[dto.Memory, dto.CoreSegment, dto.ProviderSegment,
+                       dto.Entity, dto.EntitySnapshot, dto.EntityInstance],
+) -> ty.List[ty.Any]:
+    """
+    Call `fn` on the data of each entity instance in `data`.
+
+    Iterate over a memory data structure and fall `fn` on the data of
+    each entity instance. The data is converted to python data structures
+    beforehand.
+
+    Example:
+
+    def process_instance_data(id: MemoryID, data: Dict):
+        print(id)
+        return id
+
+    memory = reader.query(...)
+    ids = reader.for_each_instances_data(process_instance_data, memory)
+
+    :param fn: The function to call on each instance data.
+    :param data: The data structure (e.g. the result of a query).
+    :return: The values returned by the calls to `fn`.
+    """
+    from armarx_memory.aron.conversion import from_aron
+
+    if isinstance(data, dto.EntityInstance):
+        pythonic_data: ty.Dict[str, ty.Any] = from_aron(data.data)
+        memory_id = MemoryID.from_ice(data.id)
+        return [fn(memory_id, pythonic_data)]
+
+    elif isinstance(data, dto.EntitySnapshot):
+        children = data.instances
+    elif isinstance(data, dto.Entity):
+        children = data.history.values()
+    elif isinstance(data, dto.ProviderSegment):
+        children = data.entities.values()
+    elif isinstance(data, dto.CoreSegment):
+        children = data.providerSegments.values()
+    elif isinstance(data, dto.Memory):
+        children = data.coreSegments.values()
+    else:
+        raise TypeError(f"Unexpected data of type {type(data)}: {data}")
+
+    results = []
+    for child in children:
+        results += for_each_instance_data(fn, child)
+    return results
 
 
 class Reader:
@@ -16,7 +68,7 @@ class Reader:
 
     def __init__(
             self,
-            server: Optional[ReadingMemoryServerPrx],
+            server: ty.Optional[ReadingMemoryServerPrx],
             ):
 
         self.server = server
@@ -24,7 +76,7 @@ class Reader:
 
     def query(
             self,
-            queries: List[armem.query.data.MemoryQuery],
+            queries: ty.List[armem.query.data.MemoryQuery],
             ) -> armem.data.Memory:
         """
         Perform a memory query. Return the result if successful,
@@ -43,10 +95,10 @@ class Reader:
 
     def query_snapshots(
             self,
-            ids: List[MemoryID],
-            ) -> Dict[MemoryID, armem.data.EntitySnapshot]:
+            ids: ty.List[MemoryID],
+            ) -> ty.Dict[MemoryID, armem.data.EntitySnapshot]:
         """
-        Query snapshots corresponding to list of memory IDs.
+        Query snapshots corresponding to ty.List of memory IDs.
 
         Each ID can refer to an entity, a snapshot or an instance. When not
         referring to an entity snapshot, the latest snapshot will be queried.
@@ -134,7 +186,7 @@ class Reader:
 
     def query_latest(
             self,
-            memory_id: Optional[MemoryID] = None,
+            memory_id: ty.Optional[MemoryID] = None,
             ) -> armem.data.Memory:
         if memory_id is None:
             memory_id = MemoryID()
@@ -163,6 +215,15 @@ class Reader:
         memory = self.query([q_memory])
         return memory
 
+    @classmethod
+    def for_each_instance_data(
+            cls,
+            fn: ty.Callable[[MemoryID, ty.Dict[str, ty.Any]], ty.Any],
+            data: ty.Union[dto.Memory, dto.CoreSegment, dto.ProviderSegment,
+                           dto.Entity, dto.EntitySnapshot, dto.EntityInstance],
+    ) -> ty.List[ty.Any]:
+        """See for_each_instance_data()."""
+        return for_each_instance_data(fn, data)
 
 
     def __bool__(self):
