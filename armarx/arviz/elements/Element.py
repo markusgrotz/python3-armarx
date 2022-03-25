@@ -3,6 +3,9 @@ import numpy as np
 
 from typing import Iterable, Union, List
 
+from armarx import slice_loader
+slice_loader.load_armarx_slice("RobotAPI", "ArViz.ice")
+
 from armarx.viz.data import Element
 
 from armarx.arviz import conversions
