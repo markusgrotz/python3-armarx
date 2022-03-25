@@ -7,6 +7,9 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
 from armarx import armem
 
 from armarx_memory.ice_conv import ice_twin
+from armarx_memory.core.time import DateTimeIceConverter
+
+date_time_conv = DateTimeIceConverter()
 
 
 class MemoryID(ice_twin.IceTwin):
@@ -207,7 +210,7 @@ class MemoryID(ice_twin.IceTwin):
         ice.coreSegmentName = self.core_segment_name
         ice.providerSegmentName = self.provider_segment_name
         ice.entityName = self.entity_name
-        ice.timestampMicroSeconds = self.timestamp_usec
+        ice.timestamp = date_time_conv.to_ice(self.timestamp_usec)
         ice.instanceIndex = self.instance_index
 
     def _set_from_ice(self, ice):
@@ -215,7 +218,7 @@ class MemoryID(ice_twin.IceTwin):
         self.core_segment_name = ice.coreSegmentName
         self.provider_segment_name = ice.providerSegmentName
         self.entity_name = ice.entityName
-        self.timestamp_usec = ice.timestampMicroSeconds
+        self.timestamp_usec = date_time_conv.from_ice(ice.timestamp)
         self.instance_index = ice.instanceIndex
 
 
