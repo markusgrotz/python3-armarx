@@ -1,7 +1,2 @@
-import time
-
 from .MemoryID import MemoryID
-
-
-def time_usec() -> int:
-    return int(time.time() * 1e6)
+from .time import time_usec, DateTimeIceConverter
