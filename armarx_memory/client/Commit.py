@@ -1,4 +1,5 @@
 from typing import List, Optional
+import time
 
 from armarx_memory.aron.conversion import Aron
 from armarx_memory.core import MemoryID, time_usec
@@ -45,22 +46,28 @@ class EntityUpdate(ice_twin.IceTwin):
         return armem.data.EntityUpdate
 
 
-    def _set_to_ice(self, dto: armem.data.Commit):
+    def _set_to_ice(self, dto: armem.data.EntityUpdate):
+        assert self.time_created_usec > 0, f"The time sent must be valid: {self.time_created_usec}"
+        assert self.time_sent_usec > 0 or self.time_sent_usec is None, f"The time sent must be valid: {self.time_created_usec}"
+
         dto.entityID = self.entity_id.to_ice()
         dto.instancesData = self.instances_data
-        dto.timeCreatedMicroSeconds = self.time_created_usec
+        dto.timeCreated.timeSinceEpoch.microSeconds = self.time_created_usec
 
         dto.confidence = self.confidence
-        dto.timeSentMicroSeconds = self.time_sent_usec if self.time_sent_usec is not None else -1
+        dto.timeSent.timeSinceEpoch.microSeconds = self.time_sent_usec if self.time_sent_usec is not None else time.time()
 
 
     def _set_from_ice(self, dto):
         self.entity_id.set_from_ice(dto.entityID)
         self.instances_data = dto.instancesData
-        self.time_created_usec = dto.timeCreatedMicroSeconds
+        self.time_created_usec = dto.timeCreated.timeSinceEpoch.microSeconds
 
         self.confidence = dto.confidence
-        self.time_sent_usec = dto.timeSentMicroSeconds
+        self.time_sent_usec = dto.timeSent.timeSinceEpoch.microSeconds
+
+        assert self.time_created_usec > 0, f"The time sent must be valid: {self.time_created_usec}"
+        assert self.time_sent_usec > 0 or self.time_sent_usec is None, f"The time sent must be valid: {self.time_created_usec}"
 
 
     def __repr__(self):

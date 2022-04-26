@@ -62,7 +62,8 @@ class Reader:
         qs_memory = []
         for snapshot_id in ids:
             if snapshot_id.timestamp_usec >= 0:
-                q_entity = self.qd.entity.Single(timestamp=snapshot_id.timestamp_usec)
+                ice_id = snapshot_id.to_ice()
+                q_entity = self.qd.entity.Single(timestamp=ice_id.timestamp)
             else:
                 q_entity = self.qd.entity.Single()  # Latest
 
@@ -77,15 +78,27 @@ class Reader:
         memory = self.query(qs_memory)
 
         snapshots = dict()
-        for id in ids:
-            entity = (memory.coreSegments[id.core_segment_name]
-                .providerSegments[id.provider_segment_name]
-                .entities[id.entity_name])
-            snapshots[id] = entity.history[
-                id.timestamp_usec
-                if id.timestamp_usec >= 0
-                else max(entity.history.keys())
-            ]
+        for snapshot_id in ids:
+            entity = (memory.coreSegments[snapshot_id.core_segment_name]
+                .providerSegments[snapshot_id.provider_segment_name]
+                .entities[snapshot_id.entity_name])
+
+            # TODO: Quick and dirty fix: Iterate over all history entries
+            # TODO: And fix that if timestamp is -2 you want to have the secondlast element
+            if snapshot_id.timestamp_usec >= 0:
+                for datetime, entry in entity.history.items():
+                    if snapshot_id.timestamp_usec == datetime.timeSinceEpoch.microSeconds:
+                        snapshots[snapshot_id] = entry
+                        break
+            else:
+                snapshots[snapshot_id] = entity.history[sorted(entity.history.keys(), key=lambda x: x.timeSinceEpoch.microSeconds)[-1]]
+
+            # snapshots[snapshot_id] = entity.history[
+            #    ice_id.timestamp
+            #    if snapshot_id.timestamp_usec >= 0
+            #    else max()
+            #]
+
         return snapshots
 
 

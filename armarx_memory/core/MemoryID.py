@@ -207,7 +207,7 @@ class MemoryID(ice_twin.IceTwin):
         ice.coreSegmentName = self.core_segment_name
         ice.providerSegmentName = self.provider_segment_name
         ice.entityName = self.entity_name
-        ice.timestampMicroSeconds = self.timestamp_usec
+        ice.timestamp.timeSinceEpoch.microSeconds = self.timestamp_usec
         ice.instanceIndex = self.instance_index
 
     def _set_from_ice(self, ice):
@@ -215,7 +215,7 @@ class MemoryID(ice_twin.IceTwin):
         self.core_segment_name = ice.coreSegmentName
         self.provider_segment_name = ice.providerSegmentName
         self.entity_name = ice.entityName
-        self.timestamp_usec = ice.timestampMicroSeconds
+        self.timestamp_usec = ice.timestamp.timeSinceEpoch.microSeconds
         self.instance_index = ice.instanceIndex
 
 

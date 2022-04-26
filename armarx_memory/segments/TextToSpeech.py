@@ -94,9 +94,9 @@ class TextToSpeechReader(TextToSpeechClientBase):
             for prov_seg in core_seg.providerSegments.values():
                 for entity in prov_seg.entities.values():
                     for snapshot in entity.history.values():
-                        if (latest_snapshot is None
-                            or latest_snapshot.id.timestamp_usec
-                                < latest_snapshot.id.timestamp_usec):
+                        if latest_snapshot is None:
+                            latest_snapshot = snapshot
+                        elif latest_snapshot.id.timestamp.timeSinceEpoch.microSeconds < snapshot.id.timestamp.timeSinceEpoch.microSeconds:
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
