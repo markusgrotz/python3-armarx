@@ -1,12 +1,14 @@
 """
 Module containing all the logic to handle and import slice files
 """
-
 import os
 import sys
 import logging
+import time
 
 import warnings
+
+import inspect
 
 from importlib.abc import MetaPathFinder
 import importlib
@@ -19,7 +21,6 @@ from .ice_manager import get_proxy
 from .ice_manager import get_topic
 from .ice_manager import register_object
 from .ice_manager import wait_for_proxy
-
 
 from .cmake_helper import get_include_path
 from .cmake_helper import get_dependencies
@@ -55,7 +56,11 @@ def _load_armarx_slice(armarx_package_name: str, filename: str):
 
     for package_name in package_dependencies:
         interface_include_path = get_include_path(package_name)
-        include_paths.extend(interface_include_path)
+        if interface_include_path:
+            include_paths.extend(interface_include_path)
+        else:
+            logger.error('Include path for project %s is empty', package_name)
+            raise Exception(f'Invalid include path for project {package_name}')
 
     filename = os.path.join(include_paths[-1], armarx_package_name, 'interface', filename)
     filename = os.path.abspath(filename)
@@ -85,6 +90,7 @@ class ArmarXProxyFinder(MetaPathFinder):
         self.package_namespaces = {'armarx', 'visionx'}
         # all patched interfaces
         self.patched_definitions = set()
+        self.loaded_slice_files = set()
         # mapping between fullname of the proxies/topics and variant info
         self.mapping = slice_mapping
         for _, v in self.mapping.items():
@@ -99,7 +105,20 @@ class ArmarXProxyFinder(MetaPathFinder):
             return None
 
         variant_info = self.mapping.get(fullname)
+
+        loaded_slice = f'{variant_info.package_name}/{variant_info.include_path}'
+        if loaded_slice in self.loaded_slice_files:
+            return None
+
         load_armarx_slice(variant_info.package_name, variant_info.include_path)
+
+
+        self.loaded_slice_files.add(loaded_slice)
+
+        if variant_info.type == 'Class':
+            return None
+
+
         self.patch_slice_definition(variant_info)
 
         for _, variant_info in self.mapping.items():

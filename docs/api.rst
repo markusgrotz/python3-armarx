@@ -22,21 +22,21 @@ If you are looking for information on a specific function
 
 
 
-API Reference for perception
+API Reference for Perception
 ============================
 
-armarx\.image\_processor module
--------------------------------
+visionx\.image\_processor module
+--------------------------------
 
-.. automodule:: armarx.image_processor
+.. automodule:: visionx.image_processor
     :members:
     :undoc-members:
     :show-inheritance:
 
-armarx\.image\_provider module
-------------------------------
+visionx\.image\_provider module
+-------------------------------
 
-.. automodule:: armarx.image_provider
+.. automodule:: visionx.image_provider
     :members:
     :undoc-members:
     :show-inheritance:
@@ -66,6 +66,24 @@ If you are looking for information on a specific function
 .. automodule:: armarx.arviz.elements.elements
     :members:
     :inherited-members:
+
+API Reference for Memory
+========================
+
+
+.. automodule:: armarx_memory
+    :members: 
+    :inherited-members:
+
+.. automodule:: armarx_memory.client
+    :members: 
+    :inherited-members:
+
+.. automodule:: armarx_memory.segments
+    :members: 
+    :inherited-members:
+
+
 
 
 

@@ -9,16 +9,16 @@ from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 
 class ObjectInstance(object):
 
-    def __init__(self, object_id: MemoryID, provider_id: MemoryID, pose: np.ndarray):
-        self.object_id = object_id
-        self.provider_id = provider_id
+    def __init__(self, classID: MemoryID, sourceID: MemoryID, pose: np.ndarray):
+        self.classID = classID
+        self.sourceID = sourceID
         self.pose = pose
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         from armarx_memory.aron.conversion import to_aron
         dto = to_aron({
-            "objectID": self.object_id,
-            "providerID": self.provider_id,
+            "classID": self.classID,
+            "sourceID": self.sourceID,
             "pose": self.pose,
         })
         return dto
@@ -53,8 +53,8 @@ class ObjectInstanceWriter(ObjectInstanceClientBase):
         return cls(mns.wait_for_writer(cls.core_segment_id)
                    if wait else mns.get_writer(cls.core_segment_id))
 
-    def commit(self, entity_id: MemoryID, object_id: MemoryID, provider_id: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
-        object_instance = ObjectInstance(object_id=object_id, provider_id=provider_id, pose=pose)
+    def commit(self, entity_id: MemoryID, classID: MemoryID, sourceID: MemoryID, pose: np.ndarray, time_created_usec=None, **kwargs):
+        object_instance = ObjectInstance(classID=classID, sourceID=sourceID, pose=pose)
         commit = Commit()
         commit.add(entity_id = entity_id, time_created_usec=time_created_usec,
                    instances_data=[object_instance.to_aron()], **kwargs)
@@ -67,6 +67,25 @@ class ObjectInstanceReader(ObjectInstanceClientBase):
         super().__init__()
         self.reader = reader
 
+    def fetch_all_instances(self):
+        entities = []
+        memory = self.reader.query_latest(self.core_segment_id)
+
+
+        core_seg = memory.coreSegments[self.core_segment_id.core_segment_name]
+        for prov_seg in core_seg.providerSegments.values():
+            for entity in prov_seg.entities.values():
+                latest_snapshot = None
+                for snapshot in entity.history.values():
+                    if latest_snapshot is None:
+                        latest_snapshot = snapshot
+                    elif latest_snapshot.id.timestampMicroSeconds < snapshot.id.timestampMicroSeconds:
+                        latest_snapshot = snapshot
+
+                if latest_snapshot:
+                    entities.append(latest_snapshot.instances[0])
+
+        return entities
 
     def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
         """

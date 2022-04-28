@@ -2,7 +2,6 @@ import numpy as np
 import transforms3d as tf3d
 
 from armarx import RobotStateComponentInterfacePrx
-from armarx.robots import A6
 from armarx import FramedPositionBase
 from armarx import FramedPoseBase
 from armarx import FramedOrientationBase
@@ -26,7 +25,7 @@ def pose2mat(pose: FramedPoseBase) -> np.ndarray:
     transform_mat[1, 3] = position.y
     transform_mat[2, 3] = position.z
 
-    return transform_mat
+    return transform_mat.astype(np.float32)
 
 
 def convert_position_to_global(f: FramedPositionBase) -> np.ndarray:
@@ -60,6 +59,8 @@ def convert_mat_to_root(pose: np.ndarray, frame: str) -> np.ndarray:
 
 def convert_pose_to_global(f: FramedPoseBase) -> np.ndarray:
     transform = pose2mat(f)
+    if f.frame == 'Global' or f.frame == 'armarx::Global':
+        return transform
     return convert_mat_to_global(transform, f.frame)
 
 def convert_pose_to_root(f: FramedPoseBase) -> np.ndarray:

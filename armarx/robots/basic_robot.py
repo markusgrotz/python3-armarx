@@ -1,0 +1,133 @@
+import sys
+import logging
+import time
+import json
+import os
+from typing import Dict
+
+from abc import ABC
+from abc import abstractmethod
+
+
+from armarx import PlatformNavigatorInterfacePrx
+from armarx import GazeControlInterfacePrx
+from armarx import ElasticFusionInterfacePrx
+
+from armarx import EmergencyStopMasterInterfacePrx
+from armarx import EmergencyStopState
+from armarx import KinematicUnitInterfacePrx
+from armarx import HandUnitInterfacePrx
+from armarx.speech import TextStateListener
+
+from armarx.statechart import StatechartExecutor
+
+logger = logging.getLogger(__name__)
+
+
+
+class Robot(ABC):
+    """
+    Convenience class
+    """
+
+    def __init__(self):
+        self._text_state_listener = TextStateListener()
+
+
+
+    def on_connect(self):
+        self._text_state_listener.on_connect()
+
+        self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
+        self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
+
+        self.navigator = PlatformNavigatorInterfacePrx.get_proxy()
+        self.gaze = GazeControlInterfacePrx.get_proxy()
+        #self._fusion = ElasticFusionInterfacePrx.get_proxy()
+
+        self.emergency_stop = EmergencyStopMasterInterfacePrx.get_proxy()
+
+    @property
+    @abstractmethod
+    def profile_name() -> str:
+        pass
+
+    def load_robot_config(self):
+        config_path = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(config_path, 'robot_config.json')
+        with open(config_path) as f:
+            robot_config = json.load(f)
+        return robot_config
+
+    def what_can_you_see_now(self, state_parameters=None):
+        statechart = StatechartExecutor(self.profile_name, 'ScanLocationGroup', 'WhatCanYouSeeNow')
+        return statechart.run(state_parameters, True)
+
+    def handover(self, state_parameters=None):
+        statechart = StatechartExecutor(self.profile_name, 'HandOverGroup', 'ReceiveFromRobot')
+        return statechart.run(state_parameters, True)
+
+    def say(self, text):
+        """
+        Verbalizes the given text.  SSML markup is supported
+        For exmaple, to verbalize in a different language use
+
+        .. highlight:: python
+        .. code-block:: python
+
+            robot = Robot()
+            robot.say('<speak><voice language="de-de">Hallo Welt</voice></speak>')
+
+        ..see:: armarx.speech.TextStateListener.say()
+        """
+        self._text_state_listener.say(text)
+
+    def scan_scene(self):
+        # self._fusion.reset()
+        for yaw in [-0.3, 0.3]:
+            self.gaze.setYaw(yaw)
+            time.sleep(0.3)
+        self.gaze.setYaw(0.0)
+
+    def stop(self):
+        """
+        Sets the soft emergency stop flag
+
+        If supported by the robot then now motor commands are sent to the
+        hardware
+        """
+        self.emergency_stop.setEmergencyStopState(EmergencyStopState.eEmergencyStopActive)
+
+
+    def open_hand(self, hand_name='left, right', shape_name=None):
+        """
+        Opens a hand or both hands
+
+        :param hand_name: the name of the hand
+        :param shape_name: the name of the hand shape
+        """
+        shape_name = shape_name or 'Open'
+        if 'left' in hand_name:
+            self.left_hand.setShape(shape_name)
+        if 'right' in hand_name:
+            self.right_hand.setShape(shape_name)
+        if 'both' in hand_name:
+            self.left_hand.setShape(shape_name)
+            self.right_hand.setShape(shape_name)
+
+    def close_hand(self, hand_name='left, right', shape_name=None):
+        """
+        Closes a hand or both hands
+
+        :param hand_name: the name of the hand
+        :param shape_name: the name of the hand shape
+        """
+        shape_name = shape_name or 'Close'
+        if 'left' in hand_name:
+            self.left_hand.setShape(shape_name)
+        if 'right' in hand_name:
+            self.right_hand.setShape(shape_name)
+        if 'both' in hand_name:
+            self.left_hand.setShape(shape_name)
+            self.right_hand.setShape(shape_name)
+

@@ -1,66 +1,12 @@
-import sys
-import logging
-import threading
 import time
 from typing import Dict
 
-from abc import ABC
-
-from armarx import ice_manager
+from .basic_robot import Robot
 
 from armarx import KinematicUnitInterfacePrx
-from armarx import KinematicUnitObserverInterfacePrx
+#from armarx import KinematicUnitObserverInterfacePrx
+
 from armarx import ControlMode
-from armarx import HandUnitInterfacePrx
-
-from armarx import PlatformNavigatorInterfacePrx
-from armarx import GazeControlInterfacePrx
-from armarx import ElasticFusionInterfacePrx
-
-from armarx import EmergencyStopMasterInterfacePrx
-from armarx import EmergencyStopState
-from armarx.speech import TextStateListener
-
-from armarx.statechart import StatechartExecutor
-
-logger = logging.getLogger(__name__)
-
-
-class Robot(ABC):
-    """
-    Convenience class 
-    """
-
-    def __init__(self):
-        self._text_state_listener = TextStateListener()
-        self._text_state_listener.on_connect()
-
-
-        self.navigator = PlatformNavigatorInterfacePrx.get_proxy()
-        self.gaze = GazeControlInterfacePrx.get_proxy()
-        #self._fusion = ElasticFusionInterfacePrx.get_proxy()
-
-        self.emergency_stop = EmergencyStopMasterInterfacePrx.get_proxy()
-
-        self.profile_name = None
-
-
-    def say(self, text):
-        self._text_state_listener.say(text) 
-
-    def scan_scene(self):
-        # self._fusion.reset()
-        for yaw in [-0.3, 0.0, 0.3]:
-            self.gaze.setYaw(yaw)
-            time.sleep(0.3)
-        self.gaze.setYaw(0.0)
-
-    def stop(self):
-        self.emergency_stop.setEmergencyStopState(EmergencyStopState.eEmergencyStopActive)
-
-
-
-
 
 class A6(Robot):
     """
@@ -71,57 +17,28 @@ class A6(Robot):
 
         from armarx.robots import A6
         robot = A6()
-        robot.say('hello world')
+        robot.say('hello world') 
     """
+
+
+    profile_name = 'Armar6Real'
 
     def __init__(self):
         super().__init__()
-        self.profile_name = 'Armar6Real'
-        self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
-        self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
-        self.kinematic_unit = ice_manager.get_proxy(KinematicUnitInterfacePrx, 'Armar6KinematicUnit')
-        self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
         self.both_arms_joint_names = ["ArmL1_Cla1", "ArmL2_Sho1", "ArmL3_Sho2",
                 "ArmL4_Sho3", "ArmL5_Elb1", "ArmL6_Elb2", "ArmL7_Wri1",
                 "ArmL8_Wri2", "ArmR1_Cla1", "ArmR2_Sho1", "ArmR3_Sho2",
                 "ArmR4_Sho3", "ArmR5_Elb1", "ArmR6_Elb2", "ArmR7_Wri1",
                 "ArmR8_Wri2"]
+        self.on_connect()
 
+        #self.poses = 
 
-    def grasp(self, object_name):
-        pass
+    def on_connect(self):
+        super().on_connect()
+        self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy('Armar6KinematicUnit')
+        #self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
 
-    def open_hand(self, hand_name='left, right', shape_name=None):
-        """
-        Opens a hand or both hands
-
-        :param hand_name: the name of the hand
-        :param shape_name: the name of the hand shape
-        """
-        shape_name = shape_name or 'Open'
-        if 'left' in hand_name:
-            self.left_hand.setShape(shape_name)
-        if 'right' in hand_name:
-            self.right_hand.setShape(shape_name)
-        if 'both' in hand_name:
-            self.left_hand.setShape(shape_name)
-            self.right_hand.setShape(shape_name)
-
-    def close_hand(self, hand_name='left, right', shape_name=None):
-        """
-        Closes a hand or both hands
-
-        :param hand_name: the name of the hand
-        :param shape_name: the name of the hand shape
-        """
-        shape_name = shape_name or 'Close'
-        if 'left' in hand_name:
-            self.left_hand.setShape(shape_name)
-        if 'right' in hand_name:
-            self.right_hand.setShape(shape_name)
-        if 'both' in hand_name:
-            self.left_hand.setShape(shape_name)
-            self.right_hand.setShape(shape_name)
 
 
     def init_pose(self):
@@ -138,6 +55,17 @@ class A6(Robot):
                 "Neck_2_Pitch": 0.2, "TorsoJoint": 0.5}
         self.move_joints(joint_angles)
 
+
+    def save_pose(self, pose_name: str):
+        """
+        ..todo:: retrieve current pose and store under name
+        """
+        pass
+
+    def set_pose(self, pose_name: str):
+        """
+        """
+        pass
 
 
     def wait_for_joints(self, joint_angles: Dict[str, float], eps=0.1, timeout=5):

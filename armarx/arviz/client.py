@@ -7,7 +7,7 @@ from armarx import ice_manager
 from armarx.arviz.layer import Layer
 from armarx.arviz.stage import Stage
 from armarx.arviz.interaction_feedback import CommitResult
-import armarx.arviz.load_slice
+from armarx.viz import StorageInterfacePrx
 import armarx.viz as viz
 
 logger = logging.getLogger(__name__)

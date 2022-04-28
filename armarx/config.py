@@ -51,7 +51,7 @@ def get_packages() -> str:
     """
     Lists all packages that are considered by the statecharts
     """
-    default_packages = 'ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision'
+    default_packages = 'ArmarXCore,ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision'
     return config.get('AutoCompletion', 'packages', fallback=default_packages)
 
 def get_ice_config_files() -> List[str]:
