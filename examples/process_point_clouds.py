@@ -13,8 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    receiver = PointCloudReceiver("ExamplePointCloudReceiver", source_provider_name="OpenNIPointCloudProvider")
-    receiver.on_connect(wait_for_provider=True)
+    receiver = PointCloudReceiver(
+        "ExamplePointCloudReceiver",
+        source_provider_name="OpenNIPointCloudProvider",
+        wait_for_provider=True,
+    )
+    receiver.on_connect()
 
     result_provider = PointCloudProvider("ExamplePointCloudResult", point_dtype=dtype_point_color_xyz, connect=True)
     # on_connect is called in the constructor if connect=True
