@@ -149,6 +149,12 @@ def make_pcd_header(
     point_cloud: np.ndarray,
     binary=True,
 ) -> List[str]:
+    """
+    Construct lines of a PCD-compatible header.
+    :param point_cloud: A point cloud with structured dtype.
+    :param binary: Whether point data is stored in binary (True) or ascii (False).
+    :return: The lines of the header. If binary, the header is encoded to bytes.
+    """
 
     lines = [
         "VERSION 0.7",
@@ -227,7 +233,7 @@ def store_point_cloud(
         point_cloud: np.ndarray,
 ):
     """
-    Save the point cloud in the PCD format [1].
+    Save the point cloud in the binary PCD format [1].
 
     [1] https://pcl.readthedocs.io/projects/tutorials/en/latest/pcd_file_format.html
 
@@ -253,6 +259,15 @@ def store_point_cloud(
 def load_point_cloud(
         filepath: str,
 ) -> np.ndarray:
+    """
+    Load a point cloud in the binary PCD format [1].
+
+    [1] https://pcl.readthedocs.io/projects/tutorials/en/latest/pcd_file_format.html
+
+    :param filepath: The path to the PCD file.
+    :return: The point cloud with a structured dtype.
+    """
+
     with open(filepath, "rb") as file:
         content = file.read()
 
