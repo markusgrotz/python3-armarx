@@ -293,6 +293,8 @@ def load_point_cloud(
     dtype = np.dtype(dtype_entries)
 
     array = np.frombuffer(data, dtype=dtype)
+
+    if height > 1:
+        array = array.reshape((width, height))
+
     return array
-
-
