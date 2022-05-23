@@ -28,9 +28,13 @@ class PointCloudReceiver(PointCloudProcessorInterface):
     A point cloud receiver connects to a PointCloudProvider and makes reads new point cloud data if available.
     """
 
-    def __init__(self, name: str,
-                 source_provider_name: str = None,
-                 connect: bool = False):
+    def __init__(
+            self,
+            name: str,
+            source_provider_name: str = None,
+            connect: bool = False,
+            wait_for_provider=True,
+    ):
         """
         Constructs a point cloud reciever.
 
@@ -52,6 +56,8 @@ class PointCloudReceiver(PointCloudProcessorInterface):
         self.source_provider_proxy = None
         self.source_provider_topic = None
         self.source_format = None
+
+        self._wait_for_provider = wait_for_provider
 
         if connect:
             self.on_connect()
@@ -97,7 +103,7 @@ class PointCloudReceiver(PointCloudProcessorInterface):
         """
         self.source_provider_topic.unsubscribe(self.proxy)
 
-    def on_connect(self, wait_for_provider=True):
+    def on_connect(self):
         """
         This function starts the connection with the source provider.
 
@@ -105,7 +111,7 @@ class PointCloudReceiver(PointCloudProcessorInterface):
         """
         logger.debug('Registering point cloud processor')
         self.proxy = ice_manager.register_object(self, self.name)
-        if wait_for_provider:
+        if self._wait_for_provider:
             self.source_provider_proxy = ice_manager.wait_for_proxy(
                 PointCloudProviderInterfacePrx, self.source_provider_name)
         else:
