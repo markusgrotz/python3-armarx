@@ -9,6 +9,7 @@ import numpy as np
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
 from armarx.ice_manager import is_alive
 
+from visionx.pointclouds import store_point_cloud
 from visionx.pointcloud_receiver import PointCloudReceiver
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ class PointCloudRecorder:
         filename = f"pointcloud_{now - self.t_start}.npy"
         filepath = os.path.join(self.directory, filename)
 
-        np.save(filepath, new_pc)
+        store_point_cloud(filepath, new_pc)
         self.count += 1
 
         print_step = 10 ** max(1, int(np.log10(self.count)))
