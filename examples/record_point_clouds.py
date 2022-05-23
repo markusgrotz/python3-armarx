@@ -29,9 +29,9 @@ class PointCloudRecorder:
         self.max_fps = max_fps
 
         # Init receiver.
-        self.receiver = PointCloudReceiver(name=name, source_provider_name=source_provider_name)
+        self.receiver = PointCloudReceiver(name=name, source_provider_name=source_provider_name, wait_for_provider=True)
         logger.info(f"Wait for point cloud provider '{self.receiver.source_provider_name}' ...")
-        self.receiver.on_connect(wait_for_provider=True)
+        self.receiver.on_connect()
 
 
         # Prepare replay.
