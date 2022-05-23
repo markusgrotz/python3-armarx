@@ -5,7 +5,7 @@ Classes:
 - PointCloudProvider: Can provide point clouds as numpy arrays.
 """
 
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 
@@ -142,4 +142,120 @@ def crop_by_position(
         return pc[mask]
     else:
         return pc
+
+
+
+def make_pcd_header(
+    point_cloud: np.ndarray,
+    binary=True,
+) -> List[str]:
+
+    lines = [
+        "VERSION 0.7",
+    ]
+
+    fields = ["FIELDS"]
+    size = ["SIZE"]
+    types = ["TYPE"]
+    count = ["COUNT"]
+
+    for name, (dtype, byte_offset) in point_cloud.dtype.fields.items():
+        print(name, (dtype, byte_offset))
+
+        if name == "position":
+            assert dtype.shape == (3,), f"Expect position dtype to have shape (3,), but got {dtype.shape}."
+            assert dtype.base == np.float32, f"Expect position dtype base ot be float32, but got {dtype.base}."
+            fields.append("x y z")
+        elif name == "color":
+            assert dtype.shape == (), f"Expect color dtype to have shape (), but got {dtype.shape}."
+            assert dtype.base == np.uint32, f"Expect position dtype base ot be uint32, but got {dtype.base}."
+            fields.append("rgba")
+        else:
+            raise ValueError(f"Encountered unknown field '{name}' of dtype {dtype} in point cloud.")
+
+        dim_count = dtype.shape[0] if dtype.shape else 1
+
+        dim_size = dtype.base.itemsize
+        dim_type = None
+        if np.issubdtype(dtype.base, np.floating):
+            dim_type = "F"
+        elif np.issubdtype(dtype.base, np.integer):
+            if dtype.base.name.startswith("uint"):
+                dim_type = "U"
+            elif dtype.base.name.startswith("int"):
+                dim_type = "I"
+        if dim_type is None:
+            raise ValueError(f"Failed to interpret base {dtype.base} of dtype {dtype} as float, unsigned int or signed int.")
+
+        size.append(" ".join(map(str, [dim_size] * dim_count)))
+        types.append(" ".join(map(str, [dim_type] * dim_count)))
+        count.append(" ".join(map(str, [1] * dim_count)))
+
+    lines += [
+        " ".join(fields),
+        " ".join(size),
+        " ".join(types),
+        " ".join(count),
+    ]
+
+    if point_cloud.ndim == 2:
+        width, height = point_cloud.shape
+    else:
+        width = point_cloud.size
+        height = 1
+
+    lines += [
+        f"WIDTH {width}",
+        f"HEIGHT {height}",
+    ]
+
+    data_format = "binary" if binary else "ascii"
+    lines += [
+        "VIEWPOINT 0 0 0 1 0 0 0",
+        f"POINTS {width * height}",
+        f"DATA {data_format}",
+    ]
+
+    # Add new lines
+    lines = [f"{l}\n" for l in lines]
+    if binary:
+        lines = [l.encode() for l in lines]
+
+    return lines
+
+
+def save_point_cloud(
+        filepath: str,
+        point_cloud: np.ndarray,
+):
+    """
+    Save the point cloud in the PCD format [1].
+
+    [1] https://pcl.readthedocs.io/projects/tutorials/en/latest/pcd_file_format.html
+
+    :param filepath: The filepath, used as-is, without adding an extension.
+    :param point_cloud: The point cloud data with a structured dtype.
+    """
+    binary = True  # Non-binary storage is not implemented, yet.
+
+    header_lines = make_pcd_header(point_cloud, binary=binary)
+
+    mode = "wb" if binary else "w"
+    with open(filepath, mode) as file:
+        # Header
+        file.writelines(header_lines)
+
+        # Data
+        if binary:
+            point_cloud.flatten().view(np.ubyte).tofile(file)
+        else:
+            raise NotImplementedError("Storing point clouds in non-binary format is not implemented.")
+
+
+def load_point_cloud(
+        filepath: str,
+) -> np.ndarray:
+    
+    pc = np.load(filepath)
+    return pc
 
