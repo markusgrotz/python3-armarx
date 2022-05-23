@@ -160,8 +160,6 @@ def make_pcd_header(
     count = ["COUNT"]
 
     for name, (dtype, byte_offset) in point_cloud.dtype.fields.items():
-        print(name, (dtype, byte_offset))
-
         if name == "position":
             assert dtype.shape == (3,), f"Expect position dtype to have shape (3,), but got {dtype.shape}."
             assert dtype.base == np.float32, f"Expect position dtype base ot be float32, but got {dtype.base}."
@@ -224,7 +222,7 @@ def make_pcd_header(
     return lines
 
 
-def save_point_cloud(
+def store_point_cloud(
         filepath: str,
         point_cloud: np.ndarray,
 ):
@@ -255,7 +253,46 @@ def save_point_cloud(
 def load_point_cloud(
         filepath: str,
 ) -> np.ndarray:
-    
-    pc = np.load(filepath)
-    return pc
+    with open(filepath, "rb") as file:
+        content = file.read()
+
+    # Find end of header
+    last_line_of_header = content.find("DATA".encode())
+    end_of_header = content.find("\n".encode(), last_line_of_header)
+
+    header = content[:end_of_header]
+    data = content[end_of_header+1:]
+
+    header_lines: List[str] = header.decode().split("\n")
+    header_dict = {}
+    for line in header_lines:
+        key, value = line.split(" ", maxsplit=1)
+        header_dict[key] = value
+
+    known_fields = {
+        "rgba": ('color', np.uint32),
+        "x y z": ('position', np.float32, (3,)),
+    }
+
+    width, height = map(int, [header_dict["WIDTH"], header_dict["HEIGHT"]])
+    fields: str = header_dict["FIELDS"]
+
+    dtype_entries = []
+    while len(fields) > 0:
+        found = False
+        for field, dtype_entry in known_fields.items():
+            if fields.startswith(field):
+                found = True
+                # Remove entry.
+                fields = fields[len(field):].strip()
+                # Handle
+                dtype_entries.append(dtype_entry)
+
+        if not found:
+            raise ValueError("Failed to interpret fields '" + header_dict["FIELDS"] + "'.")
+    dtype = np.dtype(dtype_entries)
+
+    array = np.frombuffer(data, dtype=dtype)
+    return array
+
 
