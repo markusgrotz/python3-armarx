@@ -1,4 +1,5 @@
 from typing import List, Optional
+import time
 
 from armarx_memory.aron.conversion import Aron
 from armarx_memory.core import MemoryID, time_usec, DateTimeIceConverter
@@ -63,6 +64,9 @@ class EntityUpdate(ice_twin.IceTwin):
 
         self.confidence = dto.confidence
         self.time_sent_usec = date_time_conv.from_ice(dto.timeSent)
+
+        assert self.time_created_usec > 0, f"The time sent must be valid: {self.time_created_usec}"
+        assert self.time_sent_usec > 0 or self.time_sent_usec is None, f"The time sent must be valid: {self.time_created_usec}"
 
 
     def __repr__(self):
