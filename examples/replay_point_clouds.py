@@ -14,6 +14,7 @@ from typing import List, Optional
 from armarx.ice_manager import is_alive
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
 
+from visionx.pointclouds import load_point_cloud
 from visionx.pointcloud_provider import PointCloudProvider
 from visionx.pointcloud_provider import dtype_point_color_xyz
 
@@ -57,7 +58,7 @@ class PointCloudReplayer:
         logger.info(f"Found {len(self.files)} files.")
 
         self.i = 0
-        self.pc: np.ndarray = np.load(self.files[self.i])
+        self.pc = load_point_cloud(self.files[self.i])
         logger.info(f"Got shape {self.pc.shape}, dtype {self.pc.dtype}, first point: {self.pc[0]}")
 
     def _init_provider(self):
@@ -81,7 +82,7 @@ class PointCloudReplayer:
             self.t_start = now
 
         # Load next point cloud.
-        self.pc = np.load(self.files[self.i])
+        self.pc = load_point_cloud(self.files[self.i])
 
         # Timing: Wait for next time point.
 
