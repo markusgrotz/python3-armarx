@@ -27,7 +27,7 @@ class ObjectPose(IceTwin):
             object_pose_original_frame: str = "",
             robot_pose=None,
             local_oobb: Optional[Box] = None,
-            ):
+    ):
         self.provider_name = provider_name
         self.object_id = ObjectID() if object_id is None else object_id
 
@@ -101,7 +101,8 @@ class ObjectPose(IceTwin):
         dto.confidence = self.confidence
         dto.timestampMicroSeconds = self.timestamp_usec
 
-        if all([dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]):
+        if (dto.localOOBB is not None
+                and all([dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents])):
             dto.localOOBB = self.local_oobb.to_ice()
         else:
             dto.localOOBB = None
