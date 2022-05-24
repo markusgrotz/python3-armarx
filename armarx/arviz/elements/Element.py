@@ -136,8 +136,8 @@ class Element:
 
     @scale.setter
     def scale(self, value: Union[float, np.ndarray]):
-        if isinstance(value, float):
-            self._scale = np.array([value, value, value])
+        if isinstance(value, (float, int)):
+            self._scale = np.array([value, value, value], dtype=float)
         else:
             value = np.array(value)
             if not value.shape == (3,):
