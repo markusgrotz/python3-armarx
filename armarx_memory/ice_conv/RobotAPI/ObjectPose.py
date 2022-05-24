@@ -112,3 +112,5 @@ class ObjectPose(IceTwin):
             self.__pose_conv = PoseBaseConv()
         return self.__pose_conv
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} of {str(self.object_id)}>"

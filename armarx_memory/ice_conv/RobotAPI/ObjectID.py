@@ -53,8 +53,12 @@ class ObjectID(IceTwin):
         dto.className = self.class_name
         dto.instanceName = self.instance_name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{} dataset='{}' class_name='{}' instance_name='{}'>".format(
             self.__class__.__name__, self.dataset, self.class_name, self.instance_name)
 
-
+    def __str__(self) -> str:
+        items = [self.dataset, self.class_name]
+        if self.instance_name:
+            items.append(self.instance_name)
+        return "/".join(items)
