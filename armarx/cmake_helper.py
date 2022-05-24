@@ -38,7 +38,9 @@ def get_dependencies(package_name: str, include_self=False) -> List[str]:
     dependencies = get_package_information(package_name, 'SOURCE_PACKAGE_DEPENDENCIES:')
     dependencies = dependencies or []
     # manually add ArmarXCore
-    if not 'ArmarXCore' in dependencies:
+    if dependencies is None:
+        dependencies = []
+    if 'ArmarXCore' not in dependencies:
         dependencies.append('ArmarXCore')
     if include_self and is_armarx_package(package_name):
         dependencies.append(package_name)
