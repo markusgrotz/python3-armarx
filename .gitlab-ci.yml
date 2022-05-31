@@ -1,6 +1,6 @@
 # Global
 
- image: python:3.6
+image: python:3.6
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -26,6 +26,10 @@ before_script:
   - poetry config settings.virtualenvs.in-project true
   - poetry install -vv
 
+test:
+  script:
+    - python3 -m unittest
+
 pages:
   script:
     - pip install sphinx sphinx-rtd-theme
@@ -37,4 +41,3 @@ pages:
       - public
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
