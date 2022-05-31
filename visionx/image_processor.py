@@ -9,6 +9,8 @@ from typing import Tuple
 from typing import Any
 from typing import Union
 
+import numpy as np
+
 from armarx.ice_manager import using_topic
 from armarx.ice_manager import get_proxy
 from armarx.ice_manager import register_object
@@ -21,7 +23,9 @@ from visionx import ImageProcessorInterface
 
 from armarx import MetaInfoSizeBase
 
-import numpy as np
+from .shm_tools import path_to_shm
+from .shm_tools import read_images_shm
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,26 +57,29 @@ class ImageProcessor(ImageProcessorInterface, ABC):
         self.image_source = None
         self.result_image_provider = None
 
+        self.shm_path = None
+
 
     def reportImageAvailable(self, provider_name, current=None):
         with self.cv:
             self.image_available = True
             self.cv.notify()
 
-    def _process(self):
-        image_format = self.image_source.getImageFormat()
-        number_of_images = self.image_source.getNumberImages()
-        logger.debug('image format %s', image_format)
-        data_dimensions = (number_of_images, image_format.dimension.height,
-                           image_format.dimension.width, image_format.bytesPerPixel)
-        logger.debug('data dimensions %s', data_dimensions)
+    def _get_images_and_info(self):
+        if self.shm_path:
+            info = MetaInfoSizeBase() # self.image_source.getMetaInfo()
+            images = read_images_shm(self.shm_path, self.data_dimensions)
+        else:
+            image_buffer, info = self.image_source.getImagesAndMetaInfo()
+            images = np.frombuffer(image_buffer, dtype=np.uint8).reshape(self.data_dimensions)
+        return images, info
 
+    def _process(self):
         while not ice_communicator.isShutdown():
             with self.cv:
                 self.cv.wait_for(lambda: self.image_available)
 
-                image_buffer, info = self.image_source.getImagesAndMetaInfo()
-                input_images = np.frombuffer(image_buffer, dtype=np.uint8).reshape(data_dimensions)
+                input_images, info = self._get_images_and_info()
 
                 if hasattr(self, 'process_image') and callable(self.process_image):
                     warnings.warn('Replaced with process_image(images, info)', DeprecationWarning)
@@ -119,11 +126,18 @@ class ImageProcessor(ImageProcessorInterface, ABC):
         logger.debug('Registering image processor')
         proxy = register_object(self, self.__class__.__name__)
         self.image_source = get_proxy(ImageProviderInterfacePrx, self.provider_name)
+        self.shm_path = path_to_shm(self.provider_name)
 
-        d = self.image_source.getImageFormat().dimension
+        number_of_images = self.image_source.getNumberImages()
+        image_format = self.image_source.getImageFormat()
+        d = image_format.dimension
         if self.num_result_images is None:
             self.num_result_images = self.image_source.getNumberImages()
         self.result_image_provider = ImageProvider(f'{self.__class__.__name__}Result', self.num_result_images, d.width, d.height)
         self.result_image_provider.register()
+
+        self.data_dimensions = (number_of_images, image_format.dimension.height, image_format.dimension.width, image_format.bytesPerPixel)
+        logger.debug('data dimensions %s', self.data_dimensions)
+
         self._thread.start()
         self._image_listener_topic = using_topic(proxy, f'{self.provider_name}.ImageListener')
