@@ -47,7 +47,7 @@ class ObjectID(IceTwin):
         return self.resolve_filepath(filepath) if resolve else filepath
 
     def get_viz_kwargs(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
-        return dict(project=package, filename=self.get_filename(".xml"))
+        return dict(project=package, filename=self.get_filepath(".xml"))
 
     @classmethod
     def resolve_filepath(cls, filepath: str):
