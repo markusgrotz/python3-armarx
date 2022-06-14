@@ -22,7 +22,7 @@ def main():
 
     try:
         while is_alive():
-            random_images = np.random.random(result_image_provider.data_dimensions).astype('uint8') * 255.0
+            random_images = np.random.randint(0, 255, result_image_provider.data_dimensions, dtype=np.uint8)
             time_provided = time.time() * 1000.0 * 1000.0
             time.sleep(args.delay)
             result_image_provider.update_image(random_images, time_provided)
