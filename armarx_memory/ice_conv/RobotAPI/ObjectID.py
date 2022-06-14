@@ -12,6 +12,7 @@ class ObjectID(IceTwin):
     """
 
     DEFAULT_PRIOR_KNOWLEDGE_PACKAGE = "PriorKnowledgeData"
+    SEP = "/"
 
     def __init__(
             self,
@@ -22,20 +23,38 @@ class ObjectID(IceTwin):
         self.class_name = class_name
         self.instance_name = instance_name
 
+    @classmethod
+    def from_str(cls, id: str) -> "ObjectID":
+        return cls(*id.split(cls.SEP))
+
     def get_dir(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
-        return os.path.join(package, "object", self.dataset, self.class_name)
+        return os.path.join(package, "objects", self.dataset, self.class_name)
 
     def get_filename(self, extension: str, suffix=""):
         if not extension.startswith("."):
             extension = "." + extension
         return f"{self.class_name}{suffix}{extension}"
 
-    def get_filepath(self, extension: str, suffix="", package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
-        return os.path.join(self.get_dir(package=package),
-                            self.get_filename(extension=extension, suffix=suffix))
+    def get_filepath(
+            self,
+            extension: str,
+            suffix="",
+            package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE,
+            resolve=False,
+    ):
+        filepath = os.path.join(self.get_dir(package=package),
+                                self.get_filename(extension=extension, suffix=suffix))
+        return self.resolve_filepath(filepath) if resolve else filepath
 
     def get_viz_kwargs(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
         return dict(project=package, filename=self.get_filename(".xml"))
+
+    @classmethod
+    def resolve_filepath(cls, filepath: str):
+        from armarx import cmake_helper
+        package_name = filepath.split(os.path.sep, maxsplit=1)[0]
+        package_data_dir = cmake_helper.get_data_path(package_name)[0]
+        return os.path.join(package_data_dir, filepath)
 
     @classmethod
     def _get_ice_cls(cls):
@@ -61,4 +80,4 @@ class ObjectID(IceTwin):
         items = [self.dataset, self.class_name]
         if self.instance_name:
             items.append(self.instance_name)
-        return "/".join(items)
+        return self.SEP.join(items)
