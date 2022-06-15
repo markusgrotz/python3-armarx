@@ -11,6 +11,8 @@ import time
 import logging
 import random
 
+
+
 logger = logging.getLogger(__name__)
 
 class RNGProviderComponent(RNGProviderComponentInterface):
@@ -28,7 +30,7 @@ def main():
     parser = ArgumentParser(description='RNGProviderComponent')
     parser.parse_args()
 
-    ice_manager.register_object(RNGProviderComponent(), 'RNGProviderComponent')
+    ice_manager.register_object(RNGProviderComponent(), 'RNGProvider')
     ice_manager.wait_for_shutdown()
 
 if __name__ == '__main__':
