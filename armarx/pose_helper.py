@@ -17,6 +17,19 @@ from armarx import FramedPositionBase
 from armarx import FramedPoseBase
 from armarx import FramedOrientationBase
 
+from armarx import PoseBase
+from armarx import Vector3Base
+from armarx import QuaternionBase
+
+def mat2pose(pose: np.ndarray, frame: str=None, agent: str=None) -> FramedPoseBase:
+    q = tf3d.quaternions.mat2quat(pose[:3, :3])
+    q = QuaternionBase(*q)
+    v = Vector3Base(*pose[:3, 3])
+    if not frame:
+        return PoseBase(v, q)
+    else:
+        return FramedPoseBase(v, q, frame=frame, agent=agent)
+
 
 def pose2mat(pose: FramedPoseBase) -> np.ndarray:
     """
