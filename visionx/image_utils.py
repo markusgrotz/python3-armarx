@@ -1,6 +1,34 @@
 import numpy as np
 from visionx import ImageProviderInterfacePrx
 
+def visualize_pose(img: np.ndarray, pose: np.ndarray, K: np.ndarray) -> np.ndarray:
+    """
+    Draws a 6-D pose as coordinate system on a given 2D color image.
+
+    :param img: the input image
+    :param pose: the pose to visualize
+    :param K: the instric camera parameter
+    :returns: the input image with the visualized pose
+    """
+    import cv2
+    axis_length = 100
+    axis_thickness = 3
+    R = pose[:3, :3]
+    t = pose[:3, 3]
+    rot_vec, _ = cv2.Rodrigues(R)
+
+    points = np.identity(3) * 100
+    points = np.vstack([points, np.zeros((1,3))])
+
+    points = np.float32([[100, 0, 0], [0, 100, 0], [0, 0, 100], [0, 0, 0]]).reshape(-1, 3)
+                                                                             
+    axis_points, _ = cv2.projectPoints(points, rot_vec, t, K, (0, 0, 0, 0))
+    img = cv2.line(img, tuple(axis_points[3].ravel()), tuple(axis_points[0].ravel()), (255, 0, 0), 3)
+    img = cv2.line(img, tuple(axis_points[3].ravel()), tuple(axis_points[1].ravel()), (0, 255, 0), 3)
+    img = cv2.line(img, tuple(axis_points[3].ravel()), tuple(axis_points[2].ravel()), (0, 0, 255), 3)
+
+    return img
+
 
 def convert_armarx_to_depth(image: np.ndarray) -> np.ndarray:
     if image.dtype == np.uint8 and image.shape[-1] == 3:
