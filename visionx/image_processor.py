@@ -14,7 +14,7 @@ import numpy as np
 from armarx.ice_manager import using_topic
 from armarx.ice_manager import get_proxy
 from armarx.ice_manager import register_object
-from armarx.ice_manager import ice_communicator
+from armarx.ice_manager import is_alive
 
 from visionx.image_provider import ImageProvider
 
@@ -75,7 +75,7 @@ class ImageProcessor(ImageProcessorInterface, ABC):
         return images, info
 
     def _process(self):
-        while not ice_communicator.isShutdown():
+        while is_alive():
             with self.cv:
                 self.cv.wait_for(lambda: self.image_available)
 
