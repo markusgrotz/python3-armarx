@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Optional, Callable, Union
+from typing import Dict, List, Optional
 import logging
 
 import armarx
@@ -33,9 +33,6 @@ class ServerProxies:
 class MemoryNameSystem:
 
     cls_logger = logging.getLogger(__file__)
-
-    Callback = Callable[[MemoryID, List[MemoryID]], None]
-    UpdatedSnasphotIDs = List[Union[MemoryID, "armarx.armem.data.MemoryID"]]
 
     MemoryNameSystemPrx = "armarx.armem.mns.MemoryNameSystemInterfacePrx"
     MemoryServerPrx = "armarx.armem.server.MemoryInterfacePrx"
@@ -76,8 +73,6 @@ class MemoryNameSystem:
 
         self.mns = mns
         self.servers: Dict[str, ServerProxies] = {}
-
-        self.subscriptions: Dict[MemoryID, List["Callback"]] = {}
 
         self.logger = logger or self.cls_logger
 
@@ -214,48 +209,6 @@ class MemoryNameSystem:
 
 
     # ToDo: System-wide commits
-
-
-
-    # Subscription
-
-
-    def subscribe(self, subscription_id: MemoryID, callback: Callback):
-        """
-        Subscribe a memory ID in order to receive updates to it.
-        :param subscription_id: The subscribed ID.
-        :param callback: The callback to be called with the updated IDs.
-        """
-        if subscription_id not in self.subscriptions:
-            self.subscriptions[subscription_id] = [callback]
-        else:
-            self.subscriptions[subscription_id].append(callback)
-
-
-    def updated(self, updated_snapshot_ids: UpdatedSnasphotIDs):
-        """
-        Function to be called when receiving messages over MemoryListener topic.
-        :param updated_snapshot_ids: The updated snapshot IDs.
-        """
-        # Convert from Ice
-        updated_snapshot_ids: List[MemoryID] = [
-            id if isinstance(id, MemoryID) else MemoryID.from_ice(id)
-            for id in updated_snapshot_ids
-        ]
-        for id in updated_snapshot_ids:
-            assert isinstance(id, MemoryID)
-
-        for subscribed_id, callbacks in self.subscriptions.items():
-            # Split by subscribed id
-            matching_snapshot_ids = [
-                updated_snapshot_id for updated_snapshot_id in updated_snapshot_ids
-                if subscribed_id.contains(updated_snapshot_id)
-            ]
-            # Call callbacks
-            if len(matching_snapshot_ids) > 0:
-                for callback in callbacks:
-                    callback(subscribed_id, matching_snapshot_ids)
-
 
     def _get_all_clients(self, client_cls, update: bool):
         if update:
