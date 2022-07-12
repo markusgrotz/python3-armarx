@@ -1,7 +1,7 @@
 import time
 
 
-class CycleClock:
+class Metronome:
     """
     A cycle clock allowing you to run a while-loop with an (approximately)
     fixed frequency.
@@ -20,11 +20,12 @@ class CycleClock:
             duration_seconds: float = None,
             frequency_hertz: float = None,
     ):
+        self.duration_seconds: float
         if duration_seconds is not None:
-            self.duration_seconds: float = duration_seconds
+            self.duration_seconds = duration_seconds
 
         elif frequency_hertz is not None:
-            self.duration_seconds = 1  / frequency_hertz
+            self.duration_seconds = 1 / frequency_hertz
 
         else:
             raise ValueError("Either duration_seconds or frequency_hertz must be specified.")
@@ -39,7 +40,7 @@ class CycleClock:
     def remaining_seconds(self) -> float:
         return self.duration_seconds - (time.time() - self.start)
 
-    def wait_for_next_cycle(self):
+    def wait_for_next_tick(self):
         remaining = self.remaining_seconds
         if remaining > 0:
             time.sleep(remaining)
