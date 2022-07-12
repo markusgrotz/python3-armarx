@@ -16,6 +16,8 @@ class NdArrayWidget:
             self,
             array: np.ndarray,
             column_vector=False,
+            float_widget_cls=rg.FloatSpinBox,
+            int_widget_cls=rg.IntSpinBox,
             **kwargs,
     ):
         array = np.array(array)
@@ -26,10 +28,10 @@ class NdArrayWidget:
             column_vector = not kwargs.pop("row_vector")
 
         if "int" in array.dtype.name:
-            self.spin_box_type = rg.IntSpinBox
+            self.spin_box_type = int_widget_cls
             self.scalar_type = int
         else:
-            self.spin_box_type = rg.FloatSpinBox
+            self.spin_box_type = float_widget_cls
             self.scalar_type = float
 
         self.column_vector = column_vector
