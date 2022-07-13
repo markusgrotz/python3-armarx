@@ -46,8 +46,8 @@ class ObjectID(IceTwin):
                                 self.get_filename(extension=extension, suffix=suffix))
         return self.resolve_filepath(filepath) if resolve else filepath
 
-    def get_viz_kwargs(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE):
-        return dict(project=package, filename=self.get_filepath(".xml"))
+    def get_viz_kwargs(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE, use_wrl=False):
+        return dict(project=package, filename=self.get_filepath(".wrl" if use_wrl else ".xml"))
 
     @classmethod
     def resolve_filepath(cls, filepath: str):
