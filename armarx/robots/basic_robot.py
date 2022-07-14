@@ -52,6 +52,10 @@ class Robot(ABC):
     def profile_name() -> str:
         pass
 
+    def __str__(self) -> str:
+        return f'Robot - {self.profile_name}'
+        
+
     def load_robot_config(self):
         config_path = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(config_path, 'robot_config.json')

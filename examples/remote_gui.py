@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import numpy as np
+import typing as ty
+
 import armarx.remote_gui as rg
 
 
@@ -13,6 +16,10 @@ class WidgetsTabState:
         self.int_value = 5
         self.float_value = 0.0
         self.button_clicked = False
+
+        self.int_vector = np.array([10, 20, 30])
+        self.float_vector = np.array([10., 20., 30.])
+        self.float_matrix = np.eye(3, dtype=float)
 
 
 class WidgetsTab(rg.Tab):
@@ -34,6 +41,11 @@ class WidgetsTab(rg.Tab):
         self.button = rg.Button(label="Button")
 
         self.collapsible_group = rg.GroupBox(label="Collapsible Group")
+
+        self.int_vector = rg.NdArrayWidget(self.state.int_vector, range_min=0, range_max=100)
+        self.float_vector = rg.NdArrayWidget(self.state.float_vector, range_min=-100, range_max=100, column_vector=True)
+        self.float_matrix = rg.NdArrayWidget(self.state.float_matrix, range_min=-1e3, range_max=1e3, steps=4e3)
+
 
     def create_widget_tree(self):
         v_layout = rg.VBoxLayout()
@@ -125,7 +137,26 @@ class WidgetsTab(rg.Tab):
         # Use the set_* instead of the add_* methods to override previously added children
         self.collapsible_group.set_child(rg.Label(text="This can only be seen if expanded"))
 
-        root = rg.VBoxLayout(children=[group_box, grid_group_box, self.collapsible_group])
+
+        # Nd Array widgets:
+        self.int_vector.value = self.state.int_vector
+        self.float_vector.value = self.state.float_vector
+        self.float_matrix.value = self.state.float_matrix
+
+        layout = rg.GridLayout()
+        row = 0
+
+        layout.add(rg.Label("Int Vector:"), pos=(row, 0)).add(self.int_vector.create_tree(), pos=(row, 1))
+        row += 1
+        layout.add(rg.Label("Column Vector:"), pos=(row, 0)).add(self.float_vector.create_tree(), pos=(row, 1))
+        row += 1
+        layout.add(rg.Label("Float Matrix:"), pos=(row, 0)).add(self.float_matrix.create_tree(), pos=(row, 1))
+        row += 1
+
+        array_group_box = rg.GroupBox(label="Array Widgets", child=layout)
+
+
+        root = rg.VBoxLayout(children=[group_box, grid_group_box, self.collapsible_group, array_group_box])
 
         return root
 
@@ -148,6 +179,10 @@ class WidgetsTab(rg.Tab):
         self.state.toggled = self.toggle.value
         self.state.checked = self.check_box.value
         self.state.button_clicked = self.button.was_clicked()
+
+        self.state.int_vector = self.int_vector.value
+        self.state.float_vector = self.float_vector.value
+        self.state.float_matrix = self.float_matrix.value
 
 
 client = rg.Client()

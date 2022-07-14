@@ -2,6 +2,9 @@
 # PyCharm project files
 .idea/
 
+# Local venv
+.venv
+
 
 # Generated files
 CMakeFiles/
