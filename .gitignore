@@ -9,5 +9,6 @@
 # Generated files
 CMakeFiles/
 __pycache__
+.venv
 
 armarx_dev.egg-info/

@@ -1,7 +1,8 @@
 from typing import List, Optional
+import time
 
 from armarx_memory.aron.conversion import Aron
-from armarx_memory.core import MemoryID, time_usec
+from armarx_memory.core import MemoryID, time_usec, DateTimeIceConverter
 from armarx_memory.ice_conv import ice_twin
 
 
@@ -9,6 +10,8 @@ from armarx import slice_loader
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 
 import armarx.armem as armem
+
+date_time_conv = DateTimeIceConverter()
 
 
 class EntityUpdate(ice_twin.IceTwin):
@@ -48,19 +51,22 @@ class EntityUpdate(ice_twin.IceTwin):
     def _set_to_ice(self, dto: armem.data.Commit):
         dto.entityID = self.entity_id.to_ice()
         dto.instancesData = self.instances_data
-        dto.timeCreatedMicroSeconds = self.time_created_usec
+        dto.timeCreated = date_time_conv.to_ice(self.time_created_usec)
 
         dto.confidence = self.confidence
-        dto.timeSentMicroSeconds = self.time_sent_usec if self.time_sent_usec is not None else -1
+        dto.timeSent = date_time_conv.to_ice(self.time_sent_usec if self.time_sent_usec is not None else -1)
 
 
     def _set_from_ice(self, dto):
         self.entity_id.set_from_ice(dto.entityID)
         self.instances_data = dto.instancesData
-        self.time_created_usec = dto.timeCreatedMicroSeconds
+        self.time_created_usec = date_time_conv.from_ice(dto.timeCreated)
 
         self.confidence = dto.confidence
-        self.time_sent_usec = dto.timeSentMicroSeconds
+        self.time_sent_usec = date_time_conv.from_ice(dto.timeSent)
+
+        assert self.time_created_usec > 0, f"The time sent must be valid: {self.time_created_usec}"
+        assert self.time_sent_usec > 0 or self.time_sent_usec is None, f"The time sent must be valid: {self.time_created_usec}"
 
 
     def __repr__(self):

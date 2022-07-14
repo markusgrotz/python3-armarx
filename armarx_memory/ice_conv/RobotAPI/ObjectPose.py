@@ -78,7 +78,7 @@ class ObjectPose(IceTwin):
         self.robot_pose = self._pose_conv.from_ice(dto.robotPose)
 
         self.confidence = dto.confidence
-        self.timestamp_usec = dto.timestampMicroSeconds
+        self.timestamp_usec = dto.timestamp.timeSinceEpoch.microSeconds
 
         if all([dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]):
             self.local_oobb = Box.from_ice(dto.localOOBB)
@@ -99,7 +99,7 @@ class ObjectPose(IceTwin):
         dto.robotPose = self._pose_conv.to_ice(self.robot_pose)
 
         dto.confidence = self.confidence
-        dto.timestampMicroSeconds = self.timestamp_usec
+        dto.timestamp.timeSinceEpoch.microSeconds = self.timestamp_usec
 
         if (dto.localOOBB is not None
                 and all([dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents])):

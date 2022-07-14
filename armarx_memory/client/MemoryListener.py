@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Optional, Callable, Union
+import typing as ty
 import logging
 
 from armarx import slice_loader, ice_manager
@@ -7,7 +7,6 @@ slice_loader.load_armarx_slice("RobotAPI", "armem/client/MemoryListenerInterface
 from armarx import armem
 
 from armarx_memory.core.MemoryID import MemoryID
-from armarx_memory.client.MemoryNameSystem import MemoryNameSystem
 
 
 logger = logging.getLogger(__file__)
@@ -15,35 +14,81 @@ logger = logging.getLogger(__file__)
 
 class MemoryListener(armem.client.MemoryListenerInterface):
 
-    def __init__(self,
-                 name: Optional[str] = None,
-                 topic_name: str = "MemoryUpdates",
-                 mns_clients: Optional[Union[MemoryNameSystem, List[MemoryNameSystem]]] = None,
-                 ):
+    Callback = ty.Callable[[MemoryID, ty.List[MemoryID]], None]
+    UpdatedSnapshotIDs = ty.List[ty.Union[MemoryID, "armarx.armem.data.MemoryID"]]
+
+    TopicNameFormat = "MemoryUpdates.{memory_name}"
+
+
+    def __init__(
+            self,
+            name: ty.Optional[str] = None,
+            register=True,
+            log_fn=None,
+    ):
         self.name = name
-        self.topic_name = topic_name
+        self.proxy = None
 
-        # MNS clients that shall receive memory updates to handle subscriptions.
-        if mns_clients is None:
-            self.mns_clients = []
-        elif isinstance(mns_clients, MemoryNameSystem):
-            self.mns_clients = [mns_clients]
+        if log_fn is None:
+            def log_fn(*args, **kwargs):
+                pass
+        self.log_fn = log_fn
+
+        self.subscriptions: ty.Dict[MemoryID, ty.List["MemoryListener.Callback"]] = {}
+
+        if register:
+            self.register()
+
+    def register(self):
+        self.log_fn(f"Register {self.__class__.__name__} '{self.name}' ...")
+
+        self.proxy = ice_manager.register_object(self, self.name)
+        return self.proxy
+
+    def use_topic_of_id(self, memory_id: MemoryID):
+        topic_name = self.TopicNameFormat.format(memory_name=memory_id.memory_name)
+        self.log_fn(f"'{self.name}': Use topic '{topic_name}'.")
+        ice_manager.using_topic(self.proxy, topic_name)
+
+    def subscribe(self, subscription_id: MemoryID, callback: Callback):
+        """
+        Subscribe a memory ID in order to receive updates to it.
+        :param subscription_id: The subscribed ID.
+        :param callback: The callback to be called with the updated IDs.
+        """
+        self.log_fn(f"'{self.name}': Subscribe to {subscription_id}.")
+        self.use_topic_of_id(memory_id=subscription_id)
+        if subscription_id not in self.subscriptions:
+            self.subscriptions[subscription_id] = [callback]
         else:
-            self.mns_clients = mns_clients
+            self.subscriptions[subscription_id].append(callback)
 
 
-    def register(self, log_fn=None):
-        if log_fn is not None:
-            log_fn(f"Register {self.__class__.__name__} '{self.name}' "
-                   f"listening to topic '{self.topic_name}' ...")
+    def updated(self, updated_snapshot_ids: UpdatedSnapshotIDs):
+        """
+        Function to be called when receiving messages over MemoryListener topic.
+        :param updated_snapshot_ids: The updated snapshot IDs.
+        """
+        # Convert from Ice
+        updated_snapshot_ids: ty.List[MemoryID] = [
+            id if isinstance(id, MemoryID) else MemoryID.from_ice(id)
+            for id in updated_snapshot_ids
+        ]
+        for id in updated_snapshot_ids:
+            assert isinstance(id, MemoryID)
 
-        proxy = ice_manager.register_object(self, self.name)
-        ice_manager.using_topic(proxy, self.topic_name)
-        return proxy
+        for subscribed_id, callbacks in self.subscriptions.items():
+            # Split by subscribed id
+            matching_snapshot_ids = [
+                updated_snapshot_id for updated_snapshot_id in updated_snapshot_ids
+                if subscribed_id.contains(updated_snapshot_id)
+            ]
+            # Call callbacks
+            if len(matching_snapshot_ids) > 0:
+                for callback in callbacks:
+                    callback(subscribed_id, matching_snapshot_ids)
 
-
-    def memoryUpdated(self, updated_snapshot_ids: List[armem.data.MemoryID], c=None):
-        """Called by the MemoryListenerTopic."""
+    def memoryUpdated(self, updated_snapshot_ids: ty.List[armem.data.MemoryID], c=None):
+        """Called via the MemoryListenerTopic."""
         updated_snapshot_ids = MemoryID.from_ice(updated_snapshot_ids)
-        for mns in self.mns_clients:
-            mns.updated(updated_snapshot_ids=updated_snapshot_ids)
+        self.updated(updated_snapshot_ids)

@@ -8,10 +8,15 @@ Please note that the numpy array's data type must be np.float32
 import numpy as np
 import transforms3d as tf3d
 
+from armarx import slice_loader
+slice_loader.load_armarx_slice("ArmarXCore", "components/EmergencyStopInterface.ice")
+slice_loader.load_armarx_slice("ArmarXCore", "components/SimpleStatechartExecutorInterface.ice")
+
 from armarx import RobotStateComponentInterfacePrx
 from armarx import FramedPositionBase
 from armarx import FramedPoseBase
 from armarx import FramedOrientationBase
+
 
 def pose2mat(pose: FramedPoseBase) -> np.ndarray:
     """
@@ -40,6 +45,14 @@ def convert_position_to_global(f: FramedPositionBase) -> np.ndarray:
     pose = FramedPoseBase(position=f, orientation=FramedOrientationBase(), frame=f.frame, agent=f.agent)
     return convert_pose_to_global(pose)
 
+
+def convert_mat_to_global(pose: np.ndarray, frame: str) -> np.ndarray:
+    robot_state = RobotStateComponentInterfacePrx.get_proxy()
+    current_robot_state = robot_state.getSynchronizedRobot()
+    robot_pose = current_robot_state.getGlobalPose()
+    robot_node = current_robot_state.getRobotNode(frame).getPoseInRootFrame()
+    transform_robot_node_to_root = pose2mat(robot_node)
+    transform_root_to_global = pose2mat(robot_pose)
 
 def inv(pose: np.ndarray) -> np.ndarray:
     """
@@ -104,6 +117,7 @@ def convert_pose_to_global(f: FramedPoseBase) -> np.ndarray:
     if f.frame == 'Global' or f.frame == 'armarx::Global':
         return transform
     return convert_mat_to_global(transform, f.frame)
+
 
 def convert_pose_to_root(f: FramedPoseBase) -> np.ndarray:
     """
