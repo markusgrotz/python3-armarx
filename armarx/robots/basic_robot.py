@@ -21,11 +21,13 @@ from armarx.speech import TextStateListener
 
 from armarx.statechart import StatechartExecutor
 
+from .arms import Bimanual
+
 logger = logging.getLogger(__name__)
 
 
 
-class Robot(ABC):
+class Robot(ABC, Bimanual):
     """
     Convenience class
     """
@@ -101,37 +103,3 @@ class Robot(ABC):
         hardware
         """
         self.emergency_stop.setEmergencyStopState(EmergencyStopState.eEmergencyStopActive)
-
-
-    def open_hand(self, hand_name='left, right', shape_name=None):
-        """
-        Opens a hand or both hands
-
-        :param hand_name: the name of the hand
-        :param shape_name: the name of the hand shape
-        """
-        shape_name = shape_name or 'Open'
-        if 'left' in hand_name:
-            self.left_hand.setShape(shape_name)
-        if 'right' in hand_name:
-            self.right_hand.setShape(shape_name)
-        if 'both' in hand_name:
-            self.left_hand.setShape(shape_name)
-            self.right_hand.setShape(shape_name)
-
-    def close_hand(self, hand_name='left, right', shape_name=None):
-        """
-        Closes a hand or both hands
-
-        :param hand_name: the name of the hand
-        :param shape_name: the name of the hand shape
-        """
-        shape_name = shape_name or 'Close'
-        if 'left' in hand_name:
-            self.left_hand.setShape(shape_name)
-        if 'right' in hand_name:
-            self.right_hand.setShape(shape_name)
-        if 'both' in hand_name:
-            self.left_hand.setShape(shape_name)
-            self.right_hand.setShape(shape_name)
-
