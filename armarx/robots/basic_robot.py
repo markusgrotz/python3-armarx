@@ -43,11 +43,22 @@ class Robot(ABC, Bimanual):
         self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
         self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
 
-        self.navigator = PlatformNavigatorInterfacePrx.get_proxy()
-        self.gaze = GazeControlInterfacePrx.get_proxy()
         #self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
-        self.emergency_stop = EmergencyStopMasterInterfacePrx.get_proxy()
+    @property
+    @lru_cache(1)
+    def emergency_stop(self):
+        return EmergencyStopMasterInterfacePrx.get_proxy()
+
+    @property
+    @lru_cache(1)
+    def gaze(self):
+        return GazeControlInterfacePrx.get_proxy()
+
+    @property
+    @lru_cache(1)
+    def navigator(self):
+        return PlatformNavigatorInterfacePrx.get_proxy()
 
     @property
     @abstractmethod
