@@ -8,6 +8,8 @@ from armarx import KinematicUnitInterfacePrx
 
 from armarx import ControlMode
 
+from armarx.statechart import StatechartExecutor
+
 class A6(Robot):
     """
     ARMAR-6
