@@ -30,12 +30,12 @@ class A3(Robot):
         super().on_connect()
         self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy('Armar3KinematicUnit')
 
-        class GazeSelection():
+        class GazeSelection:
 
             def __init__(self):
                 self.view_selection = ViewSelectionInterfacePrx.get_proxy()
 
-            def fixate(self, target):
+            def fixate(self, target, timeout=0):
                 self.view_selection.addManualViewTarget(target)
 
         self.gaze = GazeSelection()
