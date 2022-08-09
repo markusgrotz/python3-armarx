@@ -1,15 +1,23 @@
+#!/usr/bin/env python3
+
 import logging
+
 import numpy as np
 
 from armarx.ice_manager import is_alive
-from visionx.pointcloud_processor import PointCloudReceiver
+from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from visionx.pointcloud_receiver import PointCloudReceiver
 from visionx.pointcloud_provider import PointCloudProvider, dtype_point_color_xyz
 
 logger = logging.getLogger(__name__)
 
 
 def main():
-    receiver = PointCloudReceiver("ExamplePointCloudReceiver", source_provider_name="OpenNIPointCloudProvider")
+    receiver = PointCloudReceiver(
+        "ExamplePointCloudReceiver",
+        source_provider_name="OpenNIPointCloudProvider",
+        wait_for_provider=True,
+    )
     receiver.on_connect()
 
     result_provider = PointCloudProvider("ExamplePointCloudResult", point_dtype=dtype_point_color_xyz, connect=True)
@@ -41,4 +49,7 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser()
+    args = parser.parse_args()
+
     main()

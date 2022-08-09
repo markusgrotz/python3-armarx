@@ -1,11 +1,14 @@
+#!/usr/bin/env python3
+
 import logging
 import time
 import math
 
 from armarx.ice_manager import is_alive
+from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from visionx.pointclouds import rgb_to_uint32
 from visionx.pointcloud_provider import PointCloudProvider
 from visionx.pointcloud_provider import dtype_point_color_xyz
-from visionx.pointcloud_provider import rgb_to_uint32
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +49,14 @@ def main():
                     index += 1
                     
             pc_provider.update_point_cloud(pc)
+            time.sleep(1e-3)
+
     except KeyboardInterrupt:
         logger.info('shutting down')
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser()
+    args = parser.parse_args()
+
     main()

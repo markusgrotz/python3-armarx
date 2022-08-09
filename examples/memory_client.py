@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from typing import Any, Dict, List
 
 from armarx_memory.aron import conversion as aron_conv

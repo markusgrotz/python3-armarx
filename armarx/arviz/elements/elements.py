@@ -452,7 +452,7 @@ class PointCloud(Element):
         :param kwargs:
         """
         super().__init__(ice_data_cls=viz.data.ElementPointCloud, id=id, **kwargs)
-        self.points = []
+        self.points = np.zeros((0, 7))
 
         self.transparency: float = transparency
         self.point_size: float = point_size

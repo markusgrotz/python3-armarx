@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
 from armarx import ice_manager
 from armarx import slice_loader 
@@ -10,6 +11,8 @@ from armarx import RNGProviderComponentInterface
 import time
 import logging
 import random
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +31,7 @@ def main():
     parser = ArgumentParser(description='RNGProviderComponent')
     parser.parse_args()
 
-    ice_manager.register_object(RNGProviderComponent(), 'RNGProviderComponent')
+    ice_manager.register_object(RNGProviderComponent(), 'RNGProvider')
     ice_manager.wait_for_shutdown()
 
 if __name__ == '__main__':

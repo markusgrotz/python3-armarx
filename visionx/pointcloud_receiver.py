@@ -1,32 +1,23 @@
 """
-This module provides functionality for receiving and providing point clouds in ArmarX.
+This module provides functionality for receiving point clouds in ArmarX.
 
 Classes:
-- PointCloudProvider: Can provide point clouds as numpy arrays.
 - PointCloudReceiver: Can receive point clouds as numpy arrays.
 """
 
 import logging
 import threading
 
-from typing import Tuple
-
 import numpy as np
 
-from armarx.ice_manager import register_object
-from armarx.ice_manager import get_proxy
-from armarx.ice_manager import using_topic
+from typing import Tuple
 
+from armarx import ice_manager
 
-from visionx.pointcloud_provider import PointCloudProvider
-from visionx.pointcloud_provider import dtype_from_point_type
-
-from visionx import PointCloudProcessorInterfacePrx
-from visionx import PointCloudProcessorInterface
-from visionx import PointCloudProviderInterfacePrx
-from visionx import PointCloudProviderInterface
-from visionx import MetaPointCloudFormat
-from visionx import PointContentType
+from visionx.pointclouds import dtype_from_point_type
+from visionx.pointclouds import PointCloudProcessorInterface
+from visionx.pointclouds import PointCloudProviderInterfacePrx
+from visionx.pointclouds import MetaPointCloudFormat
 
 
 logger = logging.getLogger(__name__)
@@ -37,9 +28,13 @@ class PointCloudReceiver(PointCloudProcessorInterface):
     A point cloud receiver connects to a PointCloudProvider and makes reads new point cloud data if available.
     """
 
-    def __init__(self, name: str,
-                 source_provider_name: str = None,
-                 connect: bool = False):
+    def __init__(
+            self,
+            name: str,
+            source_provider_name: str = None,
+            connect: bool = False,
+            wait_for_provider=True,
+    ):
         """
         Constructs a point cloud reciever.
 
@@ -61,6 +56,8 @@ class PointCloudReceiver(PointCloudProcessorInterface):
         self.source_provider_proxy = None
         self.source_provider_topic = None
         self.source_format = None
+
+        self._wait_for_provider = wait_for_provider
 
         if connect:
             self.on_connect()
@@ -113,9 +110,14 @@ class PointCloudReceiver(PointCloudProcessorInterface):
         After calling this function, wait_for_next_point_cloud() and get_latest_point_cloud() can be called.
         """
         logger.debug('Registering point cloud processor')
-        self.proxy = register_object(self, self.name)
-        self.source_provider_proxy = get_proxy(PointCloudProviderInterfacePrx, self.source_provider_name)
+        self.proxy = ice_manager.register_object(self, self.name)
+        if self._wait_for_provider:
+            self.source_provider_proxy = ice_manager.wait_for_proxy(
+                PointCloudProviderInterfacePrx, self.source_provider_name)
+        else:
+            self.source_provider_proxy = ice_manager.get_proxy(
+                PointCloudProviderInterfacePrx, self.source_provider_name)
         self.source_format = self.source_provider_proxy.getPointCloudFormat()
 
-        self.source_provider_topic = using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
+        self.source_provider_topic = ice_manager.using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
 
