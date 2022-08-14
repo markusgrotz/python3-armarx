@@ -8,6 +8,7 @@ from typing import Dict
 from abc import ABC
 from abc import abstractmethod
 
+from functools import lru_cache
 
 from armarx import PlatformNavigatorInterfacePrx
 from armarx import GazeControlInterfacePrx
@@ -22,6 +23,7 @@ from armarx.speech import TextStateListener
 from armarx.statechart import StatechartExecutor
 
 from .arms import Bimanual
+
 
 logger = logging.getLogger(__name__)
 
