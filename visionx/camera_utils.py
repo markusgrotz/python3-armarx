@@ -1,6 +1,7 @@
 import math
 import numpy as np
 
+from armarx import ice_manager
 from visionx import StereoCalibrationInterfacePrx
 from visionx import ImageProviderInterfacePrx
 
@@ -53,12 +54,12 @@ def get_stereo_calibration(provider_name: str):
     :param provider_name: name of the component to connect to
     :returns: the calibration as dict
     """
-    proxy = ImageProviderInterfacePrx.get_proxy(provider_name)
+    proxy = ice_manager.wait_for_proxy(ImageProviderInterfacePrx, provider_name)
     image_format = proxy.getImageFormat()
     width = image_format.dimension.width
     height = image_format.dimension.height
 
-    proxy = StereoCalibrationInterfacePrx.get_proxy(provider_name)
+    proxy = ice_manager.wait_for_proxy(StereoCalibrationInterfacePrx, provider_name)
     frame = proxy.getReferenceFrame()
     stereo_calibration = proxy.getStereoCalibration()
 
