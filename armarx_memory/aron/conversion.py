@@ -98,7 +98,9 @@ except AttributeError as e:
 
 def to_aron(value) -> "armarx.aron.data.dto.GenericData":
 
-    if isinstance(value, str):
+    if value is None:
+        return None  # represents an unset optional value
+    elif isinstance(value, str):
         return Aron.string(value)
     elif isinstance(value, bool):
         return Aron.bool(value)
