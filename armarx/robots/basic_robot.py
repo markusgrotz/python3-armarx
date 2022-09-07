@@ -10,10 +10,6 @@ from abc import abstractmethod
 
 from functools import lru_cache
 
-from armarx import PlatformNavigatorInterfacePrx
-from armarx import GazeControlInterfacePrx
-from armarx import ElasticFusionInterfacePrx
-
 from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
 from armarx import KinematicUnitInterfacePrx
@@ -45,6 +41,7 @@ class Robot(ABC, Bimanual):
         self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
         self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
 
+        # from armarx import ElasticFusionInterfacePrx
         #self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
     @property
@@ -55,11 +52,13 @@ class Robot(ABC, Bimanual):
     @property
     @lru_cache(1)
     def gaze(self):
+        from armarx import GazeControlInterfacePrx
         return GazeControlInterfacePrx.get_proxy()
 
     @property
     @lru_cache(1)
     def navigator(self):
+        from armarx import PlatformNavigatorInterfacePrx
         return PlatformNavigatorInterfacePrx.get_proxy()
 
     @property
