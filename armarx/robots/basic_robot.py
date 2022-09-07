@@ -1,9 +1,7 @@
-import sys
 import logging
 import time
 import json
 import os
-from typing import Dict
 
 from abc import ABC
 from abc import abstractmethod
@@ -24,7 +22,6 @@ from .arms import Bimanual
 logger = logging.getLogger(__name__)
 
 
-
 class Robot(ABC, Bimanual):
     """
     Convenience class
@@ -32,7 +29,6 @@ class Robot(ABC, Bimanual):
 
     def __init__(self):
         self._text_state_listener = TextStateListener()
-
 
 
     def on_connect(self):
@@ -63,7 +59,7 @@ class Robot(ABC, Bimanual):
 
     @property
     @abstractmethod
-    def profile_name() -> str:
+    def profile_name(self) -> str:
         pass
 
     def __str__(self) -> str:
