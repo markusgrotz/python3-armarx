@@ -1,7 +1,16 @@
 import pytest
 
-from armarx_memory.aron.common.names import Names
-from armarx_memory.aron.conversion import to_aron, from_aron
+import dataclasses as dc
+import typing as ty
+
+from armarx_memory.aron.aron_dataclass import AronDataclass
+
+
+@dc.dataclass
+class Names(AronDataclass):
+
+    spoken: ty.List[str] = dc.field(default_factory=list)
+    recognized: ty.List[str] = dc.field(default_factory=list)
 
 
 @pytest.fixture
@@ -10,11 +19,13 @@ def names_in():
 
 
 def test_names_to_from_aron(names_in: Names):
-    aron = to_aron(names_in)
-    # print(aron)
+    print(f"Input:\n{names_in}")
 
-    names_out = Names(**from_aron(aron))
-    # print(names_out)
+    aron_ice = names_in.to_aron_ice()
+    print(f"Aron ice:\n{aron_ice}")
+
+    names_out = Names.from_aron_ice(aron_ice)
+    print(f"Output\n{names_out}")
 
     assert names_out.spoken == names_in.spoken
     assert names_out.recognized == names_in.recognized
