@@ -1,4 +1,5 @@
 import copy
+import enum
 
 import armarx
 from armarx import slice_loader
@@ -240,12 +241,24 @@ class MemoryID(ice_twin.IceTwin):
         import numpy as np
         from armarx_memory.aron.conversion import to_aron
 
+        class ClockType(enum.IntEnum):
+            REALTIME = 0  # Normalized time as reported by the operating system.
+            MONOTONIC = 1  # Monotonic/steady clock of the operating system.
+            VIRTUAL = 2  # Time given by time-server if configured, realtime otherwise.
+            UNKNOWN = 3  # Unknown source of time.
+
         data = {
             "memoryName": self.memory_name,
             "coreSegmentName": self.core_segment_name,
             "providerSegmentName": self.provider_segment_name,
             "entityName": self.entity_name,
-            "timestamp": np.int64(self.timestamp_usec),
+            "timestamp": {
+                "clockType": ClockType.VIRTUAL,
+                "hostname": "unknown",
+                "timeSinceEpoch": {
+                    "microSeconds": np.int64(self.timestamp_usec),
+                },
+            },
             "instanceIndex": self.instance_index
         }
         return to_aron(data)

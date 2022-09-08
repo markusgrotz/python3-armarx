@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "armarx-dev"
-version = "0.18.0"
+version = "0.18.1"
 description = "Python bindings for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 packages = [{include = "armarx"}, {include = "visionx"}, {include = "armarx_memory"}]
@@ -11,9 +11,11 @@ documentation = "https://armarx.humanoids.kit.edu/python/"
 [tool.poetry.dependencies]
 python = "^3.6"
 zeroc-ice = "3.7.0"
-lxml = "^4.8.0"
-numpy = "^1.19"
-transforms3d = "^0.3.1"
+lxml = ">=4.8.0"
+numpy = ">=1.19.5"
+transforms3d = ">=0.3.1"
+# ToDo: How does this behave on Python 3.8?
+dataclasses = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
