@@ -7,6 +7,11 @@ from visionx import MonocularCalibration
 
 from typing import Dict
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 def build_calibration_matrix(calibration: Dict[str, float], scale: float=None) -> np.ndarray:
     """
@@ -127,12 +132,12 @@ class MonocularCalibrationUtility(object):
         self._init_image_to_world_transformation()
 
     def _init_calibration(self):
-        print(
+        logger.debug(
             'Waiting for StereoCalibrationInterfaceProxy from component with name "{}"'
             .format(self.stereo_calibration_provider_name)
         )
         proxy = ice_manager.wait_for_proxy(StereoCalibrationInterfacePrx, self.stereo_calibration_provider_name)
-        print('Retrieved StereoCalibrationInterfaceProxy')
+        logger.debug('Retrieved StereoCalibrationInterfaceProxy')
 
         stereo_calibration = proxy.getStereoCalibration()
         if not stereo_calibration.calibrationLeft == stereo_calibration.calibrationRight:
