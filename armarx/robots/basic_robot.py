@@ -1,17 +1,12 @@
-import sys
 import logging
 import time
 import json
 import os
-from typing import Dict
 
 from abc import ABC
 from abc import abstractmethod
 
-
-from armarx import PlatformNavigatorInterfacePrx
-from armarx import GazeControlInterfacePrx
-from armarx import ElasticFusionInterfacePrx
+from functools import lru_cache
 
 from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
@@ -23,8 +18,8 @@ from armarx.statechart import StatechartExecutor
 
 from .arms import Bimanual
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 
 class Robot(ABC, Bimanual):
@@ -36,13 +31,13 @@ class Robot(ABC, Bimanual):
         self._text_state_listener = TextStateListener()
 
 
-
     def on_connect(self):
         self._text_state_listener.on_connect()
 
         self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
         self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
 
+        # from armarx import ElasticFusionInterfacePrx
         #self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
     @property
@@ -53,16 +48,18 @@ class Robot(ABC, Bimanual):
     @property
     @lru_cache(1)
     def gaze(self):
+        from armarx import GazeControlInterfacePrx
         return GazeControlInterfacePrx.get_proxy()
 
     @property
     @lru_cache(1)
     def navigator(self):
+        from armarx import PlatformNavigatorInterfacePrx
         return PlatformNavigatorInterfacePrx.get_proxy()
 
     @property
     @abstractmethod
-    def profile_name() -> str:
+    def profile_name(self) -> str:
         pass
 
     def __str__(self) -> str:
