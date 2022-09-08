@@ -4,14 +4,15 @@ import dataclasses as dc
 import typing as ty
 
 
-
 def dataclass_to_dict(
         obj,
+        logger: ty.Optional[logging.Logger] = None,
 ) -> ty.Dict[str, ty.Any]:
     """
     Deeply converts a dataclass to a dict.
 
     :param obj: An object of a dataclass.
+    :param logger: An optional logger.
     :return: A dict containing pythonic data types.
     """
     return dc.asdict(obj)

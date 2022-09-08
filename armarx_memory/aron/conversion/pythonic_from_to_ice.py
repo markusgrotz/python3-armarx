@@ -74,7 +74,7 @@ def pythonic_from_aron(data: "armarx.aron.data.dto.GenericData"):
 
     if isinstance(data, AronIceTypes.NDArray):
         # Last entry is #bytes per entry
-        data: bytes = data.data
+        byte_data: bytes = data.data
 
         shape: ty.Tuple[int]
         try:
@@ -89,7 +89,7 @@ def pythonic_from_aron(data: "armarx.aron.data.dto.GenericData"):
             if size == 0:
                 dtype = np.uint8
             else:
-                dtype_size = len(data) // size
+                dtype_size = len(byte_data) // size
                 dtype_dict = {
                     1: np.uint8,
                     2: np.uint16,
@@ -101,10 +101,10 @@ def pythonic_from_aron(data: "armarx.aron.data.dto.GenericData"):
                     # Build a structured dtype with sequence of bytes.
                     dtype = np.dtype([("bytes", np.uint8, dtype_size)])
 
-            print(f"Unknown type '{data.type}' of array with shape {shape} and {len(data)} bytes. "
+            print(f"Unknown type '{data.type}' of array with shape {shape} and {len(byte_data)} bytes. "
                   f"Falling back to {dtype}.")
 
-        array: np.ndarray = np.frombuffer(buffer=data, dtype=dtype)
+        array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=dtype)
         array = array.reshape(shape)
         return array
 
