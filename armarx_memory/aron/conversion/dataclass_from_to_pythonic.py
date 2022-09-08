@@ -3,6 +3,8 @@ import logging
 import dataclasses as dc
 import typing as ty
 
+from .options import ConversionOptions
+
 
 def dataclass_to_dict(
         obj,
@@ -32,6 +34,7 @@ def dataclass_from_dict(
     :param logger: A logger.
     :return: An instance of the dataclass.
     """
+
     if logger is not None:
         logger.info(f"\nConstruct class {cls.__name__} from a {type(data)} ...")
 
@@ -46,8 +49,8 @@ def dataclass_from_dict(
 
     # Build kwargs for cls.
     kwargs = dict()
-    for field, value in data.items():
-        field_type = field_types[field]
+    for field_name, value in data.items():
+        field_type = field_types[field_name]
 
         try:
             origin = field_type.__origin__
@@ -57,7 +60,7 @@ def dataclass_from_dict(
         if logger is not None:
             value_type = type(value)
             logger.debug(
-                f"- Field '{field}' of type: {field_type}"
+                f"- Field '{field_name}' of type: {field_type}"
                 f"\n- origin: {origin}"
                 f"\n- data type: {value_type}"
             )
@@ -72,7 +75,10 @@ def dataclass_from_dict(
             kt, vt = field_type.__args__
             if logger is not None:
                 logger.debug(f"> Process dict {kt} -> {vt}")
-            field_value = {kt(k): dataclass_from_dict(vt, v) for k, v in value.items()}
+            if value is not None:
+                field_value = {kt(k): dataclass_from_dict(vt, v) for k, v in value.items()}
+            else:
+                field_value = None
 
         else:
             if logger is not None:
@@ -83,6 +89,6 @@ def dataclass_from_dict(
                 # Cannot convert.
                 field_value = value
 
-        kwargs[field] = field_value
+        kwargs[field_name] = field_value
 
     return cls(**kwargs)

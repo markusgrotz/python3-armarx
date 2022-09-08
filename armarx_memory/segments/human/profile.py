@@ -2,8 +2,9 @@ import enum
 import dataclasses as dc
 import typing as ty
 
+from armarx_memory.aron.aron_dataclass import AronDataclass
 from armarx_memory.aron.common.names import Names
-from armarx_memory.aron.conversion import to_aron, from_aron
+from armarx_memory.aron.common.package_path import PackagePath
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 from armarx_memory.core import MemoryID
 
@@ -21,21 +22,7 @@ class Handedness(enum.IntEnum):
 
 
 @dc.dataclass
-class PackagePath:
-
-    package: str
-    path: str
-
-    def get_system_path(self) -> str:
-        import os
-        from armarx import cmake_helper
-        [data_path] = cmake_helper.get_data_path(self.package)
-        abs_path = os.path.join(data_path, self.package, self.path)
-        return abs_path
-
-
-@dc.dataclass
-class Profile:
+class Profile(AronDataclass):
 
     first_name: str = ""
     last_name: str = ""
@@ -48,21 +35,25 @@ class Profile:
     face_image_paths: ty.List[PackagePath] = dc.field(default_factory=list)
     birthday: int = -1
 
-    height_in_mm = -1
-    weight_in_g = -1
+    height_in_mm: int = -1
+    weight_in_g: int = -1
 
-    favorite_color: ty.Tuple[int, int, int] = (192, 192, 192)
+    favourite_color: ty.Tuple[int, int, int] = (192, 192, 192)
 
     roles: ty.List[str] = dc.field(default_factory=list)
 
     attributes: ty.Dict[str, ty.Any] = dc.field(default_factory=dict)
 
-    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        return to_aron(self)
-
     @classmethod
-    def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        return cls(from_aron(dto))
+    def _get_conversion_options(cls):
+        from armarx_memory.aron.conversion import ConversionOptions
+        return ConversionOptions(
+            names_snake_case_to_camel_case=True,
+            names_python_to_aron_dict={
+                "height_in_mm": "heightInMillimeters",
+                "weight_in_g": "weightInGrams",
+            },
+        )
 
 
 class ProfileClientBase:
@@ -92,7 +83,7 @@ class ProfileWriter(ProfileClientBase):
     def commit(self, entity_id: MemoryID, profile: Profile, time_created_usec=None, **kwargs):
         commit = Commit()
         commit.add(entity_id=entity_id, time_created_usec=time_created_usec,
-                   instances_data=[profile.to_aron()], **kwargs,)
+                   instances_data=[profile.to_aron_ice()], **kwargs,)
         return self.writer.commit(commit)
 
 
@@ -110,11 +101,12 @@ class ProfileReader(ProfileClientBase):
     def query_latest(self) -> ty.Dict[MemoryID, Profile]:
         result = self.reader.query_core_segment(self.core_segment_id.core_segment_name, latest_snapshot=True)
 
+        id_to_person = {}
         def from_aron(id: MemoryID, aron_data):
-            return id, Profile.from_aron(aron_data)
+            id_to_person[id] = Profile.from_aron_ice(aron_data)
 
-        persons = self.reader.for_each_instance_data(from_aron, result)
-        return {id: person for id, person in persons}
+        self.reader.for_each_instance_data(from_aron, result)
+        return id_to_person
 
     def fetch_latest_instance(
             self,
