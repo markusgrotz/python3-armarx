@@ -1,7 +1,6 @@
 from typing import List, Optional
-import time
 
-from armarx_memory.aron.conversion import Aron
+from armarx_memory.aron.aron_ice_types import AronIceTypes
 from armarx_memory.core import MemoryID, time_usec, DateTimeIceConverter
 from armarx_memory.ice_conv import ice_twin
 
@@ -19,7 +18,7 @@ class EntityUpdate(ice_twin.IceTwin):
     def __init__(
             self,
             entity_id: MemoryID = None,
-            instances_data: List[Aron.Data] = None,
+            instances_data: List[AronIceTypes.Data] = None,
             time_created_usec: Optional[int] = None,
             confidence: Optional[float] = None,
             time_sent_usec: Optional[int] = None,

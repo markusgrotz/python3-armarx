@@ -1,7 +1,5 @@
 from typing import List, Optional
 
-from armarx_memory.aron import conversion as aronconv
-
 from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 from armarx_memory.core import MemoryID
 

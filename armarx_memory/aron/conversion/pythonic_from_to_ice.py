@@ -3,7 +3,7 @@ import enum
 import numpy as np
 import typing as ty
 
-from .aron_ice_types import AronIceTypes, dtypes_dict
+from armarx_memory.aron.aron_ice_types import AronIceTypes, dtypes_dict
 
 
 def pythonic_to_aron(value) -> "armarx.aron.data.dto.GenericData":
