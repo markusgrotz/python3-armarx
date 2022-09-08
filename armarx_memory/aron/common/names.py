@@ -11,8 +11,10 @@ class Names:
     recognized: ty.List[str] = dc.field(default_factory=list)
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        return to_aron(self)
+        from armarx_memory.aron.dataclasses import dataclass_to_aron
+        return dataclass_to_aron(self)
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        return cls(from_aron(dto))
+        from armarx_memory.aron.dataclasses import dataclass_from_aron
+        return dataclass_from_aron(cls, dto, verbose=2)
