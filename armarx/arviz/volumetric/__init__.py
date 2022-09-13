@@ -86,6 +86,7 @@ class Volumetric:
             func: Callable[[Any], np.ndarray],
             layer: Layer,
             vlimits=None,
+            id_prefix="",
             ):
         import matplotlib.pyplot as plt
 
@@ -111,4 +112,4 @@ class Volumetric:
             size = self.size_model.get_size(voxel_size=voxel_size, context=self._size_model_context)
             if size is None or min(size) <= 0:
                 continue
-            layer.add(Box(f"{i:>04}", position=x, size=size, color=color))
+            layer.add(Box(f"{id_prefix}{i:>04}", position=x, size=size, color=color))

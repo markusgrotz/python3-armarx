@@ -7,7 +7,7 @@ from typing import List, Optional
 
 import armarx.arviz as viz
 from armarx.math.transform import Transform
-from armarx.tools.cycle_clock import CycleClock
+from armarx.tools.metronome import Metronome
 
 
 # SLIDER EXAMPLE
@@ -372,7 +372,7 @@ class ArVizInteractExample:
         try:
             print("Press Ctrl+C to interrupt...")
 
-            cycle = CycleClock(duration_seconds=0.01)
+            metronome = Metronome(duration_seconds=0.01)
             while True:
 
                 result = self.arviz.commit(stage)
@@ -395,9 +395,9 @@ class ArVizInteractExample:
                         print(f"Processing spawner interaction ... (revision {result.revision})")
                         spawners.handle(interaction, stage)
 
-                if cycle.remaining_seconds <= 0:
-                    print("Remaining: ", cycle.remaining_seconds)
-                cycle.wait_for_next_cycle()
+                if metronome.remaining_seconds <= 0:
+                    print("Remaining: ", metronome.remaining_seconds)
+                metronome.wait_for_next_tick()
 
         except KeyboardInterrupt:
             pass
