@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "armarx"
-version = "0.19.0"
+version = "0.20.0"
 description = "A Python Toolbox for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 maintainers = ["Markus Grotz <markus.grotz@kit.edu>"]
