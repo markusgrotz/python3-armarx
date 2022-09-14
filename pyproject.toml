@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "armarx-dev"
 version = "0.19.0"
-description = "Python bindings for ArmarX"
+description = "A Python Toolbox for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 maintainers = ["Markus Grotz <markus.grotz@kit.edu>"]
 packages = [{include = "armarx"}, {include = "visionx"}, {include = "armarx_memory"}, {include = "armarx_objects"}]
@@ -14,15 +14,13 @@ classifiers = [
     "Framework :: Robot Framework "
 ]
 
-
-
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.6.9,<4.0"
 zeroc-ice = "3.7.0"
 lxml = ">=4.8.0"
 numpy = ">=1.19.5"
-transforms3d = ">=0.3.1"
-dataclasses = "*"  # Also works on Python 3.8
+transforms3d = ">=0.4.1"
+dataclasses = { version = ">=0.8", python = "<3.7" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -37,3 +35,8 @@ docs = ["sphinx"]
 #requires = ["setuptools", "wheel", "poetry-core>=1.0.0"]
 requires = ["poetry-core@https://github.com/python-poetry/poetry-core/archive/325312c016d69189ac93c945ba0c1b69296c5e54.zip"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "h2t"
+url = "https://pypi.humanoids.kit.edu/simple/"
+secondary = false
