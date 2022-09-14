@@ -1,4 +1,4 @@
-# Python bindings for ArmarX
+# Python ArmarX - A Python toolbox for ArmarX
 
 ```
 from armarx import 🤖  as ❤ 
