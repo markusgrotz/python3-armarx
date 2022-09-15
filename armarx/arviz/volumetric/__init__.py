@@ -8,11 +8,11 @@ from armarx.arviz.volumetric.size_models import SizeModel, FixedScaleSizeModel
 
 
 def get_grid_coordinates(
-        bounds: Union[np.ndarray, List[Tuple[float, float]]],
-        num=None,
-        flatten_dims=True,
-        return_voxel_size=False,
-        ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    bounds: Union[np.ndarray, List[Tuple[float, float]]],
+    num=None,
+    flatten_dims=True,
+    return_voxel_size=False,
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Create coordinates in a 3D grid.
 
@@ -53,16 +53,15 @@ def get_grid_coordinates(
         return xs
 
 
-
 class Volumetric:
-
     def __init__(
-            self,
-            bounds, num=None,
-            alpha=None,
-            cmap=None,
-            size_model: SizeModel =None,
-            ):
+        self,
+        bounds,
+        num=None,
+        alpha=None,
+        cmap=None,
+        size_model: SizeModel = None,
+    ):
 
         self.bounds = bounds
         self.num = num or 16
@@ -71,26 +70,29 @@ class Volumetric:
 
         if cmap is None:
             from matplotlib.cm import get_cmap
+
             cmap = get_cmap("viridis")
         elif isinstance(cmap, str):
             from matplotlib.cm import get_cmap
+
             cmap = get_cmap(cmap)
         self.cmap = cmap
 
         self.size_model = size_model or FixedScaleSizeModel(scale=1.0)
         self._size_model_context = SizeModel.Context()
 
-
     def draw_on(
-            self,
-            func: Callable[[Any], np.ndarray],
-            layer: Layer,
-            vlimits=None,
-            id_prefix="",
-            ):
+        self,
+        func: Callable[[Any], np.ndarray],
+        layer: Layer,
+        vlimits=None,
+        id_prefix="",
+    ):
         import matplotlib.pyplot as plt
 
-        xs, voxel_size = get_grid_coordinates(self.bounds, self.num, return_voxel_size=True)
+        xs, voxel_size = get_grid_coordinates(
+            self.bounds, self.num, return_voxel_size=True
+        )
         ys = np.array(func(xs))
 
         if vlimits is None:
@@ -109,7 +111,9 @@ class Volumetric:
             self._size_model_context.x = x
             self._size_model_context.y = y
 
-            size = self.size_model.get_size(voxel_size=voxel_size, context=self._size_model_context)
+            size = self.size_model.get_size(
+                voxel_size=voxel_size, context=self._size_model_context
+            )
             if size is None or min(size) <= 0:
                 continue
             layer.add(Box(f"{id_prefix}{i:>04}", position=x, size=size, color=color))

@@ -5,7 +5,6 @@ import numpy as np
 from armarx.viz.data import Element
 
 
-
 import armarx.viz as viz
 
 from armarx.arviz import conversions as conv
@@ -27,10 +26,10 @@ class Mesh(Element):
     """
 
     def __init__(
-            self,
-            id,
-            **kwargs,
-            ):
+        self,
+        id,
+        **kwargs,
+    ):
         super().__init__(ice_data_cls=viz.data.ElementMesh, id=id, **kwargs)
 
         self.vertices = []
@@ -40,23 +39,31 @@ class Mesh(Element):
     @property
     def vertices(self) -> np.ndarray:
         """An N x 3 array of vertex positions."""
-        assert self._match_shapes(self._vertices.shape, [(0,), (None, 3)]), self._vertices.shape
+        assert self._match_shapes(
+            self._vertices.shape, [(0,), (None, 3)]
+        ), self._vertices.shape
         return self._vertices
 
     @vertices.setter
     def vertices(self, value):
-        value = self._to_array_checked(value, [(0,), (None, 3)], "mesh vertices", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(0,), (None, 3)], "mesh vertices", dtype=np.float
+        )
         self._vertices = value
 
     @property
     def colors(self):
         """An N x 4 array of vertex colors."""
-        assert self._match_shapes(self._colors.shape, [(0,), (None, 4)]), self._colors.shape
+        assert self._match_shapes(
+            self._colors.shape, [(0,), (None, 4)]
+        ), self._colors.shape
         return self._colors
 
     @colors.setter
     def colors(self, value):
-        value = self._to_array_checked(value, [(0,), (None, 3), (None, 4)], "mesh colors", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(0,), (None, 3), (None, 4)], "mesh colors", dtype=np.float
+        )
         if value.shape[-1] == 3:
             self._colors = np.concatenate([value, [[255]] * len(value)], axis=-1)
         else:
@@ -74,7 +81,9 @@ class Mesh(Element):
 
     @faces.setter
     def faces(self, value: Union[np.ndarray, List[viz.data.Face]]):
-        value = self._to_array_checked(value, [(0,), (None, 6)], "mesh faces", dtype=int)
+        value = self._to_array_checked(
+            value, [(0,), (None, 6)], "mesh faces", dtype=int
+        )
         self._faces = value
 
     def _update_ice_data(self, ice_data):
@@ -86,9 +95,9 @@ class Mesh(Element):
 
     @staticmethod
     def make_grid2d_faces(
-            num_x: int,
-            num_y: int,
-            ) -> np.ndarray:
+        num_x: int,
+        num_y: int,
+    ) -> np.ndarray:
         """
         Make vertex and color indices of triangular faces of a 2D grid.
 
@@ -115,7 +124,7 @@ class Mesh(Element):
         i = 0
         for x in range(num_x - 1):
             for y in range(num_y - 1):
-                """ 
+                """
                 In counter-clockwise order:
                       (x)  (x+1)
                  (y)   *----*

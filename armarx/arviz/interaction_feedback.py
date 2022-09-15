@@ -11,6 +11,7 @@ from armarx.viz.data import InteractionFeedback
 from armarx.viz.data import InteractionFeedbackType
 from armarx.viz.data import CommitResult
 
+
 class InteractionFeedbackType(enum.IntFlag):
     None_ = 0
 
@@ -23,10 +24,9 @@ class InteractionFeedbackType(enum.IntFlag):
 
 
 class InteractionFeedback:
-
     def __init__(
-            self,
-            data: InteractionFeedback,
+        self,
+        data: InteractionFeedback,
     ):
         self._data = data
 
@@ -82,6 +82,7 @@ class InteractionFeedback:
     def transformation(self) -> Transform:
 
         from armarx.arviz.conv import GlobalPoseConv
+
         global_pose = self._data.transformation
         return self.global_pose_conv.from_ice(global_pose)
 
@@ -95,10 +96,9 @@ class InteractionFeedback:
 
 
 class CommitResult:
-
     def __init__(
-            self,
-            data: CommitResult,
+        self,
+        data: CommitResult,
     ):
         self._data = data
         ice_interactions: List[InteractionFeedback] = self._data.interactions

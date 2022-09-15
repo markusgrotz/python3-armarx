@@ -2,7 +2,8 @@ import Ice
 
 from .ice_manager import ice_communicator
 from .slice_loader import load_armarx_slice
-load_armarx_slice('RobotAPI', 'observers/KinematicUnitObserverInterface.ice')
+
+load_armarx_slice("RobotAPI", "observers/KinematicUnitObserverInterface.ice")
 
 from armarx import DatafieldRefBase
 from armarx import ChannelRefBase
@@ -39,26 +40,29 @@ class ChannelRefFactory(Ice.ObjectFactory):
         return ChannelRef()
 
 
-load_armarx_slice('RobotAPI', 'core/FramedPoseBase.ice')
+load_armarx_slice("RobotAPI", "core/FramedPoseBase.ice")
 from armarx import PoseBase
 from armarx import FramedPositionBase
 from armarx import FramedPoseBase
 from armarx import Vector3Base
 from armarx import QuaternionBase
 
-load_armarx_slice('ArmarXCore', 'observers/Timestamp.ice')
+load_armarx_slice("ArmarXCore", "observers/Timestamp.ice")
 from armarx import TimestampBase
 
 
 class Vector3(Vector3Base):
-        pass
+    pass
+
 
 class Vector3Factory(Ice.ObjectFactory):
     def create(self, t):
         return Vector3()
 
+
 class Quaternion(QuaternionBase):
-        pass
+    pass
+
 
 class QuaternionFactory(Ice.ObjectFactory):
     def create(self, t):
@@ -68,13 +72,15 @@ class QuaternionFactory(Ice.ObjectFactory):
 class Pose(PoseBase):
     pass
 
+
 class PoseFactory(Ice.ObjectFactory):
     def create(self, t):
         return Pose()
 
 
 class FramedPosition(FramedPositionBase):
-        pass
+    pass
+
 
 class FramedPositionFactory(Ice.ObjectFactory):
     def create(self, t):
@@ -82,7 +88,8 @@ class FramedPositionFactory(Ice.ObjectFactory):
 
 
 class FramedPose(FramedPoseBase):
-        pass
+    pass
+
 
 class FramedPoseFactory(Ice.ObjectFactory):
     def create(self, t):
@@ -90,7 +97,8 @@ class FramedPoseFactory(Ice.ObjectFactory):
 
 
 class Timestamp(TimestampBase):
-        pass
+    pass
+
 
 class TimestampFactory(Ice.ObjectFactory):
     def create(self, t):
@@ -99,13 +107,19 @@ class TimestampFactory(Ice.ObjectFactory):
 
 def register():
     ice_communicator.addObjectFactory(VariantFactory(), Variant.ice_staticId())
-    ice_communicator.addObjectFactory(TimedVariantFactory(), TimedVariant.ice_staticId())
-    ice_communicator.addObjectFactory(DatafieldRefFactory(), DatafieldRef.ice_staticId())
+    ice_communicator.addObjectFactory(
+        TimedVariantFactory(), TimedVariant.ice_staticId()
+    )
+    ice_communicator.addObjectFactory(
+        DatafieldRefFactory(), DatafieldRef.ice_staticId()
+    )
     ice_communicator.addObjectFactory(ChannelRefFactory(), ChannelRef.ice_staticId())
 
     ice_communicator.addObjectFactory(TimestampFactory(), Timestamp.ice_staticId())
     ice_communicator.addObjectFactory(Vector3Factory(), Vector3.ice_staticId())
     ice_communicator.addObjectFactory(QuaternionFactory(), Quaternion.ice_staticId())
     ice_communicator.addObjectFactory(PoseFactory(), Pose.ice_staticId())
-    ice_communicator.addObjectFactory(FramedPositionFactory(), FramedPosition.ice_staticId())
+    ice_communicator.addObjectFactory(
+        FramedPositionFactory(), FramedPosition.ice_staticId()
+    )
     ice_communicator.addObjectFactory(FramedPoseFactory(), FramedPose.ice_staticId())

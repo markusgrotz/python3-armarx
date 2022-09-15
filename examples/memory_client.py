@@ -16,7 +16,9 @@ def read(core_segment_id: mem.MemoryID):
     example_reader = mns.wait_for_reader(core_segment_id)
 
     # Perform query.
-    memory = example_reader.query_core_segment(name=core_segment_id.core_segment_name, latest_snapshot=True)
+    memory = example_reader.query_core_segment(
+        name=core_segment_id.core_segment_name, latest_snapshot=True
+    )
 
     result_data = None
 
@@ -43,7 +45,6 @@ def read(core_segment_id: mem.MemoryID):
     return result_data
 
 
-
 def write(entity_id: mem.MemoryID, instances_data: List[Dict]):
     # Get Writer.
     example_writer = mns.wait_for_writer(memory_id)
@@ -53,11 +54,13 @@ def write(entity_id: mem.MemoryID, instances_data: List[Dict]):
     now = mem.time_usec()
 
     # Add a snapshot.
-    commit.add(memcl.EntityUpdate(
-        entity_id=entity_id,
-        time_created_usec=now,
-        instances_data=[aron_conv.to_aron(data) for data in instances_data],
-    ))
+    commit.add(
+        memcl.EntityUpdate(
+            entity_id=entity_id,
+            time_created_usec=now,
+            instances_data=[aron_conv.to_aron(data) for data in instances_data],
+        )
+    )
     print(commit.updates[-1].instances_data)
 
     # Perform the commit.
@@ -69,15 +72,14 @@ def write(entity_id: mem.MemoryID, instances_data: List[Dict]):
         print(f"- Success: {result.success}, error message: '{result.errorMessage}'")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     In the Scenario Manager:
     - Start the scenario "ArMemCore"
     - From the scenario "ArMemExample":
       - Start the component "ExampleMemory" (RobotAPI)
       - Start the component "ExampleMemoryClient" (RobotAPI)
-    
+
     Open the GUI plugin "ArMem.MemoryViewer"
     - Check "Auto Update"
     """
@@ -99,7 +101,9 @@ if __name__ == '__main__':
     example_data["the_int"] = 42
 
     # Write
-    entity_id = core_segment_id.with_provider_segment_name(tag).with_entity_name("from_python")
+    entity_id = core_segment_id.with_provider_segment_name(tag).with_entity_name(
+        "from_python"
+    )
     write(entity_id=entity_id, instances_data=[example_data])
 
     """

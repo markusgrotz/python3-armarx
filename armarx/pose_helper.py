@@ -9,8 +9,11 @@ import numpy as np
 import transforms3d as tf3d
 
 from armarx import slice_loader
+
 slice_loader.load_armarx_slice("ArmarXCore", "components/EmergencyStopInterface.ice")
-slice_loader.load_armarx_slice("ArmarXCore", "components/SimpleStatechartExecutorInterface.ice")
+slice_loader.load_armarx_slice(
+    "ArmarXCore", "components/SimpleStatechartExecutorInterface.ice"
+)
 
 from armarx import RobotStateComponentInterfacePrx
 from armarx import FramedPositionBase
@@ -21,7 +24,8 @@ from armarx import PoseBase
 from armarx import Vector3Base
 from armarx import QuaternionBase
 
-def mat2pose(pose: np.ndarray, frame: str=None, agent: str=None) -> FramedPoseBase:
+
+def mat2pose(pose: np.ndarray, frame: str = None, agent: str = None) -> FramedPoseBase:
     q = tf3d.quaternions.mat2quat(pose[:3, :3])
     q = QuaternionBase(*q)
     v = Vector3Base(*pose[:3, 3])
@@ -55,7 +59,9 @@ def pose2mat(pose: FramedPoseBase) -> np.ndarray:
 
 
 def convert_position_to_global(f: FramedPositionBase) -> np.ndarray:
-    pose = FramedPoseBase(position=f, orientation=FramedOrientationBase(), frame=f.frame, agent=f.agent)
+    pose = FramedPoseBase(
+        position=f, orientation=FramedOrientationBase(), frame=f.frame, agent=f.agent
+    )
     return convert_pose_to_global(pose)
 
 
@@ -67,6 +73,7 @@ def convert_mat_to_global(pose: np.ndarray, frame: str) -> np.ndarray:
     transform_robot_node_to_root = pose2mat(robot_node)
     transform_root_to_global = pose2mat(robot_pose)
 
+
 def inv(pose: np.ndarray) -> np.ndarray:
     """
     can be also done by np.linalg.inv but this is a little bit faster
@@ -77,8 +84,7 @@ def inv(pose: np.ndarray) -> np.ndarray:
     return inv_pose
 
 
-
-def robot_state(timestamp:int = None):
+def robot_state(timestamp: int = None):
     """
     Convenience method to get the robot state. If not timestamp is given return
     the current state
@@ -89,7 +95,9 @@ def robot_state(timestamp:int = None):
     return robot_state.getSynchronizedRobot()
 
 
-def convert_mat_to_robot_node(pose: np.ndarray, frame: str, timestamp:int = None) -> np.ndarray:
+def convert_mat_to_robot_node(
+    pose: np.ndarray, frame: str, timestamp: int = None
+) -> np.ndarray:
     """
     given a global pose
 
@@ -101,19 +109,22 @@ def convert_mat_to_robot_node(pose: np.ndarray, frame: str, timestamp:int = None
     return np.dot(inv(robot_node_pose), pose)
 
 
-
-def convert_mat_to_global(pose: np.ndarray, frame: str, timestamp:int = None) -> np.ndarray:
+def convert_mat_to_global(
+    pose: np.ndarray, frame: str, timestamp: int = None
+) -> np.ndarray:
     current_robot_state = robot_state(timestamp)
     robot_node = current_robot_state.getRobotNode(frame)
     robot_node_pose = pose2mat(robot_node.getGlobalPose())
     return np.dot(robot_node_pose, pose)
 
 
-def convert_mat_to_root(pose: np.ndarray, frame: str, timestamp:int = None) -> np.ndarray:
+def convert_mat_to_root(
+    pose: np.ndarray, frame: str, timestamp: int = None
+) -> np.ndarray:
     current_robot_state = robot_state(timestamp)
-    if frame == 'Global' or frame == 'armarx::Global':
+    if frame == "Global" or frame == "armarx::Global":
         robot_pose = pose2mat(current_robot_state.getGlobalPose())
-        return np.dot(robot_pose, pose) 
+        return np.dot(robot_pose, pose)
     else:
         robot_node = current_robot_state.getRobotNode(frame).getPoseInRootFrame()
         transform_robot_node_to_root = pose2mat(robot_node)
@@ -127,7 +138,7 @@ def convert_pose_to_global(f: FramedPoseBase) -> np.ndarray:
 
     """
     transform = pose2mat(f)
-    if f.frame == 'Global' or f.frame == 'armarx::Global':
+    if f.frame == "Global" or f.frame == "armarx::Global":
         return transform
     return convert_mat_to_global(transform, f.frame)
 

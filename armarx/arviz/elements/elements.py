@@ -5,12 +5,13 @@ import numpy as np
 
 
 import armarx.viz as viz
-from armarx.arviz import conversions 
+from armarx.arviz import conversions
 from armarx.arviz.elements.Element import Element
 
 
 def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
     import transforms3d as tf3d
+
     dir = np.array(dir)
     dir /= np.linalg.norm(dir)
     cross = np.cross(natural_dir, dir)
@@ -24,7 +25,6 @@ def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
     return ori
 
 
-
 class Arrow(Element):
     """
     An arrow.
@@ -33,13 +33,13 @@ class Arrow(Element):
     natural_dir = np.array((0, 1, 0))
 
     def __init__(
-            self,
-            id,
-            length=100.0,
-            width=10.0,
-            direction=None,
-            from_to=None,
-            **kwargs,
+        self,
+        id,
+        length=100.0,
+        width=10.0,
+        direction=None,
+        from_to=None,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementArrow, id=id, **kwargs)
         self.length: float = length
@@ -84,13 +84,13 @@ class ArrowCircle(Element):
     natural_normal = np.array((0, 1, 0))
 
     def __init__(
-            self,
-            id,
-            radius=100.,
-            completion=1.0,
-            width=10.,
-            normal=None,
-            **kwargs,
+        self,
+        id,
+        radius=100.0,
+        completion=1.0,
+        width=10.0,
+        normal=None,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementArrowCircle, id=id, **kwargs)
         self.radius: float = radius
@@ -120,10 +120,10 @@ class Box(Element):
     """
 
     def __init__(
-            self,
-            id,
-            size=1.0,
-            **kwargs,
+        self,
+        id,
+        size=1.0,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementBox, id=id, **kwargs)
 
@@ -155,13 +155,13 @@ class Cylinder(Element):
     natural_dir = np.array((0, 1, 0))
 
     def __init__(
-            self,
-            id,
-            radius=10.,
-            height=10.,
-            direction=None,
-            from_to=None,
-            **kwargs,
+        self,
+        id,
+        radius=10.0,
+        height=10.0,
+        direction=None,
+        from_to=None,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementCylinder, id=id, **kwargs)
         self.radius: float = radius
@@ -176,7 +176,7 @@ class Cylinder(Element):
     def from_to(self):
         pos = self.position
         dir = self.direction
-        return pos - self.height/2 * dir, pos + self.height/2 * dir
+        return pos - self.height / 2 * dir, pos + self.height / 2 * dir
 
     @from_to.setter
     def from_to(self, value):
@@ -207,10 +207,10 @@ class Sphere(Element):
     """
 
     def __init__(
-            self,
-            id,
-            radius=10.,
-            **kwargs,
+        self,
+        id,
+        radius=10.0,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementSphere, id=id, **kwargs)
         self.radius: float = radius
@@ -226,11 +226,11 @@ class Ellipsoid(Element):
     """
 
     def __init__(
-            self,
-            id,
-            axis_lengths=None,
-            curvature=None,
-            **kwargs,
+        self,
+        id,
+        axis_lengths=None,
+        curvature=None,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementEllipsoid, id=id, **kwargs)
 
@@ -245,7 +245,9 @@ class Ellipsoid(Element):
     def axis_lengths(self, value):
         try:
             iter(value)
-            value = self._to_array_checked(value, (3,), "ellipsoid axis lengths", np.float)
+            value = self._to_array_checked(
+                value, (3,), "ellipsoid axis lengths", np.float
+            )
             self._axis_lengths = value
         except TypeError:
             self._axis_lengths = np.array([value, value, value]).astype(np.float)
@@ -271,12 +273,12 @@ class Line(Element):
     """
 
     def __init__(
-            self,
-            id,
-            start=None,
-            end=None,
-            line_width=10.,
-            **kwargs,
+        self,
+        id,
+        start=None,
+        end=None,
+        line_width=10.0,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementLine, id=id, **kwargs)
 
@@ -317,20 +319,19 @@ class Pose(Element):
     """
 
     def __init__(
-            self,
-            id,
-            **kwargs,
+        self,
+        id,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementPose, id=id, **kwargs)
 
 
 class Text(Element):
-
     def __init__(
-            self,
-            id,
-            text="",
-            **kwargs,
+        self,
+        id,
+        text="",
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementText, id=id, **kwargs)
         self.text: str = text
@@ -347,16 +348,15 @@ class ModelDrawStyle(enum.IntFlag):
 
 
 class Object(Element):
-
     def __init__(
-            self,
-            id,
-            project="",
-            filename="",
-            file=None,
-            use_collision_model=False,
-            override_color=None,
-            **kwargs,
+        self,
+        id,
+        project="",
+        filename="",
+        file=None,
+        use_collision_model=False,
+        override_color=None,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementObject, id=id, **kwargs)
         self.project: str = project
@@ -413,20 +413,21 @@ class Robot(Object):
     """
 
     def __init__(
-            self,
-            id,
-            joint_angles=None,
-            **kwargs,
+        self,
+        id,
+        joint_angles=None,
+        **kwargs,
     ):
         super().__init__(id=id, **kwargs)
         self.ice_data_cls = viz.data.ElementRobot
 
-        self.joint_angles: Dict[str, float] = {} if joint_angles is None else joint_angles
+        self.joint_angles: Dict[str, float] = (
+            {} if joint_angles is None else joint_angles
+        )
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
         ice_data.jointValues = self.joint_angles
-
 
 
 class PointCloud(Element):
@@ -435,13 +436,13 @@ class PointCloud(Element):
     """
 
     def __init__(
-            self,
-            id,
-            transparency=0.0,
-            point_size=1.0,
-            points=None,
-            point_colors=None,
-            **kwargs,
+        self,
+        id,
+        transparency=0.0,
+        point_size=1.0,
+        points=None,
+        point_colors=None,
+        **kwargs,
     ):
         """
         :param id:
@@ -482,13 +483,15 @@ class PointCloud(Element):
             (N, 6): Set as (x, y, z, r, g, b) with default alpha (255).
             (N, 7): Set as (x, y, z, r, g, b, a).
         """
-        value = self._to_array_checked(value, [(0,), (None, 3), (None, 6), (None, 7)], "points", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(0,), (None, 3), (None, 6), (None, 7)], "points", dtype=np.float
+        )
         if value.size == 0:
             self._points = value
             return
 
         self._points = np.stack([[0, 0, 0, 100, 100, 100, 255]] * value.shape[0])
-        self._points[:, :value.shape[-1]] = value
+        self._points[:, : value.shape[-1]] = value
 
     @property
     def point_positions(self) -> np.ndarray:
@@ -497,7 +500,9 @@ class PointCloud(Element):
 
     @point_positions.setter
     def point_positions(self, value):
-        value = self._to_array_checked(value, [(None, 3)], "point positions", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(None, 3)], "point positions", dtype=np.float
+        )
         self._points[:, :3] = value
 
     @property
@@ -507,20 +512,23 @@ class PointCloud(Element):
 
     @point_colors.setter
     def point_colors(self, value):
-        value = self._to_array_checked(value, [(3,), (4,), (None, 3), (None, 4)], "point colors")
-        self._points[:, 3:(3 + value.shape[-1])] = value
-
+        value = self._to_array_checked(
+            value, [(3,), (4,), (None, 3), (None, 4)], "point colors"
+        )
+        self._points[:, 3 : (3 + value.shape[-1])] = value
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
 
-        dtype = np.dtype([
-            ('position', np.float32, (3,)),
-            ('a', np.uint8),
-            ('r', np.uint8),
-            ('g', np.uint8),
-            ('b', np.uint8),
-        ])
+        dtype = np.dtype(
+            [
+                ("position", np.float32, (3,)),
+                ("a", np.uint8),
+                ("r", np.uint8),
+                ("g", np.uint8),
+                ("b", np.uint8),
+            ]
+        )
         buffer = np.zeros(self.points.shape[0], dtype=dtype)
 
         assert self.points.shape[1] == 7
@@ -541,12 +549,12 @@ class Polygon(Element):
     """
 
     def __init__(
-            self,
-            id,
-            line_width=0.0,
-            line_color=None,
-            points=None,
-            **kwargs,
+        self,
+        id,
+        line_width=0.0,
+        line_color=None,
+        points=None,
+        **kwargs,
     ):
         super().__init__(ice_data_cls=viz.data.ElementPolygon, id=id, **kwargs)
         self.points = []
@@ -581,7 +589,9 @@ class Polygon(Element):
 
     @points.setter
     def points(self, value):
-        value = self._to_array_checked(value, [(0,), (None, 3)], "polygon points", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(0,), (None, 3)], "polygon points", dtype=np.float
+        )
         self._points = value
 
     def _update_ice_data(self, ice_data):

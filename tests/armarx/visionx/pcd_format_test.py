@@ -13,8 +13,8 @@ def test_store_and_load_pcd_file():
 
     for i in range(pc.shape[0]):
         for j in range(pc.shape[1]):
-            pc["position"][i, j] = (i, j, - i * j)
-            pc["color"][i, j] = vpc.rgb_to_uint32(*(50 + 10 * np.array([i, j, - i * j])))
+            pc["position"][i, j] = (i, j, -i * j)
+            pc["color"][i, j] = vpc.rgb_to_uint32(*(50 + 10 * np.array([i, j, -i * j])))
 
     vpc.store_point_cloud(filepath, pc)
     assert os.path.isfile(filepath)

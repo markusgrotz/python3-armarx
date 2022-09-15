@@ -14,7 +14,6 @@ def time_usec() -> int:
 
 
 class DateTimeIceConverter(IceConverter):
-
     @classmethod
     def _import_dto(cls):
         return DateTime
@@ -30,7 +29,7 @@ class DateTimeIceConverter(IceConverter):
         return dto
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     c = DateTimeIceConverter()
     bo = time_usec()
     dto = c.to_ice(bo)

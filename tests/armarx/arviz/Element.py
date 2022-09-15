@@ -9,6 +9,7 @@ import armarx.arviz as viz
 @pytest.fixture
 def element():
     import armarx.viz
+
     e = viz.Element(armarx.viz.data.ElementPose, "id")
     return e
 
@@ -19,7 +20,9 @@ def check_position(e, pos):
 
 
 def check_orientation(e, ori_mat=None, ori_quat=None):
-    assert not (ori_mat is None and ori_quat is None), "Either ori_mat or ori_quat must be given."
+    assert not (
+        ori_mat is None and ori_quat is None
+    ), "Either ori_mat or ori_quat must be given."
     if ori_mat is None:
         ori_mat = tf3d.quaternions.quat2mat(ori_quat)
     elif ori_quat is None:

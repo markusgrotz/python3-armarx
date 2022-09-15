@@ -2,8 +2,8 @@ import numpy as np
 
 
 def make_grid(
-        *x_i,
-        ) -> np.ndarray:
+    *x_i,
+) -> np.ndarray:
     """
     Given arrays N arrays
         (a_i) (i=1..M_a), (b_j) (j=1..M_b), ..., (z_k) (k = 1..M_z),

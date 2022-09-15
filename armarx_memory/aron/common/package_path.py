@@ -13,6 +13,7 @@ class PackagePath(AronDataclass):
     def get_system_path(self) -> str:
         import os
         from armarx import cmake_helper
+
         [data_path] = cmake_helper.get_data_path(self.package)
         abs_path = os.path.join(data_path, self.package, self.path)
         return abs_path

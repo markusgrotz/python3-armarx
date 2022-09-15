@@ -14,14 +14,15 @@ date_time_conv = DateTimeIceConverter()
 
 
 class MemoryID(ice_twin.IceTwin):
-
-    def __init__(self,
-                 memory_name: str = "",
-                 core_segment_name: str = "",
-                 provider_segment_name: str = "",
-                 entity_name: str = "",
-                 timestamp_usec: int = -1,
-                 instance_index: int = -1):
+    def __init__(
+        self,
+        memory_name: str = "",
+        core_segment_name: str = "",
+        provider_segment_name: str = "",
+        entity_name: str = "",
+        timestamp_usec: int = -1,
+        instance_index: int = -1,
+    ):
         self.memory_name = memory_name
         self.core_segment_name = core_segment_name
         self.provider_segment_name = provider_segment_name
@@ -39,7 +40,7 @@ class MemoryID(ice_twin.IceTwin):
             while len(item) > 0 and item[-1] == "\\":
                 # The / causing the split was escaped. Merge the items together.
                 if i < len(items):
-                    items[i] = item[:-1] + "/" + items[i+1]
+                    items[i] = item[:-1] + "/" + items[i + 1]
                     del items[i]
             i += 1
 
@@ -56,7 +57,6 @@ class MemoryID(ice_twin.IceTwin):
             pass
 
         return self
-
 
     def set_memory_id(self, id: "MemoryID"):
         self.memory_name = id.memory_name
@@ -80,7 +80,6 @@ class MemoryID(ice_twin.IceTwin):
     def set_instance_id(self, id: "MemoryID"):
         self.set_snapshot_id(id)
         self.instance_index = id.instance_index
-
 
     def with_memory_name(self, name: str) -> "MemoryID":
         c = copy.copy(self)
@@ -111,7 +110,6 @@ class MemoryID(ice_twin.IceTwin):
         c = copy.copy(self)
         c.instance_index = index
         return c
-
 
     def contains(self, id: "MemoryID"):
         general = self
@@ -150,13 +148,14 @@ class MemoryID(ice_twin.IceTwin):
         if other is None or not isinstance(other, MemoryID):
             return False
 
-        return (other.memory_name == self.memory_name
-                and other.core_segment_name == self.core_segment_name
-                and other.provider_segment_name == self.provider_segment_name
-                and other.entity_name == self.entity_name
-                and other.instance_index == self.instance_index
-                and other.timestamp_usec == self.timestamp_usec
-                )
+        return (
+            other.memory_name == self.memory_name
+            and other.core_segment_name == self.core_segment_name
+            and other.provider_segment_name == self.provider_segment_name
+            and other.entity_name == self.entity_name
+            and other.instance_index == self.instance_index
+            and other.timestamp_usec == self.timestamp_usec
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -166,8 +165,7 @@ class MemoryID(ice_twin.IceTwin):
         return hash((self.timestamp_usec, self.instance_index, self.entity_name))
 
     def __repr__(self):
-        return "<{} {}>".format(
-            self.__class__.__name__, self.__str__())
+        return "<{} {}>".format(self.__class__.__name__, self.__str__())
 
     def __str__(self):
         return "'{}'".format("/".join(map(str, self.get_set_items())))
@@ -198,10 +196,14 @@ class MemoryID(ice_twin.IceTwin):
         return items
 
     def get_all_items(self):
-        return [self.memory_name, self.core_segment_name,
-                self.provider_segment_name, self.entity_name,
-                self.timestamp_usec, self.instance_index]
-
+        return [
+            self.memory_name,
+            self.core_segment_name,
+            self.provider_segment_name,
+            self.entity_name,
+            self.timestamp_usec,
+            self.instance_index,
+        ]
 
     def _get_ice_cls(self):
         return armem.data.MemoryID
@@ -222,10 +224,10 @@ class MemoryID(ice_twin.IceTwin):
         self.timestamp_usec = date_time_conv.from_ice(ice.timestamp)
         self.instance_index = ice.instanceIndex
 
-
     @classmethod
     def from_aron(cls, aron: "armarx.aron.data.dto.GenericData") -> "MemoryID":
         from armarx_memory.aron.conversion import from_aron
+
         data = from_aron(aron)
         self = cls()
         self.memory_name = data["memoryName"]
@@ -235,7 +237,6 @@ class MemoryID(ice_twin.IceTwin):
         self.timestamp_usec = int(data["timestamp"])
         self.instance_index = data["instanceIndex"]
         return self
-
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         import numpy as np
@@ -259,6 +260,6 @@ class MemoryID(ice_twin.IceTwin):
                     "microSeconds": np.int64(self.timestamp_usec),
                 },
             },
-            "instanceIndex": self.instance_index
+            "instanceIndex": self.instance_index,
         }
         return to_aron(data)

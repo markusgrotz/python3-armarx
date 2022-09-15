@@ -5,7 +5,6 @@ from armarx.math.transform import Transform
 
 
 class GlobalPoseConv(IceConverter):
-
     @classmethod
     def _import_dto(cls):
         return armarx.viz.data.GlobalPose
@@ -17,5 +16,6 @@ class GlobalPoseConv(IceConverter):
         return dto
 
     def _from_ice(self, dto: armarx.viz.data.GlobalPose, *args, **kwargs):
-        return Transform(translation=(dto.x, dto.y, dto.z),
-                         rotation=(dto.qw, dto.qx, dto.qy, dto.qz))
+        return Transform(
+            translation=(dto.x, dto.y, dto.z), rotation=(dto.qw, dto.qx, dto.qy, dto.qz)
+        )

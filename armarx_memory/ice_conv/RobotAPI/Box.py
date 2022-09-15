@@ -15,16 +15,24 @@ class Box(IceTwin):
     """
 
     def __init__(
-            self,
-            position: Optional[np.ndarray] = None,
-            orientation: Optional[np.ndarray] = None,
-            extents: Optional[np.ndarray] = None,
-            ):
+        self,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        extents: Optional[np.ndarray] = None,
+    ):
         import transforms3d as tf3d
 
-        self.position = np.array(position) if position is not None else np.zeros(3, dtype=float)
-        self.orientation = np.array(orientation) if orientation is not None else tf3d.quaternions.qeye()
-        self.extents = np.array(extents) if extents is not None else np.zeros(3, dtype=float)
+        self.position = (
+            np.array(position) if position is not None else np.zeros(3, dtype=float)
+        )
+        self.orientation = (
+            np.array(orientation)
+            if orientation is not None
+            else tf3d.quaternions.qeye()
+        )
+        self.extents = (
+            np.array(extents) if extents is not None else np.zeros(3, dtype=float)
+        )
 
         self.__vec3_conv: Optional[Vector3BaseConv] = None
         self.__quat_conv: Optional[QuaternionBaseConv] = None
@@ -32,9 +40,10 @@ class Box(IceTwin):
     @property
     def pose(self) -> np.ndarray:
         import transforms3d as tf3d
-        return tf3d.affines.compose(T=self.position,
-                                    R=tf3d.quaternions.quat2mat(self.orientation),
-                                    Z=np.ones(3))
+
+        return tf3d.affines.compose(
+            T=self.position, R=tf3d.quaternions.quat2mat(self.orientation), Z=np.ones(3)
+        )
 
     @classmethod
     def from_aabb(cls, minim, maxim) -> "Box":
@@ -47,7 +56,6 @@ class Box(IceTwin):
     @classmethod
     def from_aabb_dict(cls, aabb_dict: Dict) -> "Box":
         return cls.from_aabb(minim=aabb_dict["min"], maxim=aabb_dict["max"])
-
 
     def get_corners(self, global_pose=np.eye(4)) -> List[np.ndarray]:
         pose = global_pose @ self.pose
@@ -68,11 +76,11 @@ class Box(IceTwin):
         pmax = np.max(points, axis=0)
         return Box(0.5 * (pmin + pmax), tf3d.quaternions.qeye(), pmax - pmin)
 
-
     @classmethod
     def _get_ice_cls(cls):
         slice_loader.load_armarx_slice("RobotAPI", "objectpose/object_pose_types.ice")
         from armarx.objpose import Box
+
         return Box
 
     def _set_from_ice(self, dto):
@@ -100,5 +108,7 @@ class Box(IceTwin):
     def __repr__(self):
         return "<{c} pos={p} ori={o} ext={e}>".format(
             c=self.__class__.__name__,
-            p=self.position, o=self.orientation, e=self.extents
+            p=self.position,
+            o=self.orientation,
+            e=self.extents,
         )

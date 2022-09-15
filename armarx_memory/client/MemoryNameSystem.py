@@ -16,12 +16,11 @@ from armarx_memory.client.Writer import Writer
 
 
 class ServerProxies:
-
     def __init__(
-            self,
-            reading: Optional[armem.server.ReadingMemoryInterface] = None,
-            writing: Optional[armem.server.WritingMemoryInterface] = None,
-            ):
+        self,
+        reading: Optional[armem.server.ReadingMemoryInterface] = None,
+        writing: Optional[armem.server.WritingMemoryInterface] = None,
+    ):
         self.reading = reading
         self.writing = writing
 
@@ -37,48 +36,50 @@ class MemoryNameSystem:
     MemoryNameSystemPrx = "armarx.armem.mns.MemoryNameSystemInterfacePrx"
     MemoryServerPrx = "armarx.armem.server.MemoryInterfacePrx"
 
-
     @classmethod
     def get_mns(cls, mns_name="MemoryNameSystem", **kwargs) -> "MemoryNameSystem":
         import Ice
 
         try:
             mns_proxy = ice_manager.get_proxy(
-                armarx.armem.mns.MemoryNameSystemInterfacePrx, mns_name)
+                armarx.armem.mns.MemoryNameSystemInterfacePrx, mns_name
+            )
             return MemoryNameSystem(mns_proxy, **kwargs)
 
         except Ice.NotRegisteredException as e:
             cls.cls_logger.error(e)
-            raise armem_error.ArMemError(f"Memory Name System '{MemoryNameSystem}' is not registered.")
+            raise armem_error.ArMemError(
+                f"Memory Name System '{MemoryNameSystem}' is not registered."
+            )
 
     @classmethod
-    def wait_for_mns(cls, mns_name="MemoryNameSystem", logger=None, **kwargs) -> "MemoryNameSystem":
+    def wait_for_mns(
+        cls, mns_name="MemoryNameSystem", logger=None, **kwargs
+    ) -> "MemoryNameSystem":
         if logger is not None:
             logger.info("Wait for Memory Name System ... ")
 
         mns_proxy = ice_manager.wait_for_proxy(
-            armem.mns.MemoryNameSystemInterfacePrx, mns_name, timeout=0)
+            armem.mns.MemoryNameSystemInterfacePrx, mns_name, timeout=0
+        )
 
         if logger is not None:
             logger.info("Done.")
 
         return MemoryNameSystem(mns_proxy, **kwargs)
 
-
     def __init__(
-            self,
-            mns: Optional[MemoryNameSystemPrx],
-            logger=None,
-            ):
+        self,
+        mns: Optional[MemoryNameSystemPrx],
+        logger=None,
+    ):
 
         self.mns = mns
         self.servers: Dict[str, ServerProxies] = {}
 
         self.logger = logger or self.cls_logger
 
-
     # Server Resolution
-
 
     def update(self):
         import Ice
@@ -95,13 +96,14 @@ class MemoryNameSystem:
                 for name, server in result.servers.items()
             }
         else:
-            raise armem_error.ArMemError(f"MemoryNameSystem query failed: {result.errorMessage}")
-
+            raise armem_error.ArMemError(
+                f"MemoryNameSystem query failed: {result.errorMessage}"
+            )
 
     def resolve_server(
-            self,
-            memory_id: MemoryID,
-            ) -> ServerProxies:
+        self,
+        memory_id: MemoryID,
+    ) -> ServerProxies:
 
         server = self.servers.get(memory_id.memory_name, None)
 
@@ -114,10 +116,7 @@ class MemoryNameSystem:
         assert server is not None
         return server
 
-    def wait_for_server(
-            self,
-            memory_id: MemoryID
-            ) -> ServerProxies:
+    def wait_for_server(self, memory_id: MemoryID) -> ServerProxies:
 
         server = self.servers.get(memory_id.memory_name, None)
         if server is None:
@@ -133,13 +132,15 @@ class MemoryNameSystem:
                     server = ServerProxies.from_ice(result.server)
                 else:
                     raise armem_error.CouldNotResolveMemoryServer(
-                        memory_id, f"Returned proxy is null: {result.proxy}")
+                        memory_id, f"Returned proxy is null: {result.proxy}"
+                    )
             else:
-                raise armem_error.CouldNotResolveMemoryServer(memory_id, result.errorMessage)
+                raise armem_error.CouldNotResolveMemoryServer(
+                    memory_id, result.errorMessage
+                )
 
         assert server is not None
         return server
-
 
     def get_reader(self, memory_id: MemoryID) -> Reader:
         return Reader(self.resolve_server(memory_id).reading)
@@ -159,24 +160,22 @@ class MemoryNameSystem:
     def get_all_writers(self, update=True) -> Dict[str, Writer]:
         return self._get_all_clients(Writer, update)
 
-
     # System-wide queries
 
     def resolve_entity_instance(
-            self,
-            id: MemoryID,
-            ) -> Optional["armem.data.EntityInstance"]:
+        self,
+        id: MemoryID,
+    ) -> Optional["armem.data.EntityInstance"]:
         instances = self.resolve_entity_instances([id])
         if len(instances) > 0:
             return instances[id]
         else:
             return None
 
-
     def resolve_entity_snapshots(
-            self,
-            ids: List[MemoryID],
-            ) -> Dict[MemoryID, "armem.data.EntitySnapshot"]:
+        self,
+        ids: List[MemoryID],
+    ) -> Dict[MemoryID, "armem.data.EntitySnapshot"]:
         errors = ""
         error_counter = 0
 
@@ -202,11 +201,12 @@ class MemoryNameSystem:
             self.logger.info(
                 f"{self.__class__.__name__}.{self.resolve_entity_instance.__name__}:"
                 f"The following errors may affect your result: \n{errors}\n\n"
-                + "When resolving entity snapshots: \n- {}".format("\n- ".join(map(str, ids)))
+                + "When resolving entity snapshots: \n- {}".format(
+                    "\n- ".join(map(str, ids))
+                )
             )
 
         return result
-
 
     # ToDo: System-wide commits
 
@@ -215,15 +215,14 @@ class MemoryNameSystem:
             self.update()
         return {name: client_cls(server) for name, server in self.servers}
 
-
     def __bool__(self):
         return bool(self.mns)
 
-
     @classmethod
     def get_server_by_proxy_name(
-            cls, proxy_name: str,
-            ) -> "armarx.armem.server.MemoryInterfacePrx":
+        cls,
+        proxy_name: str,
+    ) -> "armarx.armem.server.MemoryInterfacePrx":
         """
         Get a memory server proxy by its Ice object name.
         :param proxy_name: The ice object name.
@@ -238,4 +237,3 @@ class MemoryNameSystem:
         except Ice.NotRegisteredException as e:
             cls.cls_logger.error(e)
             return None
-

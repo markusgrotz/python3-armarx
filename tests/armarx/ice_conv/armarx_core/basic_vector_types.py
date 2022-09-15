@@ -21,11 +21,14 @@ def test_vector2f_from_ice_single():
 
 
 def test_vector2f_from_ice_multiple():
-    bo: np.ndarray = conv2f.from_ice([
-        Vector2f(2.0, -6.0), Vector2f(3.0, -7.0), Vector2f(4.0, -8.0)
-    ])
+    bo: np.ndarray = conv2f.from_ice(
+        [Vector2f(2.0, -6.0), Vector2f(3.0, -7.0), Vector2f(4.0, -8.0)]
+    )
     assert isinstance(bo, np.ndarray)
-    assert bo.shape == (3, 2,)
+    assert bo.shape == (
+        3,
+        2,
+    )
     assert bo.dtype == np.float64
     assert bo[0, 0] == 2.0
     assert bo[0, 1] == -6.0
@@ -43,9 +46,7 @@ def test_vector2f_to_ice_single():
 
 
 def test_vector2f_to_ice_multiple():
-    dto = conv2f.to_ice(np.array([
-        (2.0, -6.0), (3.0, -7.0), (4.0, -8.0)
-    ]))
+    dto = conv2f.to_ice(np.array([(2.0, -6.0), (3.0, -7.0), (4.0, -8.0)]))
     assert isinstance(dto, list)
     assert len(dto) == 3
     assert dto[0].e0 == 2.0

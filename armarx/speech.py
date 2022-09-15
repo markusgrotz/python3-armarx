@@ -11,7 +11,6 @@ from armarx import ice_manager
 logger = logging.getLogger(__name__)
 
 
-
 class TextStateListener(TextToSpeechStateInterface):
     """
     A simple text state listener class.
@@ -21,7 +20,7 @@ class TextStateListener(TextToSpeechStateInterface):
         super().__init__()
         self.cv = threading.Condition()
         self.state = TextToSpeechStateType.eIdle
-        self.tts = ice_manager.get_topic(TextListenerInterfacePrx, 'TextToSpeech')
+        self.tts = ice_manager.get_topic(TextListenerInterfacePrx, "TextToSpeech")
 
     def reportState(self, state, c=None):
         with self.cv:
@@ -29,12 +28,10 @@ class TextStateListener(TextToSpeechStateInterface):
             self.cv.notify()
 
     def on_connect(self):
-        """
-        """
-        logger.debug('Registering TextListener')
+        """ """
+        logger.debug("Registering TextListener")
         self._proxy = ice_manager.register_object(self, self.__class__.__name__)
-        ice_manager.using_topic(self._proxy, self.__class__.__name__ + '.Listener')
-
+        ice_manager.using_topic(self._proxy, self.__class__.__name__ + ".Listener")
 
     def is_idle(self) -> bool:
         """

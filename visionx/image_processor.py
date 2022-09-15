@@ -29,6 +29,7 @@ from .shm_tools import read_images_shm
 
 logger = logging.getLogger(__name__)
 
+
 class ImageProcessor(ImageProcessorInterface, ABC):
     """
     An abstract class  to process images
@@ -59,7 +60,6 @@ class ImageProcessor(ImageProcessorInterface, ABC):
 
         self.shm_path = None
 
-
     def reportImageAvailable(self, provider_name, current=None):
         with self.cv:
             self.image_available = True
@@ -67,11 +67,13 @@ class ImageProcessor(ImageProcessorInterface, ABC):
 
     def _get_images_and_info(self):
         if self.shm_path:
-            info = MetaInfoSizeBase() # self.image_source.getMetaInfo()
+            info = MetaInfoSizeBase()  # self.image_source.getMetaInfo()
             images = read_images_shm(self.shm_path, self.data_dimensions)
         else:
             image_buffer, info = self.image_source.getImagesAndMetaInfo()
-            images = np.frombuffer(image_buffer, dtype=np.uint8).reshape(self.data_dimensions)
+            images = np.frombuffer(image_buffer, dtype=np.uint8).reshape(
+                self.data_dimensions
+            )
         return images, info
 
     def _process(self):
@@ -81,14 +83,16 @@ class ImageProcessor(ImageProcessorInterface, ABC):
 
                 input_images, info = self._get_images_and_info()
 
-                if hasattr(self, 'process_image') and callable(self.process_image):
-                    warnings.warn('Replaced with process_image(images, info)', DeprecationWarning)
+                if hasattr(self, "process_image") and callable(self.process_image):
+                    warnings.warn(
+                        "Replaced with process_image(images, info)", DeprecationWarning
+                    )
                     result = self.process_image(input_images)
                 else:
                     result = self.process_images(input_images, info)
 
                 if not result:
-                    logger.warning('Unable to get images')
+                    logger.warning("Unable to get images")
                     return
                 elif isinstance(result, tuple):
                     result_images, info = result
@@ -96,11 +100,14 @@ class ImageProcessor(ImageProcessorInterface, ABC):
                     result_images = result
                     info.timeProvided = 0
 
-                self.result_image_provider.update_image(result_images, info.timeProvided)
-
+                self.result_image_provider.update_image(
+                    result_images, info.timeProvided
+                )
 
     @abstractmethod
-    def process_images(self, images: np.ndarray, info: MetaInfoSizeBase) -> Union[np.ndarray, Tuple[np.ndarray, MetaInfoSizeBase]]:
+    def process_images(
+        self, images: np.ndarray, info: MetaInfoSizeBase
+    ) -> Union[np.ndarray, Tuple[np.ndarray, MetaInfoSizeBase]]:
         """
         This function is called everytime a new image is available.
         Results are automatically published.
@@ -112,18 +119,18 @@ class ImageProcessor(ImageProcessorInterface, ABC):
         pass
 
     def register(self):
-        warnings.warn('Replaced with on_connect', DeprecationWarning)
+        warnings.warn("Replaced with on_connect", DeprecationWarning)
         self.on_connect()
 
     def shutdown(self):
-        warnings.warn('Replaced with on_disconnect', DeprecationWarning)
+        warnings.warn("Replaced with on_disconnect", DeprecationWarning)
         self.on_disconnect()
 
     def on_disconnect(self):
         self._image_listener_topic.unsubscribe(self._proxy)
 
     def on_connect(self):
-        logger.debug('Registering image processor')
+        logger.debug("Registering image processor")
         proxy = register_object(self, self.__class__.__name__)
         self.image_source = get_proxy(ImageProviderInterfacePrx, self.provider_name)
         self.shm_path = path_to_shm(self.provider_name)
@@ -133,11 +140,23 @@ class ImageProcessor(ImageProcessorInterface, ABC):
         d = image_format.dimension
         if self.num_result_images is None:
             self.num_result_images = self.image_source.getNumberImages()
-        self.result_image_provider = ImageProvider(f'{self.__class__.__name__}Result', self.num_result_images, d.width, d.height)
+        self.result_image_provider = ImageProvider(
+            f"{self.__class__.__name__}Result",
+            self.num_result_images,
+            d.width,
+            d.height,
+        )
         self.result_image_provider.register()
 
-        self.data_dimensions = (number_of_images, image_format.dimension.height, image_format.dimension.width, image_format.bytesPerPixel)
-        logger.debug('data dimensions %s', self.data_dimensions)
+        self.data_dimensions = (
+            number_of_images,
+            image_format.dimension.height,
+            image_format.dimension.width,
+            image_format.bytesPerPixel,
+        )
+        logger.debug("data dimensions %s", self.data_dimensions)
 
         self._thread.start()
-        self._image_listener_topic = using_topic(proxy, f'{self.provider_name}.ImageListener')
+        self._image_listener_topic = using_topic(
+            proxy, f"{self.provider_name}.ImageListener"
+        )

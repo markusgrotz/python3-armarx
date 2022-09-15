@@ -14,11 +14,7 @@ class ObjectID(IceTwin):
     DEFAULT_PRIOR_KNOWLEDGE_PACKAGE = "PriorKnowledgeData"
     SEP = "/"
 
-    def __init__(
-            self,
-            dataset="",
-            class_name="",
-            instance_name=""):
+    def __init__(self, dataset="", class_name="", instance_name=""):
         self.dataset = dataset
         self.class_name = class_name
         self.instance_name = instance_name
@@ -36,30 +32,38 @@ class ObjectID(IceTwin):
         return f"{self.class_name}{suffix}{extension}"
 
     def get_filepath(
-            self,
-            extension: str,
-            suffix="",
-            package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE,
-            resolve=False,
+        self,
+        extension: str,
+        suffix="",
+        package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE,
+        resolve=False,
     ):
-        filepath = os.path.join(self.get_dir(package=package),
-                                self.get_filename(extension=extension, suffix=suffix))
+        filepath = os.path.join(
+            self.get_dir(package=package),
+            self.get_filename(extension=extension, suffix=suffix),
+        )
         return self.resolve_filepath(filepath) if resolve else filepath
 
     def get_viz_kwargs(self, package=DEFAULT_PRIOR_KNOWLEDGE_PACKAGE, use_wrl=False):
-        return dict(project=package, filename=self.get_filepath(".wrl" if use_wrl else ".xml"))
+        return dict(
+            project=package, filename=self.get_filepath(".wrl" if use_wrl else ".xml")
+        )
 
     @classmethod
     def resolve_filepath(cls, filepath: str):
         from armarx import cmake_helper
+
         package_name = filepath.split(os.path.sep, maxsplit=1)[0]
         package_data_dir = cmake_helper.get_data_path(package_name)[0]
         return os.path.join(package_data_dir, filepath)
 
     @classmethod
     def _get_ice_cls(cls):
-        slice_loader.load_armarx_slice("RobotAPI", "ArmarXObjects/ArmarXObjectsTypes.ice")
+        slice_loader.load_armarx_slice(
+            "RobotAPI", "ArmarXObjects/ArmarXObjectsTypes.ice"
+        )
         from armarx.data import ObjectID
+
         return ObjectID
 
     def _set_from_ice(self, dto: "armarx.data.ObjectID"):
@@ -74,7 +78,8 @@ class ObjectID(IceTwin):
 
     def __repr__(self) -> str:
         return "<{} dataset='{}' class_name='{}' instance_name='{}'>".format(
-            self.__class__.__name__, self.dataset, self.class_name, self.instance_name)
+            self.__class__.__name__, self.dataset, self.class_name, self.instance_name
+        )
 
     def __str__(self) -> str:
         items = [self.dataset, self.class_name]

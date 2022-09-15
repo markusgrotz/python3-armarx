@@ -23,9 +23,12 @@ from .name_helper import get_ice_default_name
 logger = logging.getLogger(__name__)
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-def register_object(ice_object: Ice.Object, ice_object_name: str = None) -> Ice.ObjectPrx:
+
+def register_object(
+    ice_object: Ice.Object, ice_object_name: str = None
+) -> Ice.ObjectPrx:
     """
     Register a local ice object under the given name
 
@@ -34,22 +37,24 @@ def register_object(ice_object: Ice.Object, ice_object_name: str = None) -> Ice.
     :return: Proxy to this object
     """
     if not isinstance(ice_object, Ice.Object):
-        logger.error('ice object is not an Ice.Object')
-        raise ValueError('ice_object is not an Ice.Object')
+        logger.error("ice object is not an Ice.Object")
+        raise ValueError("ice_object is not an Ice.Object")
     if not ice_object_name:
         ice_object_name = ice_object.__class__.__name__
-        logger.debug('Using class name %s to register the object', ice_object_name)
-    adapter = freezer().communicator.createObjectAdapterWithEndpoints(ice_object_name, 'tcp')
+        logger.debug("Using class name %s to register the object", ice_object_name)
+    adapter = freezer().communicator.createObjectAdapterWithEndpoints(
+        ice_object_name, "tcp"
+    )
     ice_object_id = freezer().communicator.stringToIdentity(ice_object_name)
     adapter.add(ice_object, ice_object_id)
     adapter.activate()
     proxy = adapter.createProxy(ice_object_id)
     admin = get_admin()
     try:
-        logger.info('adding new object %s', ice_object_name)
+        logger.info("adding new object %s", ice_object_name)
         admin.addObjectWithType(proxy, proxy.ice_id())
     except ObjectExistsException:
-        logger.info('updating new object %s', ice_object_name)
+        logger.info("updating new object %s", ice_object_name)
         admin.updateObject(proxy)
     return proxy
 
@@ -64,13 +69,15 @@ def get_topic(cls: T, topic_name: str = None) -> T:
     :return: a casted topic proxy
     """
     topic_name = topic_name or get_ice_default_name(cls)
-    topic_manager = TopicManagerPrx.checkedCast(freezer().communicator.stringToProxy('IceStorm/TopicManager'))
+    topic_manager = TopicManagerPrx.checkedCast(
+        freezer().communicator.stringToProxy("IceStorm/TopicManager")
+    )
     topic = None
     try:
         topic = topic_manager.retrieve(topic_name)
     except NoSuchTopic:
         topic = topic_manager.create(topic_name)
-    logger.info('Publishing to topic %s', topic_name)
+    logger.info("Publishing to topic %s", topic_name)
     pub = topic.getPublisher().ice_oneway()
     return cls.uncheckedCast(pub)
 
@@ -83,7 +90,9 @@ def using_topic(proxy, topic_name: str = None):
     :param topic_name: the name of the topic to connect to
     :type topic_name: str
     """
-    topic_manager = TopicManagerPrx.checkedCast(freezer().communicator.stringToProxy('IceStorm/TopicManager'))
+    topic_manager = TopicManagerPrx.checkedCast(
+        freezer().communicator.stringToProxy("IceStorm/TopicManager")
+    )
     topic = None
     topic_name = topic_name or get_ice_default_name(proxy.__class__)
     try:
@@ -95,7 +104,7 @@ def using_topic(proxy, topic_name: str = None):
     except AlreadySubscribed:
         topic.unsubscribe(proxy)
         topic.subscribeAndGetPublisher(None, proxy)
-    logger.info('Subscribing to topic %s', topic_name)
+    logger.info("Subscribing to topic %s", topic_name)
     return topic
 
 
@@ -112,7 +121,7 @@ def wait_for_dependencies(proxy_names, timeout: int = 0):
     start_time = time.time()
     while not freezer().communicator.isShutdown():
         if timeout and (start_time + timeout) < time.time():
-            logging.exception('Timeout while waiting for proxies %s', proxy_names)
+            logging.exception("Timeout while waiting for proxies %s", proxy_names)
             return False
         dependencies_resolved = True
         for proxy_name in proxy_names:
@@ -149,10 +158,10 @@ def wait_for_proxy(cls, proxy_name: str = None, timeout: int = 0):
             proxy = None
 
         if timeout and (start_time + timeout) < time.time():
-            logging.exception('Timeout while waiting for proxy %s', proxy_name)
+            logging.exception("Timeout while waiting for proxy %s", proxy_name)
             return None
         else:
-            logger.debug('Waiting for proxy %s', proxy_name)
+            logger.debug("Waiting for proxy %s", proxy_name)
             time.sleep(0.1)
 
 
@@ -172,11 +181,11 @@ def get_proxy(cls: T, proxy_name: str = None) -> T:
         proxy = freezer().communicator.stringToProxy(proxy_name)
         return cls.checkedCast(proxy)
     except NotRegisteredException:
-        logging.exception('Proxy %s does not exist', proxy_name)
+        logging.exception("Proxy %s does not exist", proxy_name)
 
 
 def get_admin():
-    return freezer().registry.createAdminSession('user', 'password').getAdmin()
+    return freezer().registry.createAdminSession("user", "password").getAdmin()
 
 
 def is_connected(ice_node_name: str) -> bool:
@@ -202,37 +211,41 @@ def wait_for_shutdown():
     except KeyboardInterrupt:
         pass
 
+
 @lru_cache(maxsize=1)
 def freezer():
-    """
-    """
+    """ """
     return Freezer()
 
-def test_connection():
-    if not is_connected('NodeMain'):
-        logger.error('Ice is not running.')
-        raise Exception('Ice is not running.')
 
-class Freezer():
+def test_connection():
+    if not is_connected("NodeMain"):
+        logger.error("Ice is not running.")
+        raise Exception("Ice is not running.")
+
+
+class Freezer:
 
     registry: RegistryPrx = None
     communicator = None
 
     def __init__(self):
         ice_config_files = get_ice_config_files()
-        ice_communicator = Ice.initialize(['--Ice.Config={}'.format(','.join(ice_config_files))])
-        ice_registry_proxy = ice_communicator.stringToProxy('IceGrid/Registry')
+        ice_communicator = Ice.initialize(
+            ["--Ice.Config={}".format(",".join(ice_config_files))]
+        )
+        ice_registry_proxy = ice_communicator.stringToProxy("IceGrid/Registry")
         ice_registry = RegistryPrx.checkedCast(ice_registry_proxy)
 
         self.communicator = ice_communicator
         self.registry = ice_registry
         import atexit
-        atexit.register(self.__del__)
 
+        atexit.register(self.__del__)
 
     @property
     def admin(self):
-        return self.registry.createAdminSession('user', 'password').getAdmin()
+        return self.registry.createAdminSession("user", "password").getAdmin()
 
     def __enter__(self):
         return self.communicator
@@ -246,7 +259,7 @@ class Freezer():
         try:
             self.communicator.destroy()
         except Exception as ex:
-            logger.error('Error while shutting down ice communicator')
+            logger.error("Error while shutting down ice communicator")
         finally:
             self.communicator = None
 

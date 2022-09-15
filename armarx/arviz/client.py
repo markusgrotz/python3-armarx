@@ -21,10 +21,10 @@ class Client:
     STORAGE_DEFAULT_NAME = "ArVizStorage"
 
     def __init__(
-            self,
-            component: str,
-            storage_name=STORAGE_DEFAULT_NAME,
-            wait_for_proxy=True,
+        self,
+        component: str,
+        storage_name=STORAGE_DEFAULT_NAME,
+        wait_for_proxy=True,
     ):
         self.component_name = component
 
@@ -44,14 +44,15 @@ class Client:
 
     def begin_stage(self, commit_on_exit=False) -> Stage:
         if commit_on_exit:
-            return Stage(self.component_name,
-                         commit_on_exit=commit_on_exit, client=self)
+            return Stage(
+                self.component_name, commit_on_exit=commit_on_exit, client=self
+            )
         else:
             return Stage(self.component_name)
 
     def commit(
-            self,
-            layers_or_stages: Union[None, Layer, Stage, List[Union[Layer, Stage]]] = None,
+        self,
+        layers_or_stages: Union[None, Layer, Stage, List[Union[Layer, Stage]]] = None,
     ) -> CommitResult:
         """
         Commit the given layers and stages.
@@ -85,8 +86,8 @@ class Client:
 
     @staticmethod
     def _get_layer_updates(
-            layer_like: Union[Layer, viz.data.LayerUpdate],
-            ) -> List[viz.data.LayerUpdate]:
+        layer_like: Union[Layer, viz.data.LayerUpdate],
+    ) -> List[viz.data.LayerUpdate]:
 
         if isinstance(layer_like, viz.data.LayerUpdate):
             return [layer_like]

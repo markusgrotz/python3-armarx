@@ -16,9 +16,9 @@ class Metronome:
     """
 
     def __init__(
-            self,
-            duration_seconds: float = None,
-            frequency_hertz: float = None,
+        self,
+        duration_seconds: float = None,
+        frequency_hertz: float = None,
     ):
         self.duration_seconds: float
         if duration_seconds is not None:
@@ -28,7 +28,9 @@ class Metronome:
             self.duration_seconds = 1 / frequency_hertz
 
         else:
-            raise ValueError("Either duration_seconds or frequency_hertz must be specified.")
+            raise ValueError(
+                "Either duration_seconds or frequency_hertz must be specified."
+            )
 
         self.start: float = 0.0
         self.reset()

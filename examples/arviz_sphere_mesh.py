@@ -7,16 +7,12 @@ from armarx.arviz import grids
 
 
 def vis_blue_sphere(alpha=255):
-    return grids.vis_sphere_mesh(
-        name="Blue",
-        color=(0, 0, 255, alpha)
-    )
+    return grids.vis_sphere_mesh(name="Blue", color=(0, 0, 255, alpha))
 
 
 def vis_colored_sphere():
     mesh = grids.vis_sphere_mesh(
-        name="z-colored",
-        spherical_color_fn=lambda xs: xs[..., 1] + 2 * xs[..., 2]
+        name="z-colored", spherical_color_fn=lambda xs: xs[..., 1] + 2 * xs[..., 2]
     )
     mesh.position = (3, 0, 0)
     return mesh
@@ -34,9 +30,7 @@ def vis_deformed_sphere():
     grid[..., 0] = radius(grid)
 
     mesh = grids.vis_sphere_mesh(
-        name="deformed",
-        color=(0, 128, 255),
-        grid_spherical=grid
+        name="deformed", color=(0, 128, 255), grid_spherical=grid
     )
     mesh.position = (8, 0, 0)
     return mesh
@@ -58,5 +52,5 @@ def main():
         layer_deformed.add(vis_deformed_sphere())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -16,6 +16,7 @@ class ConversionOptions:
         if aron_name is None:
             if self.names_snake_case_to_camel_case:
                 from .name_conversion import snake_case_to_camel_case
+
                 aron_name = snake_case_to_camel_case(python_name)
             else:
                 aron_name = python_name
@@ -29,6 +30,7 @@ class ConversionOptions:
 
         if self.names_snake_case_to_camel_case:
             from .name_conversion import camel_case_to_snake_case
+
             python_name = camel_case_to_snake_case(aron_name)
         else:
             python_name = aron_name

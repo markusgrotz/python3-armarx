@@ -11,17 +11,16 @@ class Writer:
     WritingMemoryServerPrx = "armarx.armem.server.WritingMemoryInterfacePrx"
 
     def __init__(
-            self,
-            server: Optional[WritingMemoryServerPrx] = None,
-            ):
+        self,
+        server: Optional[WritingMemoryServerPrx] = None,
+    ):
         self.server = server
 
-
     def add_provider_segment(
-            self,
-            provider_id: MemoryID,
-            clear_when_exists=False,
-            ):
+        self,
+        provider_id: MemoryID,
+        clear_when_exists=False,
+    ):
 
         inp = armem.data.AddSegmentInput()
         inp.coreSegmentName = provider_id.core_segment_name
@@ -30,11 +29,10 @@ class Writer:
         results = self.server.addSegments([inp])
         return results[0]
 
-
     def commit(
-            self,
-            commit: Commit,
-            ):
+        self,
+        commit: Commit,
+    ):
 
         time_sent = time_usec()
         for update in commit.updates:
@@ -46,9 +44,5 @@ class Writer:
 
         return ice_result
 
-
     def __bool__(self):
         return bool(self.server)
-
-
-

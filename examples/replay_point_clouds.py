@@ -22,13 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class PointCloudReplayer:
-
     def __init__(
-            self,
-            input_directory: str,
-            name="PointCloudReplayer",
-            loop_back=False,
-            default_fps=30,
+        self,
+        input_directory: str,
+        name="PointCloudReplayer",
+        loop_back=False,
+        default_fps=30,
     ):
         self.input_directory = input_directory
         self.name = name
@@ -59,11 +58,16 @@ class PointCloudReplayer:
 
         self.i = 0
         self.pc = load_point_cloud(self.files[self.i])
-        logger.info(f"Got shape {self.pc.shape}, dtype {self.pc.dtype}, first point: {self.pc[0]}")
+        logger.info(
+            f"Got shape {self.pc.shape}, dtype {self.pc.dtype}, first point: {self.pc[0]}"
+        )
 
     def _init_provider(self):
         self.pc_provider = PointCloudProvider(
-            name=self.name, point_dtype=dtype_point_color_xyz, initial_capacity=len(self.pc))
+            name=self.name,
+            point_dtype=dtype_point_color_xyz,
+            initial_capacity=len(self.pc),
+        )
         self.pc_provider.on_connect()
 
     def play_once(self) -> bool:
@@ -94,11 +98,13 @@ class PointCloudReplayer:
             if self.t_latest is None:
                 due_seconds = 0
             else:
-                due_seconds = 1 / self.default_fps - (now - self.t_latest).total_seconds()
+                due_seconds = (
+                    1 / self.default_fps - (now - self.t_latest).total_seconds()
+                )
 
         else:
             # Extract target time (relative to start).
-            time_str = filename[m.start(): m.end()]
+            time_str = filename[m.start() : m.end()]
             target_time = datetime.strptime(time_str, self.time_format)
 
             target_delta = target_time - datetime(year=1900, month=1, day=1)
@@ -115,12 +121,15 @@ class PointCloudReplayer:
 def main():
     parser = ArgumentParser()
     parser.add_argument(
-        "-i", "--input_dir",
-        help="The input directory containing *.npy files of point clouds."
+        "-i",
+        "--input_dir",
+        help="The input directory containing *.npy files of point clouds.",
     )
     parser.add_argument(
-        "-n", "--name", default="PointCloudReplayer",
-        help="Name of the created ice object and point cloud provider."
+        "-n",
+        "--name",
+        default="PointCloudReplayer",
+        help="Name of the created ice object and point cloud provider.",
     )
 
     args = parser.parse_args()

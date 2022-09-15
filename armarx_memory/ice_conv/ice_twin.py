@@ -39,41 +39,38 @@ class IceTwin:
             self._set_from_ice(ice)
             return self
 
-
     def to_ice(self):
         cls = self._get_ice_cls()
         ice = cls()
         self._set_to_ice(ice)
         return ice
 
-
     def set_from_ice(self, dto):
         self._set_from_ice(dto)
 
-
     def set_to_ice(self, dto):
         self._set_to_ice(dto)
-
 
     @classmethod
     def _get_ice_cls(cls):
         """Return the Ice DTO class."""
         raise NotImplementedError(
-            f"{cls.__name__} does not implement `_get_ice_cls()`.")
-
+            f"{cls.__name__} does not implement `_get_ice_cls()`."
+        )
 
     def _set_from_ice(self, dto):
         """Set `self` from `dto`."""
         raise NotImplementedError(
             f"{self.__class__.__name__} cannot be set from ice. "
-            "\nImplement `_set_from_ice()` to allow it.")
+            "\nImplement `_set_from_ice()` to allow it."
+        )
 
     def _set_to_ice(self, dto):
         """Set `dto` from `self`."""
         raise NotImplementedError(
             f"{self.__class__.__name__} cannot set to ice. "
-            "\nImplement `_set_to_ice()` to allow it.`")
-
+            "\nImplement `_set_to_ice()` to allow it.`"
+        )
 
 
 def to_ice(twin: Union[IceTwin, List, Dict]):
@@ -83,7 +80,6 @@ def to_ice(twin: Union[IceTwin, List, Dict]):
         return [to_ice(t) for t in twin]
     elif isinstance(twin, dict):
         return {k: to_ice(t) for k, t in twin.items()}
-
 
 
 def __swap_assignments(code: str):
@@ -100,4 +96,3 @@ def __swap_assignments(code: str):
             out_lines.append(line)
 
     print("".join(["{}\n".format(l) for l in out_lines]))
-

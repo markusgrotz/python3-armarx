@@ -19,16 +19,22 @@ logger = logging.getLogger(__name__)
 
 
 class ImageProvider(ImageProviderInterface, ABC):
-    """
-    """
+    """ """
 
-    def __init__(self, name: str, num_images: int = 2, width: int = 640, height: int = 480):
+    def __init__(
+        self, name: str, num_images: int = 2, width: int = 640, height: int = 480
+    ):
         super().__init__()
         self.name = name
         self.image_format = self._get_image_format(width, height)
-        self.data_dimensions = (num_images, height, width, self.image_format.bytesPerPixel)
+        self.data_dimensions = (
+            num_images,
+            height,
+            width,
+            self.image_format.bytesPerPixel,
+        )
         self.images = np.zeros(self.data_dimensions, dtype=np.uint8)
-        image_size = self.image_format.bytesPerPixel * width *  height
+        image_size = self.image_format.bytesPerPixel * width * height
         self.info = MetaInfoSizeBase(image_size, image_size)
 
         self.image_topic = None
@@ -36,23 +42,22 @@ class ImageProvider(ImageProviderInterface, ABC):
         # self.register()
 
     def register(self):
-        warnings.warn('Replaced with on_connect', DeprecationWarning)
+        warnings.warn("Replaced with on_connect", DeprecationWarning)
         self.on_connect()
-
 
     def on_connect(self):
         """
         Register the image provider.
         """
-        logger.debug('registering image processor %s', self.name)
+        logger.debug("registering image processor %s", self.name)
         self.proxy = register_object(self, self.name)
-        self.image_topic = get_topic(ImageProcessorInterfacePrx, f'{self.name}.ImageListener')
+        self.image_topic = get_topic(
+            ImageProcessorInterfacePrx, f"{self.name}.ImageListener"
+        )
 
-
-    def update_image(self, images, time_provided = 0):
-        warnings.warn('Replaced with update_images', DeprecationWarning)
+    def update_image(self, images, time_provided=0):
+        warnings.warn("Replaced with update_images", DeprecationWarning)
         self.update_images(images, time_provided)
-
 
     def update_images(self, images: np.ndarray, time_provided: int = 0):
         """
@@ -66,7 +71,7 @@ class ImageProvider(ImageProviderInterface, ABC):
         if self.image_topic:
             self.image_topic.reportImageAvailable(self.name)
         else:
-            logger.warning('not registered. call register() method')
+            logger.warning("not registered. call register() method")
 
     def _get_image_format(self, width, height):
         image_format = ImageFormatInfo()
@@ -77,15 +82,15 @@ class ImageProvider(ImageProviderInterface, ABC):
         return image_format
 
     def getImageFormat(self, current=None):
-        logger.debug('getImageFormat() %s', self.image_format)
+        logger.debug("getImageFormat() %s", self.image_format)
         return self.image_format
 
     def getImagesAndMetaInfo(self, current=None):
-        logger.debug('getImageFormat() %s', self.image_format)
+        logger.debug("getImageFormat() %s", self.image_format)
         return memoryview(self.images), self.info
 
     def getImages(self, current=None):
-        logger.debug('getImages()')
+        logger.debug("getImages()")
         return memoryview(self.images)
 
     def getNumberImages(self, current=None):

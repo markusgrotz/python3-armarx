@@ -8,8 +8,7 @@ from armarx.math.transform import Transform
 
 @pytest.fixture
 def element() -> Transform:
-    e = Transform(translation=(10, 20, 30),
-                  rotation=axangle2mat((0, 0, 1), np.pi / 2))
+    e = Transform(translation=(10, 20, 30), rotation=axangle2mat((0, 0, 1), np.pi / 2))
     return e
 
 
@@ -54,7 +53,9 @@ def test_mul_rotate_translation():
     b = Transform(translation=(10, 20, 30))
 
     result = a * b
-    expected = Transform(translation=(-10, -20, 30), rotation=axangle2mat((0, 0, 1), np.pi))
+    expected = Transform(
+        translation=(-10, -20, 30), rotation=axangle2mat((0, 0, 1), np.pi)
+    )
 
     assert result.is_close_to(expected)
 

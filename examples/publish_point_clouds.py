@@ -17,8 +17,11 @@ HEIGHT = 120
 
 
 def main():
-    pc_provider = PointCloudProvider('ExamplePointCloudProvider', point_dtype=dtype_point_color_xyz,
-                                     initial_capacity=WIDTH * HEIGHT)
+    pc_provider = PointCloudProvider(
+        "ExamplePointCloudProvider",
+        point_dtype=dtype_point_color_xyz,
+        initial_capacity=WIDTH * HEIGHT,
+    )
     pc_provider.on_connect()
 
     try:
@@ -27,8 +30,12 @@ def main():
             t = time.time()
 
             # You can slice the relevant data fields out of the structured data
-            positions = pc['position']  # This is a view to the position data (3D array float32)
-            colors = pc['color']  # This is a view to the color data (1D array of uint32)
+            positions = pc[
+                "position"
+            ]  # This is a view to the position data (3D array float32)
+            colors = pc[
+                "color"
+            ]  # This is a view to the color data (1D array of uint32)
 
             index = 0
             for y in range(HEIGHT):
@@ -38,7 +45,7 @@ def main():
                 for x in range(WIDTH):
                     g = int(255.0 * height_t)
                     b = int(255 * (1.0 - height_t))
-                    colors[index] = 255 + g*256 + b*256*256
+                    colors[index] = 255 + g * 256 + b * 256 * 256
                     # The following code is very slow and is therefore commented out
                     # colors[index] = rgb_to_uint32(255, g, b)
                     point = positions[index]
@@ -47,15 +54,15 @@ def main():
                     point[2] = 50 * height_t
 
                     index += 1
-                    
+
             pc_provider.update_point_cloud(pc)
             time.sleep(1e-3)
 
     except KeyboardInterrupt:
-        logger.info('shutting down')
+        logger.info("shutting down")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = ArgumentParser()
     args = parser.parse_args()
 

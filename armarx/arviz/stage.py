@@ -4,7 +4,6 @@ from .layer import Layer
 
 
 class Stage:
-
     def __init__(self, component: str, commit_on_exit=False, client=None):
         self.component = component
         self.commit_on_exit = commit_on_exit
@@ -40,6 +39,7 @@ class Stage:
 
     def origin_layer(self, layer_name="Origin", id="Origin", scale=1.0) -> Layer:
         from .elements.elements import Pose
+
         layer = self.layer(layer_name)
         layer.add(Pose(id, scale=scale))
         return layer
@@ -49,8 +49,7 @@ class Stage:
         self._interaction_layers.append(layer.name)
 
     def __repr__(self):
-        return "<{} with {} layers>".format(
-            self.__class__.__name__, len(self.layers))
+        return "<{} with {} layers>".format(self.__class__.__name__, len(self.layers))
 
     def __enter__(self):
         """

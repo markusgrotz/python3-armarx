@@ -8,11 +8,11 @@ SLICE_INCLUDE = ("RobotAPI", "core/PoseBase.ice")
 
 
 class Vector3BaseConv(IceConverter):
-
     @classmethod
     def _import_dto(cls):
         slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         import armarx
+
         return armarx.Vector3Base
 
     def _from_ice(self, dto: "armarx.Vector3Base") -> np.ndarray:
@@ -25,11 +25,11 @@ class Vector3BaseConv(IceConverter):
 
 
 class QuaternionBaseConv(IceConverter):
-
     @classmethod
     def _import_dto(cls):
         slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         import armarx
+
         return armarx.QuaternionBase
 
     def _from_ice(self, dto: "armarx.QuaternionBase") -> np.ndarray:
@@ -37,6 +37,7 @@ class QuaternionBaseConv(IceConverter):
 
     def _to_ice(self, bo: np.ndarray) -> "armarx.QuaternionBase":
         import transforms3d as tf3d
+
         QuaternionBase = self.get_dto()
 
         ori = np.array(bo)
@@ -49,7 +50,6 @@ class QuaternionBaseConv(IceConverter):
 
 
 class PoseBaseConv(IceConverter):
-
     def __init__(self):
         super().__init__()
         self.vector3_conv = Vector3BaseConv()
@@ -59,6 +59,7 @@ class PoseBaseConv(IceConverter):
     def _import_dto(cls):
         slice_loader.load_armarx_slice(*SLICE_INCLUDE)
         import armarx
+
         return armarx.PoseBase
 
     def _from_ice(self, dto: "armarx.PoseBase") -> np.ndarray:

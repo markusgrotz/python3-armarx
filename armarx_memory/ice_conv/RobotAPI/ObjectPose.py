@@ -15,25 +15,34 @@ class ObjectPose(IceTwin):
     A Python twin of `armarx.objpose.data.ObjectPose`
     from `objectpose/types.ice` in RobotAPI.
     """
+
     JointValues = Dict[str, float]
 
     def __init__(
-            self,
-            provider_name: str = "",
-            object_id: ObjectID = None,
-            object_pose_robot=None,
-            object_pose_global=None,
-            object_pose_original=None,
-            object_pose_original_frame: str = "",
-            robot_pose=None,
-            local_oobb: Optional[Box] = None,
+        self,
+        provider_name: str = "",
+        object_id: ObjectID = None,
+        object_pose_robot=None,
+        object_pose_global=None,
+        object_pose_original=None,
+        object_pose_original_frame: str = "",
+        robot_pose=None,
+        local_oobb: Optional[Box] = None,
     ):
         self.provider_name = provider_name
         self.object_id = ObjectID() if object_id is None else object_id
 
-        self.object_pose_robot = np.eye(4) if object_pose_robot is None else np.array(object_pose_robot)
-        self.object_pose_global = np.eye(4) if object_pose_global is None else np.array(object_pose_global)
-        self.object_pose_original = np.eye(4) if object_pose_original is None else np.array(object_pose_original)
+        self.object_pose_robot = (
+            np.eye(4) if object_pose_robot is None else np.array(object_pose_robot)
+        )
+        self.object_pose_global = (
+            np.eye(4) if object_pose_global is None else np.array(object_pose_global)
+        )
+        self.object_pose_original = (
+            np.eye(4)
+            if object_pose_original is None
+            else np.array(object_pose_original)
+        )
         self.object_pose_original_frame = object_pose_original_frame
 
         self.object_joint_values: ObjectPose.JointValues = {}
@@ -55,13 +64,19 @@ class ObjectPose(IceTwin):
 
     def viz_oobb_robot(self, id: str, size_factor=1.0, **kwargs) -> "armarx.arviz.Box":
         import armarx.arviz as viz
-        return viz.Box(id, pose=self.object_pose_robot @ self.local_oobb.pose,
-                       size=self.local_oobb.extents * size_factor, **kwargs)
+
+        return viz.Box(
+            id,
+            pose=self.object_pose_robot @ self.local_oobb.pose,
+            size=self.local_oobb.extents * size_factor,
+            **kwargs,
+        )
 
     @classmethod
     def _get_ice_cls(cls):
         slice_loader.load_armarx_slice("RobotAPI", "objectpose/object_pose_types.ice")
         from armarx.objpose.data import ObjectPose
+
         return ObjectPose
 
     def _set_from_ice(self, dto: "armarx.objpose.data.ObjectPose"):
@@ -80,7 +95,9 @@ class ObjectPose(IceTwin):
         self.confidence = dto.confidence
         self.timestamp_usec = dto.timestamp.timeSinceEpoch.microSeconds
 
-        if all([dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]):
+        if all(
+            [dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]
+        ):
             self.local_oobb = Box.from_ice(dto.localOOBB)
         else:
             self.local_oobb = None
@@ -101,8 +118,9 @@ class ObjectPose(IceTwin):
         dto.confidence = self.confidence
         dto.timestamp.timeSinceEpoch.microSeconds = self.timestamp_usec
 
-        if (dto.localOOBB is not None
-                and all([dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents])):
+        if dto.localOOBB is not None and all(
+            [dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]
+        ):
             dto.localOOBB = self.local_oobb.to_ice()
         else:
             dto.localOOBB = None

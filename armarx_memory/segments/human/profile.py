@@ -47,6 +47,7 @@ class Profile(AronDataclass):
     @classmethod
     def _get_conversion_options(cls):
         from armarx_memory.aron.conversion import ConversionOptions
+
         return ConversionOptions(
             names_snake_case_to_camel_case=True,
             names_python_to_aron_dict={
@@ -64,44 +65,57 @@ class ProfileClientBase:
         pass
 
     def make_entity_name(self, provider_name: str, entity_name: str):
-        return (self.core_segment_id
-                .with_provider_segment_name(provider_name)
-                .with_entity_name(entity_name))
+        return self.core_segment_id.with_provider_segment_name(
+            provider_name
+        ).with_entity_name(entity_name)
 
 
 class ProfileWriter(ProfileClientBase):
-
     def __init__(self, writer: Writer):
         super().__init__()
         self.writer = writer
 
     @classmethod
     def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "ProfileWriter":
-        return cls(mns.wait_for_writer(cls.core_segment_id)
-                   if wait else mns.get_writer(cls.core_segment_id))
+        return cls(
+            mns.wait_for_writer(cls.core_segment_id)
+            if wait
+            else mns.get_writer(cls.core_segment_id)
+        )
 
-    def commit(self, entity_id: MemoryID, profile: Profile, time_created_usec=None, **kwargs):
+    def commit(
+        self, entity_id: MemoryID, profile: Profile, time_created_usec=None, **kwargs
+    ):
         commit = Commit()
-        commit.add(entity_id=entity_id, time_created_usec=time_created_usec,
-                   instances_data=[profile.to_aron_ice()], **kwargs,)
+        commit.add(
+            entity_id=entity_id,
+            time_created_usec=time_created_usec,
+            instances_data=[profile.to_aron_ice()],
+            **kwargs,
+        )
         return self.writer.commit(commit)
 
 
 class ProfileReader(ProfileClientBase):
-
     def __init__(self, reader: Reader):
         super().__init__()
         self.reader = reader
 
     @classmethod
     def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "ProfileReader":
-        return cls(mns.wait_for_reader(cls.core_segment_id)
-                   if wait else mns.get_reader(cls.core_segment_id))
+        return cls(
+            mns.wait_for_reader(cls.core_segment_id)
+            if wait
+            else mns.get_reader(cls.core_segment_id)
+        )
 
     def query_latest(self) -> ty.Dict[MemoryID, Profile]:
-        result = self.reader.query_core_segment(self.core_segment_id.core_segment_name, latest_snapshot=True)
+        result = self.reader.query_core_segment(
+            self.core_segment_id.core_segment_name, latest_snapshot=True
+        )
 
         id_to_person = {}
+
         def from_aron(id: MemoryID, aron_data):
             id_to_person[id] = Profile.from_aron_ice(aron_data)
 
@@ -109,8 +123,8 @@ class ProfileReader(ProfileClientBase):
         return id_to_person
 
     def fetch_latest_instance(
-            self,
-            updated_ids: ty.Optional[ty.List[MemoryID]] = None,
+        self,
+        updated_ids: ty.Optional[ty.List[MemoryID]] = None,
     ):
         if updated_ids is None:
             memory = self.reader.query_latest(self.core_segment_id)
@@ -123,7 +137,10 @@ class ProfileReader(ProfileClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestampMicroSeconds < snapshot.id.timestampMicroSeconds:
+                        elif (
+                            latest_snapshot.id.timestampMicroSeconds
+                            < snapshot.id.timestampMicroSeconds
+                        ):
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
@@ -131,7 +148,6 @@ class ProfileReader(ProfileClientBase):
 
             latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
             latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
-
 
         if not latest_snapshot:
             return None

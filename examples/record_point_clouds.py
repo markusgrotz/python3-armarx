@@ -16,13 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class PointCloudRecorder:
-
     def __init__(
-            self,
-            output_directory: str,
-            source_provider_name: str,
-            name="PointCloudRecorder",
-            max_fps=30,
+        self,
+        output_directory: str,
+        source_provider_name: str,
+        name="PointCloudRecorder",
+        max_fps=30,
     ):
         self.output_directory = output_directory
         self.source_provider_name = source_provider_name
@@ -30,10 +29,13 @@ class PointCloudRecorder:
         self.max_fps = max_fps
 
         # Init receiver.
-        self.receiver = PointCloudReceiver(name=name, source_provider_name=source_provider_name, wait_for_provider=True)
-        logger.info(f"Wait for point cloud provider '{self.receiver.source_provider_name}' ...")
+        self.receiver = PointCloudReceiver(
+            name=name, source_provider_name=source_provider_name, wait_for_provider=True
+        )
+        logger.info(
+            f"Wait for point cloud provider '{self.receiver.source_provider_name}' ..."
+        )
         self.receiver.on_connect()
-
 
         # Prepare replay.
         self.t_start = datetime.datetime.now()
@@ -52,7 +54,9 @@ class PointCloudRecorder:
         pc, info = self.receiver.wait_for_next_point_cloud()
         now = datetime.datetime.now()
 
-        if self.t_latest is not None and (now - self.t_latest).total_seconds() < (1 / self.max_fps):
+        if self.t_latest is not None and (now - self.t_latest).total_seconds() < (
+            1 / self.max_fps
+        ):
             return
         else:
             self.t_latest = now
@@ -68,24 +72,32 @@ class PointCloudRecorder:
 
         print_step = 10 ** max(1, int(np.log10(self.count)))
         if self.count % print_step == 0:
-            logger.info(f"Stored {self.count} point clouds (reporting each {print_step}) ...")
+            logger.info(
+                f"Stored {self.count} point clouds (reporting each {print_step}) ..."
+            )
 
 
 def main():
 
     parser = ArgumentParser()
     parser.add_argument(
-        "-o", "--output_dir", default=".",
-        help="The (base) output directory. A sub-directory with a timestamp will be created inside."
+        "-o",
+        "--output_dir",
+        default=".",
+        help="The (base) output directory. A sub-directory with a timestamp will be created inside.",
     )
     parser.add_argument(
-        "-p", "--provider_name", default="OpenNIPointCloudProvider",
+        "-p",
+        "--provider_name",
+        default="OpenNIPointCloudProvider",
         help="Name of the input point cloud provider "
-             "(e.g. 'OpenNIPointCloudProvider', 'DynamicSimulationDepthImageProvider')."
+        "(e.g. 'OpenNIPointCloudProvider', 'DynamicSimulationDepthImageProvider').",
     )
     parser.add_argument(
-        "-n", "--name", default="PointCloudRecorder",
-        help="Name of the created ice object."
+        "-n",
+        "--name",
+        default="PointCloudRecorder",
+        help="Name of the created ice object.",
     )
 
     args = parser.parse_args()
@@ -107,5 +119,5 @@ def main():
         recorder.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -20,9 +20,9 @@ def camel_case_to_snake_case(name: str) -> str:
 
     for match in regex.finditer(name):
         out += (
-            name[latest_end:match.start()]
+            name[latest_end : match.start()]
             + "_"
-            + name[match.start():match.end()].lower()
+            + name[match.start() : match.end()].lower()
         )
         latest_end = match.end()
 
@@ -31,7 +31,7 @@ def camel_case_to_snake_case(name: str) -> str:
     return out
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     assert snake_case_to_camel_case("one_two_three") == "oneTwoThree"
     assert camel_case_to_snake_case("oneTwoThree") == "one_two_three"

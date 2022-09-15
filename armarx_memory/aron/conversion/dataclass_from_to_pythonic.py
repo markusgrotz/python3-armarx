@@ -7,8 +7,8 @@ from .options import ConversionOptions
 
 
 def dataclass_to_dict(
-        obj,
-        logger: ty.Optional[logging.Logger] = None,
+    obj,
+    logger: ty.Optional[logging.Logger] = None,
 ) -> ty.Dict[str, ty.Any]:
     """
     Deeply converts a dataclass to a dict.
@@ -21,9 +21,9 @@ def dataclass_to_dict(
 
 
 def dataclass_from_dict(
-        cls,
-        data: ty.Dict,
-        logger: ty.Optional[logging.Logger] = None,
+    cls,
+    data: ty.Dict,
+    logger: ty.Optional[logging.Logger] = None,
 ):
     """
     Deeply converts a dictionary with pythonic data types
@@ -76,7 +76,9 @@ def dataclass_from_dict(
             if logger is not None:
                 logger.debug(f"> Process dict {kt} -> {vt}")
             if value is not None:
-                field_value = {kt(k): dataclass_from_dict(vt, v) for k, v in value.items()}
+                field_value = {
+                    kt(k): dataclass_from_dict(vt, v) for k, v in value.items()
+                }
             else:
                 field_value = None
 

@@ -4,6 +4,7 @@ import numpy as np
 from typing import Iterable, Union, List
 
 from armarx import slice_loader
+
 slice_loader.load_armarx_slice("RobotAPI", "ArViz.ice")
 
 from armarx.viz.data import Element
@@ -21,16 +22,15 @@ class ElementFlags(enum.IntFlag):
 
 
 class Element:
-
     def __init__(
-            self,
-            ice_data_cls,
-            id,
-            pose=None,
-            position=None,
-            orientation=None,
-            color=None,
-            scale=1.0,
+        self,
+        ice_data_cls,
+        id,
+        pose=None,
+        position=None,
+        orientation=None,
+        color=None,
+        scale=1.0,
     ):
         self.ice_data_cls = ice_data_cls
         self.id: str = str(id)
@@ -49,8 +49,8 @@ class Element:
         self.flags: ElementFlags = ElementFlags.NONE
 
         from armarx.viz.data import InteractionDescription
-        self._interaction = InteractionDescription()
 
+        self._interaction = InteractionDescription()
 
     @property
     def pose(self) -> np.ndarray:
@@ -71,7 +71,9 @@ class Element:
 
     @position.setter
     def position(self, value):
-        value = self._to_array_checked(value, [(3,), (3, 1)], "position vector", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(3,), (3, 1)], "position vector", dtype=np.float
+        )
         self._pose[:3, 3] = value
 
     @property
@@ -96,13 +98,16 @@ class Element:
     @ori_mat.setter
     def ori_mat(self, value):
         """Set the orientation as 3x3 rotation matrix."""
-        value = self._to_array_checked(value, (3, 3), "orientation matrix", dtype=np.float)
+        value = self._to_array_checked(
+            value, (3, 3), "orientation matrix", dtype=np.float
+        )
         self._pose[:3, :3] = value
 
     @property
     def ori_quat(self):
         """The orientation as [w, x, y, z] quaternion."""
         import transforms3d as tf3d
+
         try:
             return tf3d.quaternions.mat2quat(self.ori_mat)
         except np.linalg.LinAlgError as e:
@@ -112,6 +117,7 @@ class Element:
     @ori_quat.setter
     def ori_quat(self, value):
         import transforms3d as tf3d
+
         try:
             self.ori_mat = tf3d.quaternions.quat2mat(value)
         except np.linalg.LinAlgError as e:
@@ -144,23 +150,24 @@ class Element:
         else:
             value = np.array(value)
             if not value.shape == (3,):
-                raise ValueError(f"Expected scale to be scalar or an array of shape (3,), "
-                                 f"but got shape ({value.shape}).")
+                raise ValueError(
+                    f"Expected scale to be scalar or an array of shape (3,), "
+                    f"but got shape ({value.shape})."
+                )
             self._scale = value
-
 
     # Interaction
 
     def enable_interaction(
-            self,
-            selection: bool = False,
-            context_menu_options: List[str] = None,
-            translation: str = None,
-            rotation: str = None,
-            scaling: str = None,
-            transform: bool = False,
-            hide_during_transform: bool = False,
-        ) -> "Element":
+        self,
+        selection: bool = False,
+        context_menu_options: List[str] = None,
+        translation: str = None,
+        rotation: str = None,
+        scaling: str = None,
+        transform: bool = False,
+        hide_during_transform: bool = False,
+    ) -> "Element":
         """
         Enable one or more interaction features.
 
@@ -262,27 +269,36 @@ class Element:
         if isinstance(self.scale, float):
             scale = np.array([self.scale, self.scale, self.scale])
         else:
-            assert self.scale.shape == (3,), f"Expected scale of shape {(3,)}, but got {self.scale.shape}."
+            assert self.scale.shape == (
+                3,
+            ), f"Expected scale of shape {(3,)}, but got {self.scale.shape}."
             scale = self.scale
         ice_data.scale = Vector3f(*scale)
 
         ice_data.flags = int(self.flags)
 
-
     @classmethod
-    def _match_shape(cls, shape: Iterable[int], shape_pattern: Iterable[Union[int, None]]):
+    def _match_shape(
+        cls, shape: Iterable[int], shape_pattern: Iterable[Union[int, None]]
+    ):
         """
         Indicate whether `shape` matches `accepted_shape`.
         :param shape: An array shape, i.e. tuple of ints.
-        :param shape_pattern: 
+        :param shape_pattern:
             A shape pattern, i.e. tuple of ints or None, where None matches any size.
-        :return: True if `shape` matches `accepted_shape`. 
+        :return: True if `shape` matches `accepted_shape`.
         """
-        return np.all(np.logical_or(np.array(shape) == shape_pattern,
-                                    np.isnan(np.array(shape_pattern, dtype=np.float))))
+        return np.all(
+            np.logical_or(
+                np.array(shape) == shape_pattern,
+                np.isnan(np.array(shape_pattern, dtype=np.float)),
+            )
+        )
 
     @classmethod
-    def _match_shapes(cls, shape: Iterable[int], shape_patterns: List[Iterable[Union[int, None]]]):
+    def _match_shapes(
+        cls, shape: Iterable[int], shape_patterns: List[Iterable[Union[int, None]]]
+    ):
         for pattern in shape_patterns:
             if cls._match_shape(shape, pattern):
                 return True
@@ -305,8 +321,15 @@ class Element:
             if len(accepted_shapes) == 1:
                 shape_str = cls._shape_to_str(accepted_shapes[0])
             else:
-                shape_str = " or ".join([", ".join(map(cls._shape_to_str, accepted_shapes[:-1])),
-                                         cls._shape_to_str(accepted_shapes[-1])])
-            raise ValueError("Expected {} of shape {}, but got array of shape {}.".format(
-                name, shape_str, value.shape))
+                shape_str = " or ".join(
+                    [
+                        ", ".join(map(cls._shape_to_str, accepted_shapes[:-1])),
+                        cls._shape_to_str(accepted_shapes[-1]),
+                    ]
+                )
+            raise ValueError(
+                "Expected {} of shape {}, but got array of shape {}.".format(
+                    name, shape_str, value.shape
+                )
+            )
         return value

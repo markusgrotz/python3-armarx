@@ -11,11 +11,12 @@ from armarx_memory.segments.base_segment import BaseWriter
 
 class ObjectClassClientBase(BaseClient):
 
-    core_segment_id = MemoryID('Object', 'Class').with_provider_segment_name('PriorKnowledgeData')
+    core_segment_id = MemoryID("Object", "Class").with_provider_segment_name(
+        "PriorKnowledgeData"
+    )
 
-    default_entity_name = 'object_class'
+    default_entity_name = "object_class"
+
 
 class ObjectClassReader(BaseReader, ObjectClassClientBase):
     pass
-
-

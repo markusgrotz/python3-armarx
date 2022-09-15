@@ -49,15 +49,30 @@ class IceConverter(abc.ABC):
         self._handlers_to_ice: Dict[Type, Callable] = dict()
 
         self.set_handler_from_ice(
-            list, lambda dto, *args, **kwargs: list(map(lambda e: self.from_ice(e, *args, **kwargs), dto)))
+            list,
+            lambda dto, *args, **kwargs: list(
+                map(lambda e: self.from_ice(e, *args, **kwargs), dto)
+            ),
+        )
         self.set_handler_to_ice(
-            list, lambda bo, *args, **kwargs: list(map(lambda e: self.to_ice(e, *args, **kwargs), bo)))
+            list,
+            lambda bo, *args, **kwargs: list(
+                map(lambda e: self.to_ice(e, *args, **kwargs), bo)
+            ),
+        )
 
         self.set_handler_from_ice(
-            dict, lambda dto, *args, **kwargs: {k: self.from_ice(v, *args, **kwargs) for k, v in dto.items()})
+            dict,
+            lambda dto, *args, **kwargs: {
+                k: self.from_ice(v, *args, **kwargs) for k, v in dto.items()
+            },
+        )
         self.set_handler_to_ice(
-            dict, lambda bo, *args, **kwargs: {k: self.to_ice(v, *args, **kwargs) for k, v in bo.items()})
-
+            dict,
+            lambda bo, *args, **kwargs: {
+                k: self.to_ice(v, *args, **kwargs) for k, v in bo.items()
+            },
+        )
 
     def from_ice(self, dto, *args, **kwargs):
         """Convert the Ice Data Transfer Object(s) to Python Business Object(s)."""

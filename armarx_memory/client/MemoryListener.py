@@ -2,6 +2,7 @@ import typing as ty
 import logging
 
 from armarx import slice_loader, ice_manager
+
 slice_loader.load_armarx_slice("RobotAPI", "armem/client/MemoryListenerInterface.ice")
 
 from armarx import armem
@@ -19,19 +20,20 @@ class MemoryListener(armem.client.MemoryListenerInterface):
 
     TopicNameFormat = "MemoryUpdates.{memory_name}"
 
-
     def __init__(
-            self,
-            name: ty.Optional[str] = None,
-            register=True,
-            log_fn=None,
+        self,
+        name: ty.Optional[str] = None,
+        register=True,
+        log_fn=None,
     ):
         self.name = name
         self.proxy = None
 
         if log_fn is None:
+
             def log_fn(*args, **kwargs):
                 pass
+
         self.log_fn = log_fn
 
         self.subscriptions: ty.Dict[MemoryID, ty.List["MemoryListener.Callback"]] = {}
@@ -63,7 +65,6 @@ class MemoryListener(armem.client.MemoryListenerInterface):
         else:
             self.subscriptions[subscription_id].append(callback)
 
-
     def updated(self, updated_snapshot_ids: UpdatedSnapshotIDs):
         """
         Function to be called when receiving messages over MemoryListener topic.
@@ -80,7 +81,8 @@ class MemoryListener(armem.client.MemoryListenerInterface):
         for subscribed_id, callbacks in self.subscriptions.items():
             # Split by subscribed id
             matching_snapshot_ids = [
-                updated_snapshot_id for updated_snapshot_id in updated_snapshot_ids
+                updated_snapshot_id
+                for updated_snapshot_id in updated_snapshot_ids
                 if subscribed_id.contains(updated_snapshot_id)
             ]
             # Call callbacks

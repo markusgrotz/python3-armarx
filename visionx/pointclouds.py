@@ -17,32 +17,55 @@ from visionx import MetaPointCloudFormat
 from visionx import PointContentType
 
 
-
 # Structured data types for point types defined in VisionX
 # These are binary compatible with the Blob data used by PointCloudProvider
-dtype_point_xyz = np.dtype([('position', np.float32, (3,))])
-dtype_point_color_xyz = np.dtype([('color', np.uint32), ('position', np.float32, (3,))])
-dtype_point_normal_xyz = np.dtype([('normal', np.float32, (3,)), ('position', np.float32, (3,))])
-dtype_point_color_normal_xyz = np.dtype([('color', np.uint32), ('normal', np.float32, (3,)), ('position', np.float32, (3,))])
-dtype_point_xyz_label = np.dtype([('position', np.float32, (3,)), ('label', np.int32)])
-dtype_point_xyz_color_label = np.dtype([('position', np.float32, (3,)), ('color', np.uint32), ('label', np.int32)])
-dtype_point_xyz_intensity = np.dtype([('position', np.float32, (3,)), ('intensity', np.float32)])
+dtype_point_xyz = np.dtype([("position", np.float32, (3,))])
+dtype_point_color_xyz = np.dtype([("color", np.uint32), ("position", np.float32, (3,))])
+dtype_point_normal_xyz = np.dtype(
+    [("normal", np.float32, (3,)), ("position", np.float32, (3,))]
+)
+dtype_point_color_normal_xyz = np.dtype(
+    [("color", np.uint32), ("normal", np.float32, (3,)), ("position", np.float32, (3,))]
+)
+dtype_point_xyz_label = np.dtype([("position", np.float32, (3,)), ("label", np.int32)])
+dtype_point_xyz_color_label = np.dtype(
+    [("position", np.float32, (3,)), ("color", np.uint32), ("label", np.int32)]
+)
+dtype_point_xyz_intensity = np.dtype(
+    [("position", np.float32, (3,)), ("intensity", np.float32)]
+)
 
 
 # Color as RGBA
-dtype_point_rgba_xyz = np.dtype([
-    ('r', np.uint8), ('g', np.uint8), ('b', np.uint8), ('a', np.uint8),
-    ('position', np.float32, (3,))
-])
-dtype_point_rgba_normal_xyz = np.dtype([
-    ('r', np.uint8), ('g', np.uint8), ('b', np.uint8), ('a', np.uint8),
-    ('normal', np.float32, (3,)), ('position', np.float32, (3,))
-])
-dtype_point_xyz_rgba_label = np.dtype([
-    ('position', np.float32, (3,)),
-    ('r', np.uint8), ('g', np.uint8), ('b', np.uint8), ('a', np.uint8),
-    ('label', np.int32)
-])
+dtype_point_rgba_xyz = np.dtype(
+    [
+        ("r", np.uint8),
+        ("g", np.uint8),
+        ("b", np.uint8),
+        ("a", np.uint8),
+        ("position", np.float32, (3,)),
+    ]
+)
+dtype_point_rgba_normal_xyz = np.dtype(
+    [
+        ("r", np.uint8),
+        ("g", np.uint8),
+        ("b", np.uint8),
+        ("a", np.uint8),
+        ("normal", np.float32, (3,)),
+        ("position", np.float32, (3,)),
+    ]
+)
+dtype_point_xyz_rgba_label = np.dtype(
+    [
+        ("position", np.float32, (3,)),
+        ("r", np.uint8),
+        ("g", np.uint8),
+        ("b", np.uint8),
+        ("a", np.uint8),
+        ("label", np.int32),
+    ]
+)
 
 
 dtype_color_to_rgba_dict = {
@@ -126,23 +149,28 @@ def rgb_to_uint32_array(rgba_array: np.ndarray) -> np.ndarray:
 
 
 def crop_by_position(
-        pc: np.ndarray,
-        crop_min: Tuple[float, float, float],
-        crop_max: Tuple[float, float, float],
+    pc: np.ndarray,
+    crop_min: Tuple[float, float, float],
+    crop_max: Tuple[float, float, float],
 ) -> np.ndarray:
     from functools import reduce
 
-    masks = [pc["position"][:, i] >= threshold for i, threshold in enumerate(crop_min)
-             if threshold is not None]
-    masks += [pc["position"][:, i] <= threshold for i, threshold in enumerate(crop_max)
-              if threshold is not None]
+    masks = [
+        pc["position"][:, i] >= threshold
+        for i, threshold in enumerate(crop_min)
+        if threshold is not None
+    ]
+    masks += [
+        pc["position"][:, i] <= threshold
+        for i, threshold in enumerate(crop_max)
+        if threshold is not None
+    ]
 
     if len(masks) > 0:
         mask = reduce(np.logical_and, masks[1:], masks[0])
         return pc[mask]
     else:
         return pc
-
 
 
 def make_pcd_header(
@@ -167,15 +195,25 @@ def make_pcd_header(
 
     for name, (dtype, byte_offset) in point_cloud.dtype.fields.items():
         if name == "position":
-            assert dtype.shape == (3,), f"Expect position dtype to have shape (3,), but got {dtype.shape}."
-            assert dtype.base == np.float32, f"Expect position dtype base ot be float32, but got {dtype.base}."
+            assert dtype.shape == (
+                3,
+            ), f"Expect position dtype to have shape (3,), but got {dtype.shape}."
+            assert (
+                dtype.base == np.float32
+            ), f"Expect position dtype base ot be float32, but got {dtype.base}."
             fields.append("x y z")
         elif name == "color":
-            assert dtype.shape == (), f"Expect color dtype to have shape (), but got {dtype.shape}."
-            assert dtype.base == np.uint32, f"Expect position dtype base ot be uint32, but got {dtype.base}."
+            assert (
+                dtype.shape == ()
+            ), f"Expect color dtype to have shape (), but got {dtype.shape}."
+            assert (
+                dtype.base == np.uint32
+            ), f"Expect position dtype base ot be uint32, but got {dtype.base}."
             fields.append("rgba")
         else:
-            raise ValueError(f"Encountered unknown field '{name}' of dtype {dtype} in point cloud.")
+            raise ValueError(
+                f"Encountered unknown field '{name}' of dtype {dtype} in point cloud."
+            )
 
         dim_count = dtype.shape[0] if dtype.shape else 1
 
@@ -189,7 +227,9 @@ def make_pcd_header(
             elif dtype.base.name.startswith("int"):
                 dim_type = "I"
         if dim_type is None:
-            raise ValueError(f"Failed to interpret base {dtype.base} of dtype {dtype} as float, unsigned int or signed int.")
+            raise ValueError(
+                f"Failed to interpret base {dtype.base} of dtype {dtype} as float, unsigned int or signed int."
+            )
 
         size.append(" ".join(map(str, [dim_size] * dim_count)))
         types.append(" ".join(map(str, [dim_type] * dim_count)))
@@ -229,8 +269,8 @@ def make_pcd_header(
 
 
 def store_point_cloud(
-        filepath: str,
-        point_cloud: np.ndarray,
+    filepath: str,
+    point_cloud: np.ndarray,
 ):
     """
     Save the point cloud in the binary PCD format [1].
@@ -253,11 +293,13 @@ def store_point_cloud(
         if binary:
             point_cloud.flatten().view(np.ubyte).tofile(file)
         else:
-            raise NotImplementedError("Storing point clouds in non-binary format is not implemented.")
+            raise NotImplementedError(
+                "Storing point clouds in non-binary format is not implemented."
+            )
 
 
 def load_point_cloud(
-        filepath: str,
+    filepath: str,
 ) -> np.ndarray:
     """
     Load a point cloud in the binary PCD format [1].
@@ -276,7 +318,7 @@ def load_point_cloud(
     end_of_header = content.find("\n".encode(), last_line_of_header)
 
     header = content[:end_of_header]
-    data = content[end_of_header+1:]
+    data = content[end_of_header + 1 :]
 
     header_lines: List[str] = header.decode().split("\n")
     header_dict = {}
@@ -285,8 +327,8 @@ def load_point_cloud(
         header_dict[key] = value
 
     known_fields = {
-        "rgba": ('color', np.uint32),
-        "x y z": ('position', np.float32, (3,)),
+        "rgba": ("color", np.uint32),
+        "x y z": ("position", np.float32, (3,)),
     }
 
     width, height = map(int, [header_dict["WIDTH"], header_dict["HEIGHT"]])
@@ -299,12 +341,14 @@ def load_point_cloud(
             if fields.startswith(field):
                 found = True
                 # Remove entry.
-                fields = fields[len(field):].strip()
+                fields = fields[len(field) :].strip()
                 # Handle
                 dtype_entries.append(dtype_entry)
 
         if not found:
-            raise ValueError("Failed to interpret fields '" + header_dict["FIELDS"] + "'.")
+            raise ValueError(
+                "Failed to interpret fields '" + header_dict["FIELDS"] + "'."
+            )
     dtype = np.dtype(dtype_entries)
 
     array = np.frombuffer(data, dtype=dtype)

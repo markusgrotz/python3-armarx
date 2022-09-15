@@ -13,18 +13,20 @@ class NdArrayWidget:
     SpinBox = Union[rg.FloatSpinBox, rg.IntSpinBox]
 
     def __init__(
-            self,
-            array: np.ndarray,
-            column_vector=False,
-            float_widget_cls=rg.FloatSpinBox,
-            int_widget_cls=rg.IntSpinBox,
-            **kwargs,
+        self,
+        array: np.ndarray,
+        column_vector=False,
+        float_widget_cls=rg.FloatSpinBox,
+        int_widget_cls=rg.IntSpinBox,
+        **kwargs,
     ):
         array = np.array(array)
 
         if "row_vector" in kwargs:
-            print("NdArrayWidget(): The argument 'row_vector' was replaced by 'column_vector'.\n"
-                  "If you are using 'row_vector=True', use 'column_vector=False' instead, and vice-versa.")
+            print(
+                "NdArrayWidget(): The argument 'row_vector' was replaced by 'column_vector'.\n"
+                "If you are using 'row_vector=True', use 'column_vector=False' instead, and vice-versa."
+            )
             column_vector = not kwargs.pop("row_vector")
 
         if "int" in array.dtype.name:
@@ -41,7 +43,7 @@ class NdArrayWidget:
             self.spin_boxes.flat[i] = sb
 
     def create_tree(
-            self,
+        self,
     ):
         layout = rg.GridLayout()
         if self.spin_boxes.ndim == 1:
@@ -53,8 +55,10 @@ class NdArrayWidget:
                 for j, sb in enumerate(row):
                     layout.add(sb, (i, j))
         else:
-            raise ValueError(f"{self.__class__.__name__} supports only 1- and 2-dimensional arrays, "
-                             f"but requested ndim is {self.spin_boxes.ndim}.")
+            raise ValueError(
+                f"{self.__class__.__name__} supports only 1- and 2-dimensional arrays, "
+                f"but requested ndim is {self.spin_boxes.ndim}."
+            )
         return layout
 
     @property
@@ -66,14 +70,15 @@ class NdArrayWidget:
 
     @value.setter
     def value(self, values: np.ndarray):
-        assert values.shape == self.spin_boxes.shape, \
-            f"Shape mismatch (expected {self.spin_boxes.shape}, but got {values.shape})."
+        assert (
+            values.shape == self.spin_boxes.shape
+        ), f"Shape mismatch (expected {self.spin_boxes.shape}, but got {values.shape})."
 
         for sb, val in zip(self.spin_boxes.flat, values.flat):
             sb.value = self.scalar_type(val)
 
     def get_array(
-            self,
+        self,
     ) -> np.ndarray:
         return self.value
 
@@ -85,4 +90,6 @@ class NdArrayWidget:
 
     def find_changed(self) -> List[Tuple]:
         indices = np.indices(self.spin_boxes.shape).T.reshape(-1, self.spin_boxes.ndim)
-        return [tuple(i) for i in indices if self.spin_boxes[tuple(i)].has_value_changed()]
+        return [
+            tuple(i) for i in indices if self.spin_boxes[tuple(i)].has_value_changed()
+        ]

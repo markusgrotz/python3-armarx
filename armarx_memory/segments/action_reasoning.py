@@ -12,17 +12,18 @@ from armarx_memory.segments.base_segment import BaseWriter
 
 
 class Anticipation(object):
-
     def __init__(self, prediction: List[str]):
         self.prediction = prediction
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         from armarx_memory.aron.conversion import to_aron
+
         return to_aron({"prediction": self.prediction})
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
         from armarx_memory.aron.conversion import from_aron
+
         return cls(**from_aron(dto))
 
 

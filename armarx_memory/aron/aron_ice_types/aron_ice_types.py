@@ -74,8 +74,6 @@ try:
         def dict(cls, elements: dict) -> Dict:
             return cls.Dict(elements=elements, VERSION=cls.ARON_VERSION)
 
-
-
 except AttributeError as e:
     # < 0.2.3
 
@@ -95,4 +93,3 @@ except AttributeError as e:
         Dict = ns.AronDict
 
         NdArray = ns.AronNDArray
-

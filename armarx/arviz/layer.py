@@ -1,14 +1,13 @@
 from typing import List, Union, Tuple
 
 
-from armarx.viz.data import Element 
-from armarx.viz.data import LayerUpdate 
+from armarx.viz.data import Element
+from armarx.viz.data import LayerUpdate
 
 from .elements import Element as E
 
 
 class Layer:
-
     def __init__(self, component: str, name: str, elements: List[E] = ()):
         self.component = component
         self.name = name
@@ -25,8 +24,11 @@ class Layer:
         return "{}/{}".format(self.component, self.name)
 
     def data(self) -> LayerUpdate:
-        return LayerUpdate(component=self.component, name=self.name,
-                                    elements=list(map(self._get_element_data, self.elements)))
+        return LayerUpdate(
+            component=self.component,
+            name=self.name,
+            elements=list(map(self._get_element_data, self.elements)),
+        )
 
     @staticmethod
     def _get_element_data(element: Union[Element, E]):
@@ -35,8 +37,11 @@ class Layer:
         elif isinstance(element, Element):
             return element
         else:
-            raise TypeError("Expected viz element, but received object of class '{}'.".format(element.__class__))
-
+            raise TypeError(
+                "Expected viz element, but received object of class '{}'.".format(
+                    element.__class__
+                )
+            )
 
     def __iadd__(self, elements):
         """Add an element or multiple elements to this layer's elements."""
@@ -45,7 +50,6 @@ class Layer:
         else:
             self.elements += elements
         return self
-
 
     def __enter__(self):
         """

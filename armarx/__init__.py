@@ -28,5 +28,6 @@ def inject() -> bool:
         sys.meta_path.insert(0, ArmarXProxyFinder())
         return True
 
+
 # auto inject
 inject()

@@ -30,13 +30,15 @@ from .name_helper import slice_mapping
 logger = logging.getLogger(__name__)
 
 
-
 def load_armarx_slice(armarx_package_name: str, filename: str):
     """
     ..deprecated:: add your slice file to a project's VariantInfo-*.xml instead
     """
-    warnings.warn('Add the slice definition to VariantInfo-*.xml instead.', DeprecationWarning)
+    warnings.warn(
+        "Add the slice definition to VariantInfo-*.xml instead.", DeprecationWarning
+    )
     _load_armarx_slice(armarx_package_name, filename)
+
 
 def _load_armarx_slice(armarx_package_name: str, filename: str):
     """
@@ -52,25 +54,26 @@ def _load_armarx_slice(armarx_package_name: str, filename: str):
     package_dependencies = get_dependencies(armarx_package_name)
     package_dependencies.append(armarx_package_name)
 
-    include_paths = ['-I{}'.format(Ice.getSliceDir())]
+    include_paths = ["-I{}".format(Ice.getSliceDir())]
 
     for package_name in package_dependencies:
         interface_include_path = get_include_path(package_name)
         if interface_include_path:
             include_paths.extend(interface_include_path)
         else:
-            logger.error('Include path for project %s is empty', package_name)
-            raise Exception(f'Invalid include path for project {package_name}')
+            logger.error("Include path for project %s is empty", package_name)
+            raise Exception(f"Invalid include path for project {package_name}")
 
-    filename = os.path.join(include_paths[-1], armarx_package_name, 'interface', filename)
+    filename = os.path.join(
+        include_paths[-1], armarx_package_name, "interface", filename
+    )
     filename = os.path.abspath(filename)
 
-    search_path = ' -I'.join(include_paths)
-    logger.debug('Looking for slice files in %s', search_path)
+    search_path = " -I".join(include_paths)
+    logger.debug("Looking for slice files in %s", search_path)
     if not os.path.exists(filename):
         raise IOError("Path not found: " + filename)
-    Ice.loadSlice('{} --underscore --all {}'.format(search_path, filename))
-
+    Ice.loadSlice("{} --underscore --all {}".format(search_path, filename))
 
 
 class ArmarXProxyFinder(MetaPathFinder):
@@ -87,14 +90,14 @@ class ArmarXProxyFinder(MetaPathFinder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # all namespaces as specified by the slice definitions
-        self.package_namespaces = {'armarx', 'visionx'}
+        self.package_namespaces = {"armarx", "visionx"}
         # all patched interfaces
         self.patched_definitions = set()
         self.loaded_slice_files = set()
         # mapping between fullname of the proxies/topics and variant info
         self.mapping = slice_mapping
         for _, v in self.mapping.items():
-            python_package_name, _type_name = v.fullname.rsplit('.', 1)
+            python_package_name, _type_name = v.fullname.rsplit(".", 1)
             self.package_namespaces.add(python_package_name)
 
     def find_spec(self, fullname, path, target=None):
@@ -106,18 +109,16 @@ class ArmarXProxyFinder(MetaPathFinder):
 
         variant_info = self.mapping.get(fullname)
 
-        loaded_slice = f'{variant_info.package_name}/{variant_info.include_path}'
+        loaded_slice = f"{variant_info.package_name}/{variant_info.include_path}"
         if loaded_slice in self.loaded_slice_files:
             return None
 
         load_armarx_slice(variant_info.package_name, variant_info.include_path)
 
-
         self.loaded_slice_files.add(loaded_slice)
 
-        if variant_info.type == 'Class':
+        if variant_info.type == "Class":
             return None
-
 
         self.patch_slice_definition(variant_info)
 
@@ -135,15 +136,13 @@ class ArmarXProxyFinder(MetaPathFinder):
         """
         default_name = variant_info.default_name
 
-
         # already patched. No need to do it again.
         if variant_info.fullname in self.patched_definitions:
             return
 
-        package_name, type_name = variant_info.fullname.rsplit('.', 1)
+        package_name, type_name = variant_info.fullname.rsplit(".", 1)
 
         mod = importlib.import_module(package_name)
-
 
         if not hasattr(mod, type_name):
             return
@@ -162,16 +161,14 @@ class ArmarXProxyFinder(MetaPathFinder):
         def _register_object(self, name: str):
             return register_object(self, name)
 
-
-        if type_name.endswith('Prx'):
+        if type_name.endswith("Prx"):
             proxy_class = cls
         else:
-            proxy_class = getattr(mod, type_name + 'Prx')
+            proxy_class = getattr(mod, type_name + "Prx")
 
         cls.get_topic = types.MethodType(_get_default_topic, proxy_class)
         cls.get_proxy = types.MethodType(_get_default_proxy, proxy_class)
         cls.wait_for_proxy = types.MethodType(_wait_for_default_proxy, proxy_class)
         cls.default_name = default_name
-
 
         self.patched_definitions.add(variant_info.fullname)

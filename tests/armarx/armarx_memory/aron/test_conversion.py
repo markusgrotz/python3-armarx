@@ -24,15 +24,19 @@ class NamedPose(AronDataclass):
     # Re-use another Aron data class.
     names: Names
 
-    position: np.ndarray = dc.field(default_factory=lambda: np.zeros(3, dtype=np.float32))
-    orientation: np.ndarray = dc.field(default_factory=lambda: np.array([1., 0., 0., 0.]))
+    position: np.ndarray = dc.field(
+        default_factory=lambda: np.zeros(3, dtype=np.float32)
+    )
+    orientation: np.ndarray = dc.field(
+        default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0])
+    )
 
     @classmethod
     def make_test_data(cls) -> "NamedPose":
         return cls(
             names=Names(spoken=["spoken01, spoken02"], recognized=["reco"]),
-            position=np.array([1., 2., 3.]),
-            orientation=np.array([1., 0., 0., 0.]),
+            position=np.array([1.0, 2.0, 3.0]),
+            orientation=np.array([1.0, 0.0, 0.0, 0.0]),
         )
 
 
@@ -60,12 +64,13 @@ class NativeTypes(AronDataclass):
             int_=10 * seed,
             long_=int(1e10) * seed,
             float_=42.5 * seed,
-
             optional_string_=None if seed % 2 == 1 else "value",
-
             list_of_ints_=[1, 2, 3] * seed,
-            dict_of_floats_={"one": 1.0 * seed, "two": 2.0 * seed, "three-and-a-half": 3.5 * seed},
-
+            dict_of_floats_={
+                "one": 1.0 * seed,
+                "two": 2.0 * seed,
+                "three-and-a-half": 3.5 * seed,
+            },
             array_=np.array([[1, 2, 3], [4, 5, 6]]) * seed,
         )
 

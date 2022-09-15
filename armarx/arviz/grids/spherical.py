@@ -6,9 +6,9 @@ from .core import make_grid
 
 
 def make_spherical_grid(
-        num: Union[int, Tuple[int, int]] = (50, 50),
-        radius: Optional[float] = None,
-        ) -> np.ndarray:
+    num: Union[int, Tuple[int, int]] = (50, 50),
+    radius: Optional[float] = None,
+) -> np.ndarray:
     """
     Make a grid of spherical coordinates (azim, elev) spanning
     [-pi, pi] x [-pi/2, pi/2].
@@ -43,16 +43,14 @@ def make_spherical_grid(
 
 
 def vis_sphere_mesh(
-        name: str,
-
-        num: Union[int, Tuple[int, int]] = (65, 33),
-        radius=1.0,
-        grid_spherical: Optional[np.ndarray] = None,
-
-        color=(196, 196, 196, 255),
-        spherical_color_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
-        cmap: Union[str, Callable] = "viridis",
-        ) -> "armarx.arviz.Mesh":
+    name: str,
+    num: Union[int, Tuple[int, int]] = (65, 33),
+    radius=1.0,
+    grid_spherical: Optional[np.ndarray] = None,
+    color=(196, 196, 196, 255),
+    spherical_color_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+    cmap: Union[str, Callable] = "viridis",
+) -> "armarx.arviz.Mesh":
     """
     Create a colored sphere mesh.
     :param name:
@@ -99,7 +97,9 @@ def vis_sphere_mesh(
         elif color.shape == (4,):
             colors = np.insert(np.zeros_like(grid_cartesian, dtype=int), 0, 0, axis=-1)
         else:
-            raise ValueError(f"Expected color to have shape (3,) or (4,), but got {color.shape}.")
+            raise ValueError(
+                f"Expected color to have shape (3,) or (4,), but got {color.shape}."
+            )
         colors[:] = color
 
     else:

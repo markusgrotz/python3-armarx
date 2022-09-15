@@ -8,8 +8,8 @@ from armarx_memory.aron.conversion.options import ConversionOptions
 
 
 def pythonic_to_aron_ice(
-        value: ty.Any,
-        options: ty.Optional[ConversionOptions] = None,
+    value: ty.Any,
+    options: ty.Optional[ConversionOptions] = None,
 ) -> "armarx.aron.data.dto.GenericData":
     """
     Deeply converts objects/values of pythonic types to their Aron Ice counterparts.
@@ -37,10 +37,14 @@ def pythonic_to_aron_ice(
         return pythonic_to_aron_ice(value.value)  # int
 
     elif isinstance(value, dict):
-        a = AronIceTypes.dict({
-            (options.name_python_to_aron(k) if options is not None else k): pythonic_to_aron_ice(v)
-            for k, v in value.items()
-        })
+        a = AronIceTypes.dict(
+            {
+                (
+                    options.name_python_to_aron(k) if options is not None else k
+                ): pythonic_to_aron_ice(v)
+                for k, v in value.items()
+            }
+        )
         return a
 
     elif isinstance(value, AronIceTypes.Dict):
@@ -58,8 +62,8 @@ def pythonic_to_aron_ice(
 
 
 def pythonic_from_aron_ice(
-        data: "armarx.aron.data.dto.GenericData",
-        options: ty.Optional[ConversionOptions] = None,
+    data: "armarx.aron.data.dto.GenericData",
+    options: ty.Optional[ConversionOptions] = None,
 ) -> ty.Any:
     """
     Deeply converts an Aron data Ice object to its pythonic representation.
@@ -68,9 +72,12 @@ def pythonic_from_aron_ice(
     :param options: Conversion options.
     :return: The pythonic representation.
     """
+
     def handle_dict(elements):
         return {
-            (options.name_aron_to_python(k) if options is not None else k): pythonic_from_aron_ice(v)
+            (
+                options.name_aron_to_python(k) if options is not None else k
+            ): pythonic_from_aron_ice(v)
             for k, v in elements.items()
         }
 
@@ -105,16 +112,21 @@ def pythonic_from_aron_ice(
         elif isinstance(elements, dict):
             return handle_dict(elements)
         else:
-            raise TypeError(f"Could not handle aron container object of type '{type(data)}'. \n"
-                            f"elements: {elements}")
+            raise TypeError(
+                f"Could not handle aron container object of type '{type(data)}'. \n"
+                f"elements: {elements}"
+            )
 
-    raise TypeError(f"Could not handle aron object of type '{type(data)}'.\n"
-                    f"dir(a): {dir(data)}")
+    raise TypeError(
+        f"Could not handle aron object of type '{type(data)}'.\n" f"dir(a): {dir(data)}"
+    )
 
 
 def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
     shape = (*value.shape, value.itemsize)
-    return AronIceTypes.NDArray(shape=shape, type=str(value.dtype), data=value.tobytes())
+    return AronIceTypes.NDArray(
+        shape=shape, type=str(value.dtype), data=value.tobytes()
+    )
 
 
 def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
@@ -135,19 +147,16 @@ def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
             dtype = np.uint8
         else:
             dtype_size = len(byte_data) // size
-            dtype_dict = {
-                1: np.uint8,
-                2: np.uint16,
-                4: np.uint32,
-                8: np.uint64
-            }
+            dtype_dict = {1: np.uint8, 2: np.uint16, 4: np.uint32, 8: np.uint64}
             dtype = dtype_dict.get(dtype_size, None)
             if dtype is None:
                 # Build a structured dtype with sequence of bytes.
                 dtype = np.dtype([("bytes", np.uint8, dtype_size)])
 
-        print(f"Unknown type '{data.type}' of array with shape {shape} and {len(byte_data)} bytes. "
-              f"Falling back to {dtype}.")
+        print(
+            f"Unknown type '{data.type}' of array with shape {shape} and {len(byte_data)} bytes. "
+            f"Falling back to {dtype}."
+        )
 
     array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=dtype)
     array = array.reshape(shape)

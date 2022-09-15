@@ -10,7 +10,6 @@ SLICE_INCLUDE = ("ArmarXCore", "core/BasicVectorTypes.ice")
 
 
 class Vector2fConv(IceConverter):
-
     def __init__(self):
         super().__init__()
         self.set_handler_from_ice(list, self._from_ice)
@@ -21,16 +20,20 @@ class Vector2fConv(IceConverter):
         return armarx.Vector2f
 
     def _from_ice(
-            self,
-            dto: Union["armarx.Vector2f", List["armarx.Vector2f"]],
-            scaling: Optional[float] = None,
-            ) -> np.ndarray:
+        self,
+        dto: Union["armarx.Vector2f", List["armarx.Vector2f"]],
+        scaling: Optional[float] = None,
+    ) -> np.ndarray:
 
         if isinstance(dto, list):
             points = dto
             bo = np.array([(p.e0, p.e1) for p in points])
-            assert bo.shape == (len(points), 2), \
-                "Shape should be {}, but was {}.\n\tPoints: {}".format((len(points), 2), bo.shape, points)
+            assert bo.shape == (
+                len(points),
+                2,
+            ), "Shape should be {}, but was {}.\n\tPoints: {}".format(
+                (len(points), 2), bo.shape, points
+            )
         else:
             point = dto
             bo = np.array((point.e0, point.e1))
@@ -38,12 +41,11 @@ class Vector2fConv(IceConverter):
         bo = scale(bo, scaling)
         return bo
 
-
     def _to_ice(
-            self,
-            bo: np.ndarray,
-            scaling: Optional[float] = None,
-            ) -> "armarx.Vector2f":
+        self,
+        bo: np.ndarray,
+        scaling: Optional[float] = None,
+    ) -> "armarx.Vector2f":
         Vector2f = self.get_dto()
 
         bo = np.array(bo)
@@ -56,9 +58,7 @@ class Vector2fConv(IceConverter):
             return [Vector2f(x, y) for x, y in bo]
 
 
-
 class Vector3fConv(IceConverter):
-
     def __init__(self):
         super().__init__()
         self.set_handler_from_ice(list, self._from_ice)
@@ -69,10 +69,10 @@ class Vector3fConv(IceConverter):
         return armarx.Vector3f
 
     def _from_ice(
-            self,
-            dto_points: Union["armarx.Vector3f", List["armarx.Vector3f"]],
-            scaling: Optional[float] = None,
-            ) -> np.ndarray:
+        self,
+        dto_points: Union["armarx.Vector3f", List["armarx.Vector3f"]],
+        scaling: Optional[float] = None,
+    ) -> np.ndarray:
 
         try:
             iter(dto_points)
@@ -82,17 +82,21 @@ class Vector3fConv(IceConverter):
 
         else:
             bo = np.array([(p.e0, p.e1, p.e2) for p in dto_points])
-            assert bo.shape == (len(dto_points), 3), \
-                "Shape should be {}, but was {}.\n\tPoints: {}".format((len(dto_points), 3), bo.shape, dto_points)
+            assert bo.shape == (
+                len(dto_points),
+                3,
+            ), "Shape should be {}, but was {}.\n\tPoints: {}".format(
+                (len(dto_points), 3), bo.shape, dto_points
+            )
 
         bo = scale(bo, scaling)
         return bo
 
     def _to_ice(
-            self,
-            bo: np.ndarray,
-            scaling: Optional[float] = None,
-            ) -> "armarx.Vector3f":
+        self,
+        bo: np.ndarray,
+        scaling: Optional[float] = None,
+    ) -> "armarx.Vector3f":
         Vector3f = self.get_dto()
 
         bo = scale(bo, scaling)
@@ -102,7 +106,6 @@ class Vector3fConv(IceConverter):
             return Vector3f(x, y, z)
         else:
             return [Vector3f(x, y, z) for x, y, z in bo]
-
 
 
 def scale(points: np.ndarray, scaling: Optional[float] = None) -> np.ndarray:

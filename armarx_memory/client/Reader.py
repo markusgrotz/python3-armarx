@@ -1,6 +1,7 @@
 import typing as ty
 
 from armarx import slice_loader
+
 slice_loader.load_armarx_slice("RobotAPI", "armem/query.ice")
 
 from armarx import armem
@@ -9,25 +10,22 @@ from armarx.armem import data as dto  # The ice type namespace.
 from armarx_memory.core import MemoryID
 
 
-
 class Reader:
 
     ReadingMemoryServerPrx = "armem.server.ReadingMemoryInterfacePrx"
     qd = armem.query.data
 
-
     def __init__(
-            self,
-            server: ty.Optional[ReadingMemoryServerPrx],
-            ):
+        self,
+        server: ty.Optional[ReadingMemoryServerPrx],
+    ):
 
         self.server = server
 
-
     def query(
-            self,
-            queries: ty.List[armem.query.data.MemoryQuery],
-            ) -> armem.data.Memory:
+        self,
+        queries: ty.List[armem.query.data.MemoryQuery],
+    ) -> armem.data.Memory:
         """
         Perform a memory query. Return the result if successful,
         otherwise raise an exception.
@@ -42,11 +40,10 @@ class Reader:
         else:
             return result.memory
 
-
     def query_snapshots(
-            self,
-            ids: ty.List[MemoryID],
-            ) -> ty.Dict[MemoryID, armem.data.EntitySnapshot]:
+        self,
+        ids: ty.List[MemoryID],
+    ) -> ty.Dict[MemoryID, armem.data.EntitySnapshot]:
         """
         Query snapshots corresponding to ty.List of memory IDs.
 
@@ -69,52 +66,65 @@ class Reader:
             else:
                 q_entity = self.qd.entity.Single()  # Latest
 
-            q_prov = self.qd.provider.Single(entityName=snapshot_id.entity_name,
-                                             entityQueries=[q_entity])
-            q_core = self.qd.core.Single(providerSegmentName=snapshot_id.provider_segment_name,
-                                         providerSegmentQueries=[q_prov])
-            q_memory = self.qd.memory.Single(coreSegmentName=snapshot_id.core_segment_name,
-                                             coreSegmentQueries=[q_core])
+            q_prov = self.qd.provider.Single(
+                entityName=snapshot_id.entity_name, entityQueries=[q_entity]
+            )
+            q_core = self.qd.core.Single(
+                providerSegmentName=snapshot_id.provider_segment_name,
+                providerSegmentQueries=[q_prov],
+            )
+            q_memory = self.qd.memory.Single(
+                coreSegmentName=snapshot_id.core_segment_name,
+                coreSegmentQueries=[q_core],
+            )
             qs_memory.append(q_memory)
 
         memory = self.query(qs_memory)
 
         snapshots = dict()
         for snapshot_id in ids:
-            entity = (memory.coreSegments[snapshot_id.core_segment_name]
+            entity = (
+                memory.coreSegments[snapshot_id.core_segment_name]
                 .providerSegments[snapshot_id.provider_segment_name]
-                .entities[snapshot_id.entity_name])
+                .entities[snapshot_id.entity_name]
+            )
 
             # TODO: Quick and dirty fix: Iterate over all history entries
             # TODO: And fix that if timestamp is -2 you want to have the secondlast element
             if snapshot_id.timestamp_usec >= 0:
                 for datetime, entry in entity.history.items():
-                    if snapshot_id.timestamp_usec == datetime.timeSinceEpoch.microSeconds:
+                    if (
+                        snapshot_id.timestamp_usec
+                        == datetime.timeSinceEpoch.microSeconds
+                    ):
                         snapshots[snapshot_id] = entry
                         break
             else:
-                snapshots[snapshot_id] = entity.history[sorted(entity.history.keys(), key=lambda x: x.timeSinceEpoch.microSeconds)[-1]]
+                snapshots[snapshot_id] = entity.history[
+                    sorted(
+                        entity.history.keys(),
+                        key=lambda x: x.timeSinceEpoch.microSeconds,
+                    )[-1]
+                ]
 
             # snapshots[snapshot_id] = entity.history[
             #    ice_id.timestamp
             #    if snapshot_id.timestamp_usec >= 0
             #    else max()
-            #]
+            # ]
 
         return snapshots
 
-
     def query_snapshot(
-            self,
-            snapshot_id: MemoryID,
-            ) -> armem.data.EntitySnapshot:
+        self,
+        snapshot_id: MemoryID,
+    ) -> armem.data.EntitySnapshot:
 
         return self.query_snapshots([snapshot_id])[snapshot_id]
 
-
     def query_all(
-            self,
-            ) -> armem.data.Memory:
+        self,
+    ) -> armem.data.Memory:
 
         q_entity = self.qd.entity.All()
         q_prov = self.qd.provider.All(entityQueries=[q_entity])
@@ -123,13 +133,12 @@ class Reader:
         memory = self.query([q_memory])
         return memory
 
-
     def query_core_segment(
-            self,
-            name: str,
-            regex=False,
-            latest_snapshot=False,
-            ) -> armem.data.Memory:
+        self,
+        name: str,
+        regex=False,
+        latest_snapshot=False,
+    ) -> armem.data.Memory:
 
         if latest_snapshot:
             q_entity = self.qd.entity.Single()  # Latest
@@ -138,53 +147,62 @@ class Reader:
         q_prov = self.qd.provider.All(entityQueries=[q_entity])
         q_core = self.qd.core.All(providerSegmentQueries=[q_prov])
         if regex:
-            q_memory = self.qd.memory.Regex(coreSegmentNameRegex=name,
-                                            coreSegmentQueries=[q_core])
+            q_memory = self.qd.memory.Regex(
+                coreSegmentNameRegex=name, coreSegmentQueries=[q_core]
+            )
         else:
-            q_memory = self.qd.memory.Single(coreSegmentName=name,
-                                             coreSegmentQueries=[q_core])
+            q_memory = self.qd.memory.Single(
+                coreSegmentName=name, coreSegmentQueries=[q_core]
+            )
         memory = self.query([q_memory])
         return memory
 
-
     def query_latest(
-            self,
-            memory_id: ty.Optional[MemoryID] = None,
-            ) -> armem.data.Memory:
+        self,
+        memory_id: ty.Optional[MemoryID] = None,
+    ) -> armem.data.Memory:
         if memory_id is None:
             memory_id = MemoryID()
 
         q_entity = self.qd.entity.Single()  # Latest
         if memory_id.entity_name:
-            q_prov = self.qd.provider.Single(entityName=memory_id.entity_name,
-                                             entityQueries=[q_entity])
+            q_prov = self.qd.provider.Single(
+                entityName=memory_id.entity_name, entityQueries=[q_entity]
+            )
         else:
             q_prov = self.qd.provider.All(entityQueries=[q_entity])
 
         if memory_id.provider_segment_name:
-            q_core = self.qd.core.Single(providerSegmentName=memory_id.provider_segment_name,
-                                         providerSegmentQueries=[q_prov])
+            q_core = self.qd.core.Single(
+                providerSegmentName=memory_id.provider_segment_name,
+                providerSegmentQueries=[q_prov],
+            )
         else:
             q_core = self.qd.core.All(providerSegmentQueries=[q_prov])
 
-
         if memory_id.core_segment_name:
-            q_memory = self.qd.memory.Single(coreSegmentName=memory_id.core_segment_name,
-                                             coreSegmentQueries=[q_core])
+            q_memory = self.qd.memory.Single(
+                coreSegmentName=memory_id.core_segment_name, coreSegmentQueries=[q_core]
+            )
         else:
             q_memory = self.qd.memory.All(coreSegmentQueries=[q_core])
-
 
         memory = self.query([q_memory])
         return memory
 
     @classmethod
     def for_each_instance_data(
-            cls,
-            fn: ty.Callable[[MemoryID, ty.Dict[str, ty.Any]], ty.Any],
-            data: ty.Union[dto.Memory, dto.CoreSegment, dto.ProviderSegment,
-                           dto.Entity, dto.EntitySnapshot, dto.EntityInstance],
-            discard_none=False,
+        cls,
+        fn: ty.Callable[[MemoryID, ty.Dict[str, ty.Any]], ty.Any],
+        data: ty.Union[
+            dto.Memory,
+            dto.CoreSegment,
+            dto.ProviderSegment,
+            dto.Entity,
+            dto.EntitySnapshot,
+            dto.EntityInstance,
+        ],
+        discard_none=False,
     ) -> ty.List[ty.Any]:
         """
         Call `fn` on the data of each entity instance in `data`.

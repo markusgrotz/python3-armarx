@@ -28,7 +28,6 @@ from armarx.remote_gui.ice_wrapper import make_widget_state
 from armarx.remote_gui.ice_wrapper import TabProxy
 
 
-
 class Widget:
     """
     Base class for widgets.
@@ -37,6 +36,7 @@ class Widget:
      - hidden: Controls whether the widget is visible or hidden.
      - disabled: Controls whether the widget is enabled or disabled.
     """
+
     next_id = 0
 
     def __init__(self, desc: rg.Widget):
@@ -56,30 +56,32 @@ class Widget:
 
     def _check_initialized(self, property_name: str):
         if self.tab is None:
-            raise Exception(f"Cannot query widget property '{property_name}': Widget has not been initialized")
+            raise Exception(
+                f"Cannot query widget property '{property_name}': Widget has not been initialized"
+            )
 
     @property
     def hidden(self):
         """Returns whether the widget is currently hidden."""
-        self._check_initialized('hidden')
+        self._check_initialized("hidden")
         return self.tab.is_hidden(self.desc.name)
 
     @hidden.setter
     def hidden(self, new_hidden: bool):
         """Hides or shows the widget."""
-        self._check_initialized('hidden')
+        self._check_initialized("hidden")
         self.tab.set_hidden(self.desc.name, new_hidden)
 
     @property
     def disabled(self):
         """Returns whether the widget is currently disabled."""
-        self._check_initialized('disabled')
+        self._check_initialized("disabled")
         return self.tab.is_disabled(self.desc.name)
 
     @disabled.setter
     def disabled(self, new_disabled: bool):
         """Enables or disables the widget."""
-        self._check_initialized('disabled')
+        self._check_initialized("disabled")
         self.tab.set_disabled(self.desc.name, new_disabled)
 
 
@@ -184,8 +186,12 @@ class ComboBox(ValueWidget):
     def index(self, new_index: int):
         """Sets the current value to the entry of predefined options with the given index."""
         if new_index < 0 or new_index >= len(self.desc.options):
-            raise Exception("Index out of range for combo box", new_index,
-                            "Options:", self.desc.options)
+            raise Exception(
+                "Index out of range for combo box",
+                new_index,
+                "Options:",
+                self.desc.options,
+            )
         self.value = self.desc.options[new_index]
 
 
@@ -256,9 +262,14 @@ class FloatSpinBox(ValueWidget):
     The 'decimals' property defines how many decimal places of the current value are displayed in the widget.
     """
 
-    def __init__(self, value: float = 0.0,
-                 range_min: float = 0.0, range_max: float = 1.0,
-                 steps: int = 100, decimals: int = 3):
+    def __init__(
+        self,
+        value: float = 0.0,
+        range_min: float = 0.0,
+        range_max: float = 1.0,
+        steps: int = 100,
+        decimals: int = 3,
+    ):
         super().__init__(rg.FloatSpinBox())
         self.value = value
         self.range = (range_min, range_max)
@@ -310,9 +321,13 @@ class FloatSlider(ValueWidget):
     from its minimum to its maximum.
     """
 
-    def __init__(self, value: float = 0.0,
-                 range_min: float = 0.0, range_max: float = 1.0,
-                 steps: int = 100):
+    def __init__(
+        self,
+        value: float = 0.0,
+        range_min: float = 0.0,
+        range_max: float = 1.0,
+        steps: int = 100,
+    ):
         super().__init__(rg.FloatSlider())
         self.value = value
         self.range = (range_min, range_max)
@@ -450,7 +465,9 @@ class GridLayout(ContainerWidget):
         super().__init__(rg.GridLayout())
         self.desc.childrenLayoutInfo = []
 
-    def add(self, child: Widget, pos: Tuple[int, int] = None, span: Tuple[int, int] = None):
+    def add(
+        self, child: Widget, pos: Tuple[int, int] = None, span: Tuple[int, int] = None
+    ):
         """Add a child widget at the specified grid position (x, y) and span (width, height)."""
 
         if span is None:

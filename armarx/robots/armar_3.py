@@ -10,6 +10,7 @@ from armarx import ViewTargetBase
 
 from armarx.statechart import StatechartExecutor
 
+
 class A3(Robot):
     """
     ARMAR-III
@@ -22,7 +23,7 @@ class A3(Robot):
         robot.say('hello world')
     """
 
-    profile_name = 'Armar3Real'
+    profile_name = "Armar3Real"
 
     def __init__(self):
         super().__init__()
@@ -30,10 +31,9 @@ class A3(Robot):
 
     def on_connect(self):
         super().on_connect()
-        self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy('Armar3KinematicUnit')
+        self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy("Armar3KinematicUnit")
 
         class GazeSelection:
-
             def __init__(self):
                 self.view_selection = ViewSelectionInterfacePrx.get_proxy()
 
@@ -43,13 +43,15 @@ class A3(Robot):
         self.gaze = GazeSelection()
 
     def move_to(self, state_parameters=None):
-        s = StatechartExecutor(self.profile_name, 'PlatformGroup', 'MovePlatform')
+        s = StatechartExecutor(self.profile_name, "PlatformGroup", "MovePlatform")
         return s.run(state_parameters, True)
 
     def bring_object(self, state_parameters=None):
-        s = StatechartExecutor(self.profile_name, 'BringObject', '')
+        s = StatechartExecutor(self.profile_name, "BringObject", "")
         return s.run(state_parameters, True)
 
     def grasp_object(self, state_parameters=None):
-        s = StatechartExecutor(self.profile_name, 'GraspObjectGroup', 'GraspSingleObject')
+        s = StatechartExecutor(
+            self.profile_name, "GraspObjectGroup", "GraspSingleObject"
+        )
         return s.run(state_parameters, True)

@@ -13,7 +13,10 @@ import numpy as np
 from armarx import ice_manager
 
 from visionx.pointclouds import dtype_point_color_xyz, get_point_cloud_format
-from visionx.pointclouds import PointCloudProviderInterface, PointCloudProcessorInterfacePrx
+from visionx.pointclouds import (
+    PointCloudProviderInterface,
+    PointCloudProcessorInterfacePrx,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -28,10 +31,13 @@ class PointCloudProvider(PointCloudProviderInterface):
     You can use the create_point_cloud_array() method to create a compatible numpy array.
     """
 
-    def __init__(self, name: str,
-                 point_dtype: np.dtype = dtype_point_color_xyz,
-                 initial_capacity: int = 640*480,
-                 connect: bool = False):
+    def __init__(
+        self,
+        name: str,
+        point_dtype: np.dtype = dtype_point_color_xyz,
+        initial_capacity: int = 640 * 480,
+        connect: bool = False,
+    ):
         super().__init__()
         self.name = name
         self.point_dtype = point_dtype
@@ -61,9 +67,11 @@ class PointCloudProvider(PointCloudProviderInterface):
 
         Call this function before calling update_point_cloud().
         """
-        logger.debug('registering point cloud provider %s', self.name)
+        logger.debug("registering point cloud provider %s", self.name)
         self.proxy = ice_manager.register_object(self, self.name)
-        self.pc_topic = ice_manager.get_topic(PointCloudProcessorInterfacePrx, f'{self.name}.PointCloudListener')
+        self.pc_topic = ice_manager.get_topic(
+            PointCloudProcessorInterfacePrx, f"{self.name}.PointCloudListener"
+        )
 
     def on_disconnect(self):
         """
@@ -80,7 +88,9 @@ class PointCloudProvider(PointCloudProviderInterface):
         :param time_provided: time stamp of the images. If zero the current time will be used
         """
         if points.dtype != self.point_dtype:
-            raise Exception("Array data type is not compatible!", points.dtype, self.point_dtype)
+            raise Exception(
+                "Array data type is not compatible!", points.dtype, self.point_dtype
+            )
 
         # Do we need to guard this with a mutex? Probably...
         if points.shape[0] != self.points.shape[0]:
@@ -98,16 +108,15 @@ class PointCloudProvider(PointCloudProviderInterface):
         if self.pc_topic:
             self.pc_topic.reportPointCloudAvailable(self.name)
         else:
-            logger.warning('not connected. call on_connect() method')
+            logger.warning("not connected. call on_connect() method")
 
     def getPointCloudFormat(self, current=None):
-        logger.debug('getPointCloudFormat() %s', self.format)
+        logger.debug("getPointCloudFormat() %s", self.format)
         return self.format
 
     def getPointCloud(self, current=None):
-        logger.debug('getPointCloud() %s', self.format)
+        logger.debug("getPointCloud() %s", self.format)
         return self.points, self.format
 
     def hasSharedMemorySupport(self, current=None):
         return False
-

@@ -4,13 +4,12 @@ import numpy as np
 
 
 class Transform:
-
     def __init__(
-            self,
-            transform=None,
-            translation=None,
-            rotation=None,
-            ):
+        self,
+        transform=None,
+        translation=None,
+        rotation=None,
+    ):
 
         self.transform = np.eye(4)
         if transform is not None:
@@ -27,7 +26,9 @@ class Transform:
 
     @transform.setter
     def transform(self, value):
-        value = self._to_array_checked(value, (4, 4), "transform matrix", dtype=np.float)
+        value = self._to_array_checked(
+            value, (4, 4), "transform matrix", dtype=np.float
+        )
         self._transform = value
 
     @property
@@ -36,7 +37,9 @@ class Transform:
 
     @translation.setter
     def translation(self, value):
-        value = self._to_array_checked(value, [(3,), (3, 1)], "translation vector", dtype=np.float)
+        value = self._to_array_checked(
+            value, [(3,), (3, 1)], "translation vector", dtype=np.float
+        )
         self._transform[:3, 3] = value
 
     @property
@@ -90,8 +93,9 @@ class Transform:
         Return the inverted transform of self.
         :return: self^(-1)
         """
-        return Transform(rotation=self.rot_mat.T,
-                         translation=-self.rot_mat.T @ self.translation)
+        return Transform(
+            rotation=self.rot_mat.T, translation=-self.rot_mat.T @ self.translation
+        )
 
     def __mul__(self, other: "Transform"):
         """
@@ -100,7 +104,9 @@ class Transform:
         :return: self * other
         """
         if not isinstance(other, Transform):
-            raise TypeError(f"Unsupported operator * between {type(self)} and {type(other)}.")
+            raise TypeError(
+                f"Unsupported operator * between {type(self)} and {type(other)}."
+            )
         return Transform(self.transform @ other.transform)
 
     def is_close_to(self, other: "Transform", **kwargs):
@@ -113,7 +119,9 @@ class Transform:
         return np.allclose(self.transform, other.transform, **kwargs)
 
     @classmethod
-    def _match_shape(cls, shape: Iterable[int], shape_pattern: Iterable[Union[int, None]]):
+    def _match_shape(
+        cls, shape: Iterable[int], shape_pattern: Iterable[Union[int, None]]
+    ):
         """
         Indicate whether `shape` matches `accepted_shape`.
         :param shape: An array shape, i.e. tuple of ints.
@@ -121,11 +129,17 @@ class Transform:
             A shape pattern, i.e. tuple of ints or None, where None matches any size.
         :return: True if `shape` matches `accepted_shape`.
         """
-        return np.all(np.logical_or(np.array(shape) == shape_pattern,
-                                    np.isnan(np.array(shape_pattern, dtype=np.float))))
+        return np.all(
+            np.logical_or(
+                np.array(shape) == shape_pattern,
+                np.isnan(np.array(shape_pattern, dtype=np.float)),
+            )
+        )
 
     @classmethod
-    def _match_shapes(cls, shape: Iterable[int], shape_patterns: List[Iterable[Union[int, None]]]):
+    def _match_shapes(
+        cls, shape: Iterable[int], shape_patterns: List[Iterable[Union[int, None]]]
+    ):
         for pattern in shape_patterns:
             if cls._match_shape(shape, pattern):
                 return True
@@ -148,8 +162,13 @@ class Transform:
             if len(accepted_shapes) == 1:
                 shape_str = cls._shape_to_str(accepted_shapes[0])
             else:
-                shape_str = " or ".join([", ".join(map(cls._shape_to_str, accepted_shapes[:-1])),
-                                         cls._shape_to_str(accepted_shapes[-1])])
-            raise ValueError(f"Expected {name} of shape {shape_str}, but got array of shape {value.shape}.")
+                shape_str = " or ".join(
+                    [
+                        ", ".join(map(cls._shape_to_str, accepted_shapes[:-1])),
+                        cls._shape_to_str(accepted_shapes[-1]),
+                    ]
+                )
+            raise ValueError(
+                f"Expected {name} of shape {shape_str}, but got array of shape {value.shape}."
+            )
         return value
-

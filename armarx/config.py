@@ -16,9 +16,9 @@ def _load_config() -> configparser.ConfigParser:
     :returns: the default armarx config
     :rtype: configparser.ConfigParser
     """
-    config_file = os.path.join(_get_config_dir(), 'armarx.ini')
+    config_file = os.path.join(_get_config_dir(), "armarx.ini")
     if not os.path.exists(config_file):
-        raise FileNotFoundError('ArmarX config file does not exists.')
+        raise FileNotFoundError("ArmarX config file does not exists.")
     config_parser = configparser.ConfigParser()
     config_parser.read(config_file)
     return config_parser
@@ -32,40 +32,47 @@ def _get_config_dir():
 
     :returns: the current config directory
     """
-    if os.environ.get('ARMARX_USER_CONFIG_DIR', None):
-        config_dir = os.path.expanduser(os.environ['ARMARX_USER_CONFIG_DIR'])
-    elif os.environ.get('ARMARX_WORKSPACE', None):
-        config_dir = os.path.join(os.environ['ARMARX_WORKSPACE'], 'armarx_config')
+    if os.environ.get("ARMARX_USER_CONFIG_DIR", None):
+        config_dir = os.path.expanduser(os.environ["ARMARX_USER_CONFIG_DIR"])
+    elif os.environ.get("ARMARX_WORKSPACE", None):
+        config_dir = os.path.join(os.environ["ARMARX_WORKSPACE"], "armarx_config")
     else:
-        config_dir = os.path.expanduser('~/.armarx/')
+        config_dir = os.path.expanduser("~/.armarx/")
 
     if config_dir:
         config_dir = os.path.expandvars(config_dir)
     if os.path.isdir(config_dir):
         return config_dir
     else:
-        raise FileNotFoundError(f'ArmarX config folder does not exists. (Tried: "{config_dir}")')
+        raise FileNotFoundError(
+            f'ArmarX config folder does not exists. (Tried: "{config_dir}")'
+        )
 
 
 def get_packages() -> str:
     """
     Lists all packages that are considered by the statecharts
     """
-    default_packages = 'ArmarXCore,ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision'
-    return config.get('AutoCompletion', 'packages', fallback=default_packages)
+    default_packages = (
+        "ArmarXCore,ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision"
+    )
+    return config.get("AutoCompletion", "packages", fallback=default_packages)
+
 
 def get_ice_config_files() -> List[str]:
     """
     The default Ice.Config
     """
     config_dir = _get_config_dir()
-    return [os.path.join(config_dir, 'default.generated.cfg'),
-            os.path.join(config_dir, 'default.cfg')]
+    return [
+        os.path.join(config_dir, "default.generated.cfg"),
+        os.path.join(config_dir, "default.cfg"),
+    ]
 
 
 def get_python_build_dir() -> str:
-    if os.environ.get('ARMARX_PYTHON_BUILD_DIR', None):
-        return os.path.expandvars(os.environ['ARMARX_PYTHON_BUILD_DIR'])
+    if os.environ.get("ARMARX_PYTHON_BUILD_DIR", None):
+        return os.path.expandvars(os.environ["ARMARX_PYTHON_BUILD_DIR"])
 
 
 class CodeGenerationType(Enum):
@@ -74,12 +81,16 @@ class CodeGenerationType(Enum):
 
 
 def get_code_generation_type():
-    if config.get('Misc', 'PythonStaticCode', fallback=None):
+    if config.get("Misc", "PythonStaticCode", fallback=None):
         python_binary_dir = get_python_build_dir()
         if os.path.exists(python_binary_dir):
             return CodeGenerationType.STATIC
         else:
-            logger.warning('Static python code selected but directory %s does not exists', python_binary_dir)
+            logger.warning(
+                "Static python code selected but directory %s does not exists",
+                python_binary_dir,
+            )
     return CodeGenerationType.DYNAMIC
+
 
 config = _load_config()

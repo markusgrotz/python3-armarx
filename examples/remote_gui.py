@@ -18,7 +18,7 @@ class WidgetsTabState:
         self.button_clicked = False
 
         self.int_vector = np.array([10, 20, 30])
-        self.float_vector = np.array([10., 20., 30.])
+        self.float_vector = np.array([10.0, 20.0, 30.0])
         self.float_matrix = np.eye(3, dtype=float)
 
 
@@ -42,74 +42,61 @@ class WidgetsTab(rg.Tab):
 
         self.collapsible_group = rg.GroupBox(label="Collapsible Group")
 
-        self.int_vector = rg.NdArrayWidget(self.state.int_vector, range_min=0, range_max=100)
-        self.float_vector = rg.NdArrayWidget(self.state.float_vector, range_min=-100, range_max=100, column_vector=True)
-        self.float_matrix = rg.NdArrayWidget(self.state.float_matrix, range_min=-1e3, range_max=1e3, steps=4e3)
-
+        self.int_vector = rg.NdArrayWidget(
+            self.state.int_vector, range_min=0, range_max=100
+        )
+        self.float_vector = rg.NdArrayWidget(
+            self.state.float_vector, range_min=-100, range_max=100, column_vector=True
+        )
+        self.float_matrix = rg.NdArrayWidget(
+            self.state.float_matrix, range_min=-1e3, range_max=1e3, steps=4e3
+        )
 
     def create_widget_tree(self):
         v_layout = rg.VBoxLayout()
 
         self.line_edit.value = self.state.line
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Line: "),
-                self.line_edit
-            ]))
+            rg.HBoxLayout(children=[rg.Label(text="Line: "), self.line_edit])
+        )
 
         self.combo.value = self.state.combo
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Combo: "),
-                self.combo
-            ])
+            rg.HBoxLayout(children=[rg.Label(text="Combo: "), self.combo])
         )
 
         self.check_box.value = self.state.checked
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Check: "),
-                self.check_box
-            ])
+            rg.HBoxLayout(children=[rg.Label(text="Check: "), self.check_box])
         )
 
         self.toggle.value = self.state.toggled
         self.toggle.label = "Toggle"
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Check: "),
-                self.toggle
-            ])
+            rg.HBoxLayout(children=[rg.Label(text="Check: "), self.toggle])
         )
 
         self.int_slider.value = self.state.int_value
         self.int_spin.range = (0, 10)
         self.int_spin.value = self.state.int_value
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Int: "),
-                self.int_slider,
-                self.int_spin
-            ])
+            rg.HBoxLayout(
+                children=[rg.Label(text="Int: "), self.int_slider, self.int_spin]
+            )
         )
 
         self.float_slider.value = self.state.float_value
         self.float_spin.range = (0.0, 2.0)
         self.float_spin.value = self.state.float_value
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Float: "),
-                self.float_slider,
-                self.float_spin
-            ])
+            rg.HBoxLayout(
+                children=[rg.Label(text="Float: "), self.float_slider, self.float_spin]
+            )
         )
 
         self.button.label = "Button"
         v_layout.add_child(
-            rg.HBoxLayout(children=[
-                rg.Label(text="Button: "),
-                self.button
-            ])
+            rg.HBoxLayout(children=[rg.Label(text="Button: "), self.button])
         )
 
         v_layout.add_child(rg.VSpacer())
@@ -124,19 +111,20 @@ class WidgetsTab(rg.Tab):
         grid_group_box = rg.GroupBox(
             label="Group GridLayout",
             child=rg.GridLayout()
-                  .add(rg.Button(label="1"), pos=(0, 0), span=(1, 2))
-                  .add(rg.Button(label="2"), pos=(0, 2), span=(2, 1))
-                  .add(rg.Button(label="3"), pos=(1, 1), span=(1, 1))
-                  .add(rg.Button(label="4"), pos=(1, 0), span=(2, 1))
-                  .add(rg.Label(text="foooooooooooooooooo"), pos=(2, 1), span=(1, 2))
-                  .add(rg.HSpacer(), pos=(0, 3), span=(1, 1))
+            .add(rg.Button(label="1"), pos=(0, 0), span=(1, 2))
+            .add(rg.Button(label="2"), pos=(0, 2), span=(2, 1))
+            .add(rg.Button(label="3"), pos=(1, 1), span=(1, 1))
+            .add(rg.Button(label="4"), pos=(1, 0), span=(2, 1))
+            .add(rg.Label(text="foooooooooooooooooo"), pos=(2, 1), span=(1, 2))
+            .add(rg.HSpacer(), pos=(0, 3), span=(1, 1)),
         )
 
         self.collapsible_group.collapsed = True
         # Be careful with container widgets that you store in member variables:
         # Use the set_* instead of the add_* methods to override previously added children
-        self.collapsible_group.set_child(rg.Label(text="This can only be seen if expanded"))
-
+        self.collapsible_group.set_child(
+            rg.Label(text="This can only be seen if expanded")
+        )
 
         # Nd Array widgets:
         self.int_vector.value = self.state.int_vector
@@ -146,17 +134,29 @@ class WidgetsTab(rg.Tab):
         layout = rg.GridLayout()
         row = 0
 
-        layout.add(rg.Label("Int Vector:"), pos=(row, 0)).add(self.int_vector.create_tree(), pos=(row, 1))
+        layout.add(rg.Label("Int Vector:"), pos=(row, 0)).add(
+            self.int_vector.create_tree(), pos=(row, 1)
+        )
         row += 1
-        layout.add(rg.Label("Column Vector:"), pos=(row, 0)).add(self.float_vector.create_tree(), pos=(row, 1))
+        layout.add(rg.Label("Column Vector:"), pos=(row, 0)).add(
+            self.float_vector.create_tree(), pos=(row, 1)
+        )
         row += 1
-        layout.add(rg.Label("Float Matrix:"), pos=(row, 0)).add(self.float_matrix.create_tree(), pos=(row, 1))
+        layout.add(rg.Label("Float Matrix:"), pos=(row, 0)).add(
+            self.float_matrix.create_tree(), pos=(row, 1)
+        )
         row += 1
 
         array_group_box = rg.GroupBox(label="Array Widgets", child=layout)
 
-
-        root = rg.VBoxLayout(children=[group_box, grid_group_box, self.collapsible_group, array_group_box])
+        root = rg.VBoxLayout(
+            children=[
+                group_box,
+                grid_group_box,
+                self.collapsible_group,
+                array_group_box,
+            ]
+        )
 
         return root
 

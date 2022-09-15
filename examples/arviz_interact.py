@@ -12,8 +12,8 @@ from armarx.tools.metronome import Metronome
 
 # SLIDER EXAMPLE
 
-class SingleSlider:
 
+class SingleSlider:
     def __init__(self, name: str, color):
         self.box = viz.Box(name)
         self.color = color
@@ -139,6 +139,7 @@ class SlidersState:
 
 # SPAWNER EXAMPLE
 
+
 class SpawnerType(enum.IntEnum):
     Box = 1
     Cylinder = 2
@@ -151,13 +152,12 @@ class SpawnerOption(enum.IntEnum):
 
 
 class Spawner:
-
     def __init__(
-            self,
-            type: SpawnerType = SpawnerType.Box,
-            position: Optional[np.ndarray] = None,
-            size=100.0,
-            color=(0, 0, 0)
+        self,
+        type: SpawnerType = SpawnerType.Box,
+        position: Optional[np.ndarray] = None,
+        size=100.0,
+        color=(0, 0, 0),
     ):
         self.type = type
         self.position = np.zeros(3, float) if position is None else position
@@ -165,32 +165,50 @@ class Spawner:
         self.color = color
 
     def visualize(self, i: int, layer: viz.Layer):
-        interaction_kwargs = dict(selection=True, transform=True, scaling="xyz",
-                                  context_menu_options=["Delete All", "Delete All of Type"])
+        interaction_kwargs = dict(
+            selection=True,
+            transform=True,
+            scaling="xyz",
+            context_menu_options=["Delete All", "Delete All of Type"],
+        )
         name = f"Spawner_{i}"
 
         if self.type == SpawnerType.Box:
-            layer.add(viz.Box(name, position=self.position, size=self.size, color=self.color)
-                      .enable_interaction(**interaction_kwargs))
+            layer.add(
+                viz.Box(
+                    name, position=self.position, size=self.size, color=self.color
+                ).enable_interaction(**interaction_kwargs)
+            )
         elif self.type == SpawnerType.Cylinder:
-            layer.add(viz.Cylinder(name, position=self.position, radius=0.5 * self.size, height=self.size, color=self.color)
-                      .enable_interaction(**interaction_kwargs))
+            layer.add(
+                viz.Cylinder(
+                    name,
+                    position=self.position,
+                    radius=0.5 * self.size,
+                    height=self.size,
+                    color=self.color,
+                ).enable_interaction(**interaction_kwargs)
+            )
         elif self.type == SpawnerType.Sphere:
             layer.add(
-                viz.Sphere(name, position=self.position, radius=0.5 * self.size, color=self.color)
-                .enable_interaction(**interaction_kwargs))
+                viz.Sphere(
+                    name,
+                    position=self.position,
+                    radius=0.5 * self.size,
+                    color=self.color,
+                ).enable_interaction(**interaction_kwargs)
+            )
         else:
             raise ValueError(f"Unexcpected enum value {self.type}.")
 
 
 class SpawnedObject:
-
     def __init__(
-            self,
-            index=0,
-            source: Spawner = None,
-            transform: Optional[Transform] = None,
-            scale: np.ndarray = None,
+        self,
+        index=0,
+        source: Spawner = None,
+        transform: Optional[Transform] = None,
+        scale: np.ndarray = None,
     ):
         self.index = index
         self.source = source
@@ -206,12 +224,36 @@ class SpawnedObject:
 
         source = self.source
         if source.type == SpawnerType.Box:
-            layer.add(viz.Box(id=name, pose=pose, scale=self.scale, size=source.size, color=source.color))
+            layer.add(
+                viz.Box(
+                    id=name,
+                    pose=pose,
+                    scale=self.scale,
+                    size=source.size,
+                    color=source.color,
+                )
+            )
         elif source.type == SpawnerType.Cylinder:
-            layer.add(viz.Cylinder(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, height=source.size,
-                                   color=source.color))
+            layer.add(
+                viz.Cylinder(
+                    id=name,
+                    pose=pose,
+                    scale=self.scale,
+                    radius=source.size * 0.5,
+                    height=source.size,
+                    color=source.color,
+                )
+            )
         elif source.type == SpawnerType.Sphere:
-            layer.add(viz.Sphere(id=name, pose=pose, scale=self.scale, radius=source.size * 0.5, color=source.color))
+            layer.add(
+                viz.Sphere(
+                    id=name,
+                    pose=pose,
+                    scale=self.scale,
+                    radius=source.size * 0.5,
+                    color=source.color,
+                )
+            )
         else:
             raise ValueError(f"Unexpected enum value: {source.type}.")
 
@@ -226,7 +268,6 @@ class SpawnedObject:
 
 
 class SpawnersState:
-
     def __init__(self, origin: np.ndarray):
         self.origin = origin
 
@@ -242,15 +283,21 @@ class SpawnersState:
         size = 100.0
 
         self.spawners += [
-            Spawner(type=SpawnerType.Box,
-                    position=origin + (750, 500, 0.5 * size),
-                    color=(0, 255, 255)),
-            Spawner(type=SpawnerType.Cylinder,
-                    position=origin + (1250, 500, 0.5 * size),
-                    color=(255, 0, 128)),
-            Spawner(type=SpawnerType.Sphere,
-                    position=origin + (1000, 750, 0.5 * size),
-                    color=(255, 255, 0)),
+            Spawner(
+                type=SpawnerType.Box,
+                position=origin + (750, 500, 0.5 * size),
+                color=(0, 255, 255),
+            ),
+            Spawner(
+                type=SpawnerType.Cylinder,
+                position=origin + (1250, 500, 0.5 * size),
+                color=(255, 0, 128),
+            ),
+            Spawner(
+                type=SpawnerType.Sphere,
+                position=origin + (1000, 750, 0.5 * size),
+                color=(255, 255, 0),
+            ),
         ]
 
     def visualize(self, arviz: viz.Client):
@@ -274,12 +321,14 @@ class SpawnersState:
         if interaction.type == Types.Select:
             # Create a spawned object.
             print(f"\tSelected {spawner.type.name}.")
-            assert self.spawned_object is None, f"Already spawned object: {self.spawned_object}"
+            assert (
+                self.spawned_object is None
+            ), f"Already spawned object: {self.spawned_object}"
             self.spawned_object = SpawnedObject(
                 index=self.spawned_object_counter,
                 source=spawner,
                 transform=Transform(),
-                scale=np.ones(3, float)
+                scale=np.ones(3, float),
             )
             self.spawned_object_counter += 1
             print(f"\tSpawned object {self.spawned_object}.")
@@ -318,8 +367,9 @@ class SpawnersState:
                 stage.add(self.layer_objects)
 
             elif option == SpawnerOption.DeleteType:
-                self.objects = [obj for obj in self.objects
-                                if obj.source is not spawner]
+                self.objects = [
+                    obj for obj in self.objects if obj.source is not spawner
+                ]
 
                 self.layer_objects.clear()
                 for obj in self.objects:
@@ -334,8 +384,8 @@ class SpawnersState:
 
 # MAIN
 
-class ArVizInteractExample:
 
+class ArVizInteractExample:
     @classmethod
     def get_name(cls):
         return "ArVizInteractExample"
@@ -354,8 +404,16 @@ class ArVizInteractExample:
         origin3 = np.array([-2000.0, -2000.0, 0.0])
         origin4 = np.array([0.0, -2000.0, 0.0])
 
-        regions.add(viz.Cylinder("SeparatorX", from_to=(origin1, origin1 + (4000, 0, 0)), radius=5))
-        regions.add(viz.Cylinder("SeparatorY", from_to=(origin4, origin4 + (0, 4000, 0)), radius=5))
+        regions.add(
+            viz.Cylinder(
+                "SeparatorX", from_to=(origin1, origin1 + (4000, 0, 0)), radius=5
+            )
+        )
+        regions.add(
+            viz.Cylinder(
+                "SeparatorY", from_to=(origin4, origin4 + (0, 4000, 0)), radius=5
+            )
+        )
 
         sliders = SlidersState(origin=origin1 + (500, 500, 0))
         spawners = SpawnersState(origin2)
@@ -388,11 +446,15 @@ class ArVizInteractExample:
 
                 for interaction in result.interactions:
                     if interaction.layer == "Sliders":
-                        print(f"Processing slider interaction ... (revision {result.revision})")
+                        print(
+                            f"Processing slider interaction ... (revision {result.revision})"
+                        )
                         sliders.handle(interaction, stage)
 
                     if interaction.layer == "Spawners":
-                        print(f"Processing spawner interaction ... (revision {result.revision})")
+                        print(
+                            f"Processing spawner interaction ... (revision {result.revision})"
+                        )
                         spawners.handle(interaction, stage)
 
                 if metronome.remaining_seconds <= 0:
@@ -403,7 +465,7 @@ class ArVizInteractExample:
             pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     example = ArVizInteractExample()
     example.run()
     print("Finished.")

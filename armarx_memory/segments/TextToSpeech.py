@@ -5,30 +5,31 @@ from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 
 
 class TextToSpeech:
-
     def __init__(
-            self,
-            text: str,
-            ):
+        self,
+        text: str,
+    ):
         self.text = text
 
     def to_aron(self) -> "armarx.aron.data.dto.GenericData":
         from armarx_memory.aron.conversion import to_aron
-        dto = to_aron({
-            "text": self.text,
-        })
+
+        dto = to_aron(
+            {
+                "text": self.text,
+            }
+        )
         return dto
 
     @classmethod
     def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
         from armarx_memory.aron.conversion import from_aron
+
         d = from_aron(dto)
         return cls(**d)
 
     def __repr__(self):
-        return "<{c} text='{t}'>".format(
-            c=self.__class__.__name__, t=self.text
-        )
+        return "<{c} text='{t}'>".format(c=self.__class__.__name__, t=self.text)
 
 
 class TextToSpeechClientBase:
@@ -39,46 +40,45 @@ class TextToSpeechClientBase:
         pass
 
     def make_entity_name(self, provider_name: str, entity_name: str = "text"):
-        return (self.core_segment_id
-                .with_provider_segment_name(provider_name)
-                .with_entity_name(entity_name))
+        return self.core_segment_id.with_provider_segment_name(
+            provider_name
+        ).with_entity_name(entity_name)
 
 
 class TextToSpeechWriter(TextToSpeechClientBase):
-
     def __init__(self, writer: Writer):
         super().__init__()
         self.writer = writer
 
     @classmethod
     def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "TextToSpeechWriter":
-        return cls(mns.wait_for_writer(cls.core_segment_id)
-                   if wait else mns.get_writer(cls.core_segment_id))
+        return cls(
+            mns.wait_for_writer(cls.core_segment_id)
+            if wait
+            else mns.get_writer(cls.core_segment_id)
+        )
 
-    def commit(self,
-               entity_id: MemoryID,
-               text: str,
-               time_created_usec=None,
-               **kwargs,
-               ):
+    def commit(
+        self,
+        entity_id: MemoryID,
+        text: str,
+        time_created_usec=None,
+        **kwargs,
+    ):
         commit = Commit()
         commit.add(
-            entity_id = entity_id,
+            entity_id=entity_id,
             time_created_usec=time_created_usec,
-            instances_data=[
-                TextToSpeech(text=text).to_aron()
-            ],
+            instances_data=[TextToSpeech(text=text).to_aron()],
             **kwargs,
         )
         return self.writer.commit(commit)
 
 
 class TextToSpeechReader(TextToSpeechClientBase):
-
     def __init__(self, reader: Reader):
         super().__init__()
         self.reader = reader
-
 
     def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
         """
@@ -96,7 +96,10 @@ class TextToSpeechReader(TextToSpeechClientBase):
                     for snapshot in entity.history.values():
                         if latest_snapshot is None:
                             latest_snapshot = snapshot
-                        elif latest_snapshot.id.timestamp.timeSinceEpoch.microSeconds < snapshot.id.timestamp.timeSinceEpoch.microSeconds:
+                        elif (
+                            latest_snapshot.id.timestamp.timeSinceEpoch.microSeconds
+                            < snapshot.id.timestamp.timeSinceEpoch.microSeconds
+                        ):
                             latest_snapshot = snapshot
         else:
             for up_id in updated_ids:
@@ -108,8 +111,10 @@ class TextToSpeechReader(TextToSpeechClientBase):
         latest_instance = latest_snapshot.instances[0]
         return latest_instance
 
-
     @classmethod
     def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "TextToSpeechReader":
-        return cls(mns.wait_for_reader(cls.core_segment_id)
-                   if wait else mns.get_reader(cls.core_segment_id))
+        return cls(
+            mns.wait_for_reader(cls.core_segment_id)
+            if wait
+            else mns.get_reader(cls.core_segment_id)
+        )

@@ -30,15 +30,14 @@ class Robot(ABC, Bimanual):
     def __init__(self):
         self._text_state_listener = TextStateListener()
 
-
     def on_connect(self):
         self._text_state_listener.on_connect()
 
-        self.left_hand = HandUnitInterfacePrx.get_proxy('LeftHandUnit')
-        self.right_hand = HandUnitInterfacePrx.get_proxy('RightHandUnit')
+        self.left_hand = HandUnitInterfacePrx.get_proxy("LeftHandUnit")
+        self.right_hand = HandUnitInterfacePrx.get_proxy("RightHandUnit")
 
         # from armarx import ElasticFusionInterfacePrx
-        #self._fusion = ElasticFusionInterfacePrx.get_proxy()
+        # self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
     @property
     @lru_cache(1)
@@ -49,12 +48,14 @@ class Robot(ABC, Bimanual):
     @lru_cache(1)
     def gaze(self):
         from armarx import GazeControlInterfacePrx
+
         return GazeControlInterfacePrx.get_proxy()
 
     @property
     @lru_cache(1)
     def navigator(self):
         from armarx import PlatformNavigatorInterfacePrx
+
         return PlatformNavigatorInterfacePrx.get_proxy()
 
     @property
@@ -63,22 +64,25 @@ class Robot(ABC, Bimanual):
         pass
 
     def __str__(self) -> str:
-        return f'Robot - {self.profile_name}'
-        
+        return f"Robot - {self.profile_name}"
 
     def load_robot_config(self):
         config_path = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(config_path, 'robot_config.json')
+        config_path = os.path.join(config_path, "robot_config.json")
         with open(config_path) as f:
             robot_config = json.load(f)
         return robot_config
 
     def what_can_you_see_now(self, state_parameters=None):
-        statechart = StatechartExecutor(self.profile_name, 'ScanLocationGroup', 'WhatCanYouSeeNow')
+        statechart = StatechartExecutor(
+            self.profile_name, "ScanLocationGroup", "WhatCanYouSeeNow"
+        )
         return statechart.run(state_parameters, True)
 
     def handover(self, state_parameters=None):
-        statechart = StatechartExecutor(self.profile_name, 'HandOverGroup', 'ReceiveFromRobot')
+        statechart = StatechartExecutor(
+            self.profile_name, "HandOverGroup", "ReceiveFromRobot"
+        )
         return statechart.run(state_parameters, True)
 
     def say(self, text):
@@ -110,4 +114,6 @@ class Robot(ABC, Bimanual):
         If supported by the robot then now motor commands are sent to the
         hardware
         """
-        self.emergency_stop.setEmergencyStopState(EmergencyStopState.eEmergencyStopActive)
+        self.emergency_stop.setEmergencyStopState(
+            EmergencyStopState.eEmergencyStopActive
+        )

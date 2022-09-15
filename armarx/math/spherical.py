@@ -4,15 +4,15 @@ from typing import Union, List
 
 
 def spherical2cartesian(
-        spherical: Union[List, np.ndarray],
-        ) -> np.ndarray:
+    spherical: Union[List, np.ndarray],
+) -> np.ndarray:
 
     spherical = np.array(spherical)
     assert spherical.shape[-1] == 3
     radius = spherical[..., 0]
     azim = spherical[..., 1]
     elev = spherical[..., 2]
-    inclination = np.pi/2 - elev
+    inclination = np.pi / 2 - elev
     sin_inclination = np.sin(inclination)
 
     cartesian = spherical.astype(np.float).copy()
@@ -23,8 +23,8 @@ def spherical2cartesian(
 
 
 def cartesian2spherical(
-        cartesian: Union[List, np.ndarray],
-        ) -> np.ndarray:
+    cartesian: Union[List, np.ndarray],
+) -> np.ndarray:
 
     cartesian = np.array(cartesian)
     assert cartesian.shape[-1] == 3
@@ -35,7 +35,7 @@ def cartesian2spherical(
     radius = np.linalg.norm(cartesian, axis=-1)  # radius
     azim = np.arctan2(y, x)  # angle phi
     inclination = np.arccos(z / radius)  # angle theta
-    elev = np.pi/2 - inclination
+    elev = np.pi / 2 - inclination
 
     polar = cartesian.astype(np.float).copy()
     polar[..., 0] = radius

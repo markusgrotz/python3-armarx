@@ -29,11 +29,11 @@ class PointCloudReceiver(PointCloudProcessorInterface):
     """
 
     def __init__(
-            self,
-            name: str,
-            source_provider_name: str = None,
-            connect: bool = False,
-            wait_for_provider=True,
+        self,
+        name: str,
+        source_provider_name: str = None,
+        connect: bool = False,
+        wait_for_provider=True,
     ):
         """
         Constructs a point cloud reciever.
@@ -109,15 +109,18 @@ class PointCloudReceiver(PointCloudProcessorInterface):
 
         After calling this function, wait_for_next_point_cloud() and get_latest_point_cloud() can be called.
         """
-        logger.debug('Registering point cloud processor')
+        logger.debug("Registering point cloud processor")
         self.proxy = ice_manager.register_object(self, self.name)
         if self._wait_for_provider:
             self.source_provider_proxy = ice_manager.wait_for_proxy(
-                PointCloudProviderInterfacePrx, self.source_provider_name)
+                PointCloudProviderInterfacePrx, self.source_provider_name
+            )
         else:
             self.source_provider_proxy = ice_manager.get_proxy(
-                PointCloudProviderInterfacePrx, self.source_provider_name)
+                PointCloudProviderInterfacePrx, self.source_provider_name
+            )
         self.source_format = self.source_provider_proxy.getPointCloudFormat()
 
-        self.source_provider_topic = ice_manager.using_topic(self.proxy, f'{self.source_provider_name}.PointCloudListener')
-
+        self.source_provider_topic = ice_manager.using_topic(
+            self.proxy, f"{self.source_provider_name}.PointCloudListener"
+        )

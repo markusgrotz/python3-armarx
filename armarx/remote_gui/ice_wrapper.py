@@ -37,19 +37,31 @@ def make_value_variant(py_value) -> rg.ValueVariant:
                     result.type = rg.ValueVariantType.VALUE_VARIANT_MATRIX4
                     result.v = flat_list
                 else:
-                    raise ValueError("Error while creating ValueVariant from list",
-                                     "Number of elements in the list:", len(flat_list),
-                                     "Value:", py_value)
+                    raise ValueError(
+                        "Error while creating ValueVariant from list",
+                        "Number of elements in the list:",
+                        len(flat_list),
+                        "Value:",
+                        py_value,
+                    )
             else:
-                raise ValueError("Error while creating ValueVariant from list",
-                                 "Type of first element:", type(py_value[0]),
-                                 "Value:", py_value)
+                raise ValueError(
+                    "Error while creating ValueVariant from list",
+                    "Type of first element:",
+                    type(py_value[0]),
+                    "Value:",
+                    py_value,
+                )
     elif isinstance(py_value, np.ndarray):
         return make_value_variant(py_value.tolist())
     else:
-        raise ValueError("Error while creating ValueVariant from unknown type",
-                         "Type of value:", type(py_value),
-                         "Value:", py_value)
+        raise ValueError(
+            "Error while creating ValueVariant from unknown type",
+            "Type of value:",
+            type(py_value),
+            "Value:",
+            py_value,
+        )
     return result
 
 
@@ -132,7 +144,7 @@ class TabProxy:
             self.proxy.setValues(self.tab_id, self.dirty_values)
             self.dirty_values.clear()
         if self.widget_changed:
-            self.proxy.setWidgetStates(self.tab_id, self.new_widget_states);
+            self.proxy.setWidgetStates(self.tab_id, self.new_widget_states)
 
     def set_value(self, name: str, py_value):
         # Keep track of changed values, dirty values and so on
@@ -161,7 +173,9 @@ class TabProxy:
             return False
 
         if name not in self.new_values:
-            raise Exception("Button with name", name, "not found in new values", self.new_values)
+            raise Exception(
+                "Button with name", name, "not found in new values", self.new_values
+            )
 
         old_value = unwrap_value_variant(self.old_values[name])
         new_value = unwrap_value_variant(self.new_values[name])

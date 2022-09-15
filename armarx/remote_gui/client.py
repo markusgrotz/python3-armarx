@@ -59,7 +59,7 @@ class Tab:
         """
         pass
 
-    def connect(self, proxy: 'RemoteGuiInterfacePrx'):
+    def connect(self, proxy: "RemoteGuiInterfacePrx"):
         """Connect this instance with a remote GUI tab."""
         self.root_widget = self.create_widget_tree()
         proxy.createTab(self.id, self.root_widget.desc)
@@ -108,7 +108,9 @@ class Client:
         for tab in self.tabs:
             tab.send_updates()
 
-    def update_loop(self, callback: Callable, block=True) -> Optional["threading.Thread"]:
+    def update_loop(
+        self, callback: Callable, block=True
+    ) -> Optional["threading.Thread"]:
         """
         Run a loop receiving and sending updates.
         :param callback: The callback to call after receiving updates.
@@ -129,7 +131,10 @@ class Client:
                 pass
         else:
             from threading import Thread
-            thread = Thread(target=lambda: self.update_loop(callback=callback, block=True), name="Remote GUI")
+
+            thread = Thread(
+                target=lambda: self.update_loop(callback=callback, block=True),
+                name="Remote GUI",
+            )
             thread.start()
             return thread
-
