@@ -12,7 +12,7 @@ publishing or subscribing to images.
 
 ## Installation
 
-`pip install --upgrade --extra-index-url https://pypi.humanoids.kit.edu/ armarx-dev`
+`pip install --upgrade --extra-index-url https://pypi.humanoids.kit.edu/ armarx`
 
 ## Using the bindings
 
