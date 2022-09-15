@@ -24,8 +24,8 @@ Python bindings share some configuration with the statecharts.  Section
 Quickstart
 ----------
 
-Grab the latest version with `poetry add armarx-dev` or
-`pip install --extra-index-url https://pypi.humanoids.kit.edu/ armarx-dev`.
+Grab the latest version with `poetry add armarx` or
+`pip install --extra-index-url https://pypi.humanoids.kit.edu/ armarx`.
 
 To access a proxy via ice you can load the interface with the import keyword.
 For convenience, functions such as `get_proxy` are automatically injected with
