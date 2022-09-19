@@ -183,7 +183,7 @@ class MonocularCalibrationUtility(object):
         camera_Pt_point_hom[:2] = (
             (
                 image_Pt_point2D * self.image_size_multiplier
-                - self.calibration.cameraParam.principalPoint[0]
+                - self.calibration.cameraParam.principalPoint
             )
             / self.calibration.cameraParam.focalLength
             * zc
