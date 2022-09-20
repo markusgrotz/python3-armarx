@@ -37,44 +37,10 @@ def load_armarx_slice(armarx_package_name: str, filename: str):
     warnings.warn(
         "Add the slice definition to VariantInfo-*.xml instead.", DeprecationWarning
     )
-    _load_armarx_slice(armarx_package_name, filename)
-
-
-def _load_armarx_slice(armarx_package_name: str, filename: str):
-    """
-    Simple helper function to load a slice definition file.
-
-    Loads a slice definition file from a project. Definitions in the imported
-    slice file are then available through the python import function.
-
-    :raises IOError: if the slice file was not found
-    :param armarx_package_name: name of the armarx package
-    :param filename: relative path to the slice interface
-    """
-    package_dependencies = get_dependencies(armarx_package_name)
-    package_dependencies.append(armarx_package_name)
-
-    include_paths = ["-I{}".format(Ice.getSliceDir())]
-
-    for package_name in package_dependencies:
-        interface_include_path = get_include_path(package_name)
-        if interface_include_path:
-            include_paths.extend(interface_include_path)
-        else:
-            logger.error("Include path for project %s is empty", package_name)
-            raise Exception(f"Invalid include path for project {package_name}")
-
-    filename = os.path.join(
-        include_paths[-1], armarx_package_name, "interface", filename
-    )
-    filename = os.path.abspath(filename)
-
-    search_path = " -I".join(include_paths)
-    logger.debug("Looking for slice files in %s", search_path)
-    if not os.path.exists(filename):
-        raise IOError("Path not found: " + filename)
-    Ice.loadSlice("{} --underscore --all {}".format(search_path, filename))
-
+    for c in sys.meta_path:
+        if isinstance(c, ArmarXProxyFinder):
+            c._load_armarx_slice(armarx_package_name, filename)
+            c.update_loaded_modules()
 
 class ArmarXProxyFinder(MetaPathFinder):
     """
@@ -100,6 +66,60 @@ class ArmarXProxyFinder(MetaPathFinder):
             python_package_name, _type_name = v.fullname.rsplit(".", 1)
             self.package_namespaces.add(python_package_name)
 
+
+    def _load_armarx_slice(self, armarx_package_name: str, filename: str):
+        """
+        Simple helper function to load a slice definition file.
+
+        Loads a slice definition file from a project. Definitions in the imported
+        slice file are then available through the python import function.
+
+        :raises IOError: if the slice file was not found
+        :param armarx_package_name: name of the armarx package
+        :param filename: relative path to the slice interface
+        """
+        package_dependencies = get_dependencies(armarx_package_name)
+        package_dependencies.append(armarx_package_name)
+
+        include_paths = ["-I{}".format(Ice.getSliceDir())]
+
+        for package_name in package_dependencies:
+            interface_include_path = get_include_path(package_name)
+            if interface_include_path:
+                include_paths.extend(interface_include_path)
+            else:
+                logger.error("Include path for project %s is empty", package_name)
+                raise Exception(f"Invalid include path for project {package_name}")
+
+        filename = os.path.join(
+            include_paths[-1], armarx_package_name, "interface", filename
+        )
+        filename = os.path.abspath(filename)
+
+        search_path = " -I".join(include_paths)
+        logger.debug("Looking for slice files in %s", search_path)
+        if not os.path.exists(filename):
+            raise IOError("Path not found: " + filename)
+        Ice.loadSlice("{} --underscore --all {}".format(search_path, filename))
+
+
+    def update_loaded_modules(self):
+        """
+        Update
+        """
+        for _, variant_info in self.mapping.items():
+
+            if variant_info.fullname in self.patched_definitions:
+                continue
+
+            module_name, x = variant_info.fullname.rsplit('.', maxsplit=1)
+
+            if module_name in sys.modules:
+                module = sys.modules[module_name]
+                if hasattr(module, x):
+                    self.patch_slice_definition(variant_info)
+
+
     def find_spec(self, fullname, path, target=None):
         """
         ..see:: importlib.abc.MetaPathFinder.find_spec
@@ -111,9 +131,10 @@ class ArmarXProxyFinder(MetaPathFinder):
 
         loaded_slice = f"{variant_info.package_name}/{variant_info.include_path}"
         if loaded_slice in self.loaded_slice_files:
+            self.update_loaded_modules()
             return None
 
-        load_armarx_slice(variant_info.package_name, variant_info.include_path)
+        self._load_armarx_slice(variant_info.package_name, variant_info.include_path)
 
         self.loaded_slice_files.add(loaded_slice)
 
@@ -122,12 +143,8 @@ class ArmarXProxyFinder(MetaPathFinder):
 
         self.patch_slice_definition(variant_info)
 
-        for _, variant_info in self.mapping.items():
-            if variant_info.fullname in sys.modules:
-                if variant_info.fullname in self.patched_definitions:
-                    continue
-                else:
-                    self.patch_slice_definition(variant_info)
+        self.update_loaded_modules()
+
         return None
 
     def patch_slice_definition(self, variant_info):
@@ -163,8 +180,10 @@ class ArmarXProxyFinder(MetaPathFinder):
 
         if type_name.endswith("Prx"):
             proxy_class = cls
-        else:
+        elif hasattr(mod, type_name + "Prx"):
             proxy_class = getattr(mod, type_name + "Prx")
+        else:
+            return
 
         cls.get_topic = types.MethodType(_get_default_topic, proxy_class)
         cls.get_proxy = types.MethodType(_get_default_proxy, proxy_class)
