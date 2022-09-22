@@ -4,7 +4,7 @@ version = "0.20.1"
 description = "A Python Toolbox for ArmarX"
 authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 maintainers = ["Markus Grotz <markus.grotz@kit.edu>"]
-packages = [{include = "armarx"}, {include = "visionx"}, {include = "armarx_memory"}, {include = "armarx_objects"}]
+packages = [{include = "armarx_core"}, {include = "armarx_memory"}, {include = "armarx_objects"}, {include = "armarx"}, {include = "visionx"}]
 readme = "README.md"
 repository = "http://gitlab.com/ArmarX/python3-armarx"
 documentation = "https://armarx.humanoids.kit.edu/python/"
