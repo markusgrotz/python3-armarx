@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import mmap
-from armarx.config import config
+from armarx_core.config import config
 
 
 def path_to_shm(provider_name: str) -> str:

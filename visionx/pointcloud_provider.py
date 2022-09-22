@@ -10,7 +10,7 @@ import time
 
 import numpy as np
 
-from armarx import ice_manager
+from armarx_core import ice_manager
 
 from visionx.pointclouds import dtype_point_color_xyz, get_point_cloud_format
 from visionx.pointclouds import (
