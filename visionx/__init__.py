@@ -1,1 +1,1 @@
-import armarx
+import armarx_core
