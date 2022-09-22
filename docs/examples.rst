@@ -29,7 +29,7 @@ Creating a proxy
     import random
 
     from armarx import RNGProviderComponentInterface
-    from armarx import ice_manager
+    from armarx_core import ice_manager
 
 
     class RNGProvider(RNGProviderComponentInterface):

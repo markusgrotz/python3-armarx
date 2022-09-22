@@ -52,4 +52,3 @@ Configuration
 The ArmarX Python bindings read the available ArmarX projects from the
 configurtion :file:`$ARMARX_WORKSPACE/armarx_config/armarx.ini`. Here the key 'packages' from the
 entry 'AutoCompletion' is relevant.
-

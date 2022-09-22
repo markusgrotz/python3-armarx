@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# armarx-dev documentation build configuration file, created by
+# armarx documentation build configuration file, created by
 # sphinx-quickstart on Fri Nov 20 23:17:51 2020.
 #
 # This file is execfile()d with the current directory set to its
@@ -129,7 +129,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "armarx-devdoc"
+htmlhelp_basename = "armarxdoc"
 
 
 # --
@@ -159,8 +159,8 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "armarx-dev.tex",
-        "armarx-dev Documentation",
+        "armarx.tex",
+        "armarx Documentation",
         "Markus Grotz",
         "manual",
     ),
@@ -171,7 +171,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "armarx-dev", "armarx-dev Documentation", [author], 1)]
+man_pages = [(master_doc, "armarx", "armarx Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -182,10 +182,10 @@ man_pages = [(master_doc, "armarx-dev", "armarx-dev Documentation", [author], 1)
 texinfo_documents = [
     (
         master_doc,
-        "armarx-dev",
-        "armarx-dev Documentation",
+        "armarx",
+        "armarx Documentation",
         author,
-        "armarx-dev",
+        "armarx",
         "One line description of project.",
         "Miscellaneous",
     ),
