@@ -33,9 +33,6 @@ class Robot(ABC, Bimanual):
     def on_connect(self):
         self._text_state_listener.on_connect()
 
-        self.left_hand = HandUnitInterfacePrx.get_proxy("LeftHandUnit")
-        self.right_hand = HandUnitInterfacePrx.get_proxy("RightHandUnit")
-
         # from armarx import ElasticFusionInterfacePrx
         # self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
