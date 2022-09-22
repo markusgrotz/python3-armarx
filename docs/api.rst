@@ -8,11 +8,11 @@ If you are looking for information on a specific function
     :members:
     :inherited-members:
 
-.. automodule:: armarx.ice_manager
+.. automodule:: armarx_core.ice_manager
     :members: 
     :inherited-members:
 
-.. automodule:: armarx.slice_loader
+.. automodule:: armarx_core.slice_loader
     :members: load_armarx_slice
 
 .. automodule:: armarx.statechart
@@ -82,8 +82,4 @@ API Reference for Memory
 .. automodule:: armarx_memory.segments
     :members: 
     :inherited-members:
-
-
-
-
 

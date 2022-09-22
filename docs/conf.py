@@ -134,7 +134,7 @@ htmlhelp_basename = "armarxdoc"
 
 # --
 
-html_logo = "./war-machine.jpg"
+html_logo = "./_static/war-machine.jpg"
 
 # -- Options for LaTeX output ---------------------------------------------
 

@@ -11,10 +11,10 @@ from typing import Union
 
 import numpy as np
 
-from armarx.ice_manager import using_topic
-from armarx.ice_manager import get_proxy
-from armarx.ice_manager import register_object
-from armarx.ice_manager import is_alive
+from armarx_core.ice_manager import using_topic
+from armarx_core.ice_manager import get_proxy
+from armarx_core.ice_manager import register_object
+from armarx_core.ice_manager import is_alive
 
 from visionx.image_provider import ImageProvider
 

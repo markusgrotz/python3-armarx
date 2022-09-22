@@ -115,8 +115,10 @@ class Client:
         Run a loop receiving and sending updates.
         :param callback: The callback to call after receiving updates.
         :param block:
+
             If true, blocks until a KeyboardInterrupt is received.
             If false, starts the loop in a thread and returns the thread.
+
         :return: If block is False, returns the thread, otherwise returns nothing.
         """
         if block:
