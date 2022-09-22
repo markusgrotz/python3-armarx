@@ -1,5 +1,6 @@
 import time
 from typing import Dict
+from functools import lru_cache
 
 from .basic_robot import Robot
 
@@ -55,6 +56,7 @@ class A6(Robot):
         # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
 
     @property
+    @lru_cache(1)
     def kinematic_unit(self):
         return KinematicUnitInterfacePrx.get_proxy("Armar6KinematicUnit")
 

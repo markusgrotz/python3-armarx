@@ -1,8 +1,9 @@
 from typing import Dict
+from functools import lru_cache
 
 from .armar_6 import A6
 
-from armarx import ice_manager
+from armarx_core import ice_manager
 
 from armarx import HandUnitInterfacePrx
 from armarx import KinematicUnitInterfacePrx
@@ -34,11 +35,11 @@ class AD(A6):
         self.on_connect()
 
     def on_connect(self):
-        self.left_hand = HandUnitInterfacePrx.get_proxy("LeftHandUnit")
-        self.right_hand = HandUnitInterfacePrx.get_proxy("RightHandUnit")
+        pass
        # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
 
     @property
+    @lru_cache(1)
     def kinematic_unit(self):
         return ice_manager.get_proxy(KinematicUnitInterfacePrx, "KinematicUnit")
  
