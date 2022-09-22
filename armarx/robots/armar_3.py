@@ -29,9 +29,13 @@ class A3(Robot):
         super().__init__()
         self.on_connect()
 
+
+    @property
+    def kinematic_unit(self):
+        return KinematicUnitInterfacePrx.get_proxy("Armar3KinematicUnit")
+
     def on_connect(self):
         super().on_connect()
-        self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy("Armar3KinematicUnit")
 
         class GazeSelection:
             def __init__(self):

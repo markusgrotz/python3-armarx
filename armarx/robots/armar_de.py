@@ -36,7 +36,9 @@ class AD(A6):
     def on_connect(self):
         self.left_hand = HandUnitInterfacePrx.get_proxy("LeftHandUnit")
         self.right_hand = HandUnitInterfacePrx.get_proxy("RightHandUnit")
-        self.kinematic_unit = ice_manager.get_proxy(
-            KinematicUnitInterfacePrx, "KinematicUnit"
-        )
-        # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
+       # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
+
+    @property
+    def kinematic_unit(self):
+        return ice_manager.get_proxy(KinematicUnitInterfacePrx, "KinematicUnit")
+ 

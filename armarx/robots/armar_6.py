@@ -52,8 +52,11 @@ class A6(Robot):
 
     def on_connect(self):
         super().on_connect()
-        self.kinematic_unit = KinematicUnitInterfacePrx.get_proxy("Armar6KinematicUnit")
         # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
+
+    @property
+    def kinematic_unit(self):
+        return KinematicUnitInterfacePrx.get_proxy("Armar6KinematicUnit")
 
     def init_pose(self):
         """

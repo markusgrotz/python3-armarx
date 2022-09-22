@@ -37,6 +37,12 @@ class Robot(ABC, Bimanual):
         # self._fusion = ElasticFusionInterfacePrx.get_proxy()
 
     @property
+    @abstractmethod
+    def kinematic_unit(self):
+        pass
+
+
+    @property
     @lru_cache(1)
     def emergency_stop(self):
         return EmergencyStopMasterInterfacePrx.get_proxy()
