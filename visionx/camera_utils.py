@@ -1,6 +1,7 @@
 import math
 import numpy as np
 
+from armarx import ice_manager
 from visionx import StereoCalibrationInterfacePrx
 from visionx import ImageProviderInterfacePrx
 from visionx import MonocularCalibration
