@@ -124,13 +124,18 @@ class Client:
         if block:
             try:
                 while True:
-                    self.receive_updates()
+                    try:
+                        self.receive_updates()
 
-                    callback()
+                        callback()
 
-                    self.send_updates()
+                        self.send_updates()
+                    except KeyError:
+                        pass
+
             except KeyboardInterrupt:
                 pass
+
         else:
             from threading import Thread
 
