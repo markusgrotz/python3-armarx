@@ -2,7 +2,7 @@ import numpy as np
 
 from typing import Dict, Optional
 
-from armarx import slice_loader
+from armarx_core import slice_loader
 
 from armarx_memory.ice_conv.ice_twin import IceTwin
 from armarx_memory.ice_conv.RobotAPI.Box import Box

@@ -1,6 +1,6 @@
 import os
 
-from armarx import slice_loader
+from armarx_core import slice_loader
 
 from armarx_memory.ice_conv.ice_twin import IceTwin
 
