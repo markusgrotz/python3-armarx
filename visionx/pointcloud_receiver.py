@@ -12,7 +12,7 @@ import numpy as np
 
 from typing import Tuple
 
-from armarx import ice_manager
+from armarx_core import ice_manager
 
 from visionx.pointclouds import dtype_from_point_type
 from visionx.pointclouds import PointCloudProcessorInterface
