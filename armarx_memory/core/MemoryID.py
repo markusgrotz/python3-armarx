@@ -2,7 +2,7 @@ import copy
 import enum
 
 import armarx
-from armarx import slice_loader
+from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
 from armarx import armem

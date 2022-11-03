@@ -1,6 +1,6 @@
 import typing as ty
 
-from armarx import slice_loader
+from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/query.ice")
 

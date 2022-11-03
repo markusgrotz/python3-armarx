@@ -5,8 +5,8 @@ import warnings
 
 import numpy as np
 
-from armarx.ice_manager import register_object
-from armarx.ice_manager import get_topic
+from armarx_core.ice_manager import register_object
+from armarx_core.ice_manager import get_topic
 
 from visionx import ImageProcessorInterfacePrx
 from visionx import ImageProviderInterface

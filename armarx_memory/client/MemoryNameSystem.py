@@ -2,7 +2,8 @@ from typing import Dict, List, Optional
 import logging
 
 import armarx
-from armarx import slice_loader, ice_manager
+from armarx_core import slice_loader
+from armarx_core import ice_manager
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 slice_loader.load_armarx_slice("RobotAPI", "armem/mns/MemoryNameSystemInterface.ice")

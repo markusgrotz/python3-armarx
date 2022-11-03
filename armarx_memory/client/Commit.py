@@ -5,7 +5,7 @@ from armarx_memory.core import MemoryID, time_usec, DateTimeIceConverter
 from armarx_memory.ice_conv import ice_twin
 
 
-from armarx import slice_loader
+from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/server/MemoryInterface.ice")
 

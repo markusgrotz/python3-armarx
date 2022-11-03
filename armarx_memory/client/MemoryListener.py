@@ -1,7 +1,8 @@
 import typing as ty
 import logging
 
-from armarx import slice_loader, ice_manager
+from armarx_core import slice_loader
+from armarx_core import ice_manager
 
 slice_loader.load_armarx_slice("RobotAPI", "armem/client/MemoryListenerInterface.ice")
 
