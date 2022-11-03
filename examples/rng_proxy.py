@@ -2,8 +2,8 @@
 
 
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
-from armarx import ice_manager
-from armarx import slice_loader
+from armarx_core import ice_manager
+from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice(
     "ComponentsExample", "RNGComponentProviderIceInterface.ice"
