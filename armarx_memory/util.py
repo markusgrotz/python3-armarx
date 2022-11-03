@@ -1,6 +1,6 @@
 from typing import Optional
 
-from armarx import slice_loader
+from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("RobotAPI", "aron.ice")
 slice_loader.load_armarx_slice("RobotAPI", "armem/memory.ice")
