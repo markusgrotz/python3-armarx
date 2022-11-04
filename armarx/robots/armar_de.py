@@ -38,7 +38,7 @@ class AD(A6):
         pass
        # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
 
-    @property
+    @Robot.kinematic_unit.setter
     @lru_cache(1)
     def kinematic_unit(self):
         return ice_manager.get_proxy(KinematicUnitInterfacePrx, "KinematicUnit")
