@@ -4,7 +4,7 @@ import time
 import logging
 import numpy as np
 
-from visionx.image_provider import ImageProvider
+from armarx_vision.image_provider import ImageProvider
 
 from armarx_core.ice_manager import is_alive
 from armarx.parser import ArmarXArgumentParser as ArgumentParser

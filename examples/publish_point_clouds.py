@@ -6,9 +6,10 @@ import math
 
 from armarx.ice_manager import is_alive
 from armarx.parser import ArmarXArgumentParser as ArgumentParser
-from visionx.pointclouds import rgb_to_uint32
-from visionx.pointcloud_provider import PointCloudProvider
-from visionx.pointcloud_provider import dtype_point_color_xyz
+
+from armarx_vision.pointclouds import rgb_to_uint32
+from armarx_vision.pointcloud_provider import PointCloudProvider
+from armarx_vision.pointcloud_provider import dtype_point_color_xyz
 
 logger = logging.getLogger(__name__)
 

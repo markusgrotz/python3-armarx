@@ -3,9 +3,9 @@ from functools import lru_cache
 from visionx import ImageProviderInterfacePrx
 from visionx import ReferenceFrameInterfacePrx
 
-from visionx.camera_utils import get_stereo_calibration
-from visionx.camera_utils import get_calibration
-from visionx.image_utils import read_images
+from armarx_vision.camera_utils import get_stereo_calibration
+from armarx_vision.camera_utils import get_calibration
+from armarx_vision.image_utils import read_images
 
 class Camera:
 
