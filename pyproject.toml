@@ -6,8 +6,8 @@ authors = ["Markus Grotz <markus.grotz@kit.edu>"]
 maintainers = ["Markus Grotz <markus.grotz@kit.edu>"]
 packages = [{include = "armarx_core"}, {include = "armarx_memory"}, 
             {include = "armarx_objects"},
-            {include = "armarx_robots"},
- {include = "armarx"}, {include = "visionx"}]
+            {include = "armarx_robots"}, {include = "armarx_visionx"}
+            {include = "armarx"}]
 
 readme = "README.md"
 repository = "http://gitlab.com/ArmarX/python3-armarx"
