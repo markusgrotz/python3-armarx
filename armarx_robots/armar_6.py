@@ -2,7 +2,7 @@ import time
 from typing import Dict
 from functools import lru_cache
 
-from .basic_robot import Robot
+from armarx_robots.basic_robot import Robot
 
 from armarx import KinematicUnitInterfacePrx
 
@@ -10,7 +10,7 @@ from armarx import KinematicUnitInterfacePrx
 
 from armarx import ControlMode
 
-from armarx.statechart import StatechartExecutor
+from armarx_robots.statechart import StatechartExecutor
 
 
 class A6(Robot):

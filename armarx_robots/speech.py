@@ -6,7 +6,7 @@ from armarx import TextListenerInterfacePrx
 from armarx import TextToSpeechStateInterface
 from armarx import TextToSpeechStateType
 
-from armarx import ice_manager
+from armarx_core import ice_manager
 
 logger = logging.getLogger(__name__)
 

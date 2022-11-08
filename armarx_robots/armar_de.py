@@ -1,7 +1,8 @@
 from typing import Dict
 from functools import lru_cache
 
-from .armar_6 import A6
+from armarx_robots.armar_6 import A6
+from armarx_robots.basic_robot import Robot
 
 from armarx_core import ice_manager
 

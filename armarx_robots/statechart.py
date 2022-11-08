@@ -13,7 +13,8 @@ from armarx import StateParameterIceBase
 from armarx import SingleVariantBase
 from armarx import VariantBase
 from armarx import ContainerType
-from armarx.variants import hash_type_name
+
+from armarx_core.variants import hash_type_name
 
 
 class StatechartExecutor(object):

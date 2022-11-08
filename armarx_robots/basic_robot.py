@@ -12,11 +12,10 @@ from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
 from armarx import KinematicUnitInterfacePrx
 from armarx import HandUnitInterfacePrx
-from armarx.speech import TextStateListener
 
-from armarx.statechart import StatechartExecutor
-
-from .arms import Bimanual
+from armarx_robots.speech import TextStateListener
+from armarx_robots.statechart import StatechartExecutor
+from armarx_robots.arms import Bimanual
 
 
 logger = logging.getLogger(__name__)

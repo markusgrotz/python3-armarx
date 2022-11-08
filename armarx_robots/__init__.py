@@ -1,6 +1,6 @@
-from .armar_6 import A6
-from .armar_de import AD
-from .armar_3 import A3
+from armarx_robots.armar_6 import A6
+from armarx_robots.armar_de import AD
+from armarx_robots.armar_3 import A3
 
 
 def robot_by_name(robot_name: str = None):
