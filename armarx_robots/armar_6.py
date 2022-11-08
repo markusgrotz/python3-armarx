@@ -55,7 +55,7 @@ class A6(Robot):
         super().on_connect()
         # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('Armar6KinematicUnitObserver')
 
-    @Robot.kinematic_unit.setter
+    @property
     @lru_cache(1)
     def kinematic_unit(self):
         return KinematicUnitInterfacePrx.get_proxy("Armar6KinematicUnit")

@@ -29,7 +29,7 @@ class A3(Robot):
         self.on_connect()
 
 
-    @Robot.kinematic_unit.setter
+    @property
     @lru_cache(1)
     def kinematic_unit(self):
         return KinematicUnitInterfacePrx.get_proxy("Armar3KinematicUnit")
