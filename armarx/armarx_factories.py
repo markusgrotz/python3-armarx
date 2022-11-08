@@ -1,15 +1,15 @@
 import Ice
 
-from .ice_manager import ice_communicator
-from .slice_loader import load_armarx_slice
+from armarx_core.ice_manager import ice_communicator
+from armarx_core.slice_loader import load_armarx_slice
 
 load_armarx_slice("RobotAPI", "observers/KinematicUnitObserverInterface.ice")
 
 from armarx import DatafieldRefBase
 from armarx import ChannelRefBase
 
-from .variants import Variant
-from .variants import TimedVariant
+from armarx_core.variants import Variant
+from armarx_core.variants import TimedVariant
 
 
 class VariantFactory(Ice.ObjectFactory):
