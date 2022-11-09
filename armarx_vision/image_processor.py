@@ -16,7 +16,7 @@ from armarx_core.ice_manager import get_proxy
 from armarx_core.ice_manager import register_object
 from armarx_core.ice_manager import is_alive
 
-from visionx.image_provider import ImageProvider
+from armarx_vision.image_provider import ImageProvider
 
 from visionx import ImageProviderInterfacePrx
 from visionx import ImageProcessorInterface
