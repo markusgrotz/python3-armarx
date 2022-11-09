@@ -14,10 +14,10 @@ from typing import Tuple
 
 from armarx_core import ice_manager
 
-from visionx.pointclouds import dtype_from_point_type
-from visionx.pointclouds import PointCloudProcessorInterface
-from visionx.pointclouds import PointCloudProviderInterfacePrx
-from visionx.pointclouds import MetaPointCloudFormat
+from armarx_vision.pointclouds import dtype_from_point_type
+from armarx_vision.pointclouds import PointCloudProcessorInterface
+from armarx_vision.pointclouds import PointCloudProviderInterfacePrx
+from armarx_vision.pointclouds import MetaPointCloudFormat
 
 
 logger = logging.getLogger(__name__)
