@@ -28,7 +28,6 @@ class A3(Robot):
         super().__init__()
         self.on_connect()
 
-
     @property
     @lru_cache(1)
     def kinematic_unit(self):

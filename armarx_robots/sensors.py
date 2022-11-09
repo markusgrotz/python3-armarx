@@ -7,8 +7,8 @@ from armarx_vision.camera_utils import get_stereo_calibration
 from armarx_vision.camera_utils import get_calibration
 from armarx_vision.image_utils import read_images
 
-class Camera:
 
+class Camera:
     def __init__(self, name):
         self.provider_name = name
         self.images = property(lambda self: read_images(name))
@@ -25,9 +25,12 @@ class Camera:
         proxy = ImageProviderInterfacePrx.get_proxy(self.provider_name)
         number_of_images = proxy.getNumberImages()
 
-        return {'proxy': proxy, 'width': width, 'height': height, 'num_images':
-                number_of_images}
-
+        return {
+            "proxy": proxy,
+            "width": width,
+            "height": height,
+            "num_images": number_of_images,
+        }
 
     @property
     @lru_cache(1)
@@ -48,4 +51,3 @@ class Camera:
             return get_stereo_calibration(self.provider_name)
         else:
             return get_calibration(self.provider_name)
-

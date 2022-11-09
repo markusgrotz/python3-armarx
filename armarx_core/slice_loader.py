@@ -42,6 +42,7 @@ def load_armarx_slice(armarx_package_name: str, filename: str):
             c._load_armarx_slice(armarx_package_name, filename)
             c.update_loaded_modules()
 
+
 class ArmarXProxyFinder(MetaPathFinder):
     """
     The ArmarXProxyFinder class
@@ -65,7 +66,6 @@ class ArmarXProxyFinder(MetaPathFinder):
         for _, v in self.mapping.items():
             python_package_name, _type_name = v.fullname.rsplit(".", 1)
             self.package_namespaces.add(python_package_name)
-
 
     def _load_armarx_slice(self, armarx_package_name: str, filename: str):
         """
@@ -102,7 +102,6 @@ class ArmarXProxyFinder(MetaPathFinder):
             raise IOError("Path not found: " + filename)
         Ice.loadSlice("{} --underscore --all {}".format(search_path, filename))
 
-
     def update_loaded_modules(self):
         """
         Update
@@ -112,13 +111,12 @@ class ArmarXProxyFinder(MetaPathFinder):
             if variant_info.fullname in self.patched_definitions:
                 continue
 
-            module_name, x = variant_info.fullname.rsplit('.', maxsplit=1)
+            module_name, x = variant_info.fullname.rsplit(".", maxsplit=1)
 
             if module_name in sys.modules:
                 module = sys.modules[module_name]
                 if hasattr(module, x):
                     self.patch_slice_definition(variant_info)
-
 
     def find_spec(self, fullname, path, target=None):
         """

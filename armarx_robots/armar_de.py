@@ -37,10 +37,10 @@ class AD(A6):
 
     def on_connect(self):
         pass
-       # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
+
+    # self.kinematic_observer = KinematicUnitObserverInterfacePrx.get_proxy('ArmarDEKinematicUnitObserver')
 
     @property
     @lru_cache(1)
     def kinematic_unit(self):
         return ice_manager.get_proxy(KinematicUnitInterfacePrx, "KinematicUnit")
-

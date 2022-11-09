@@ -40,7 +40,6 @@ class Robot(ABC, Bimanual):
     def kinematic_unit(self):
         pass
 
-
     @property
     @lru_cache(1)
     def emergency_stop(self):
