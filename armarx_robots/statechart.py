@@ -11,10 +11,16 @@ from armarx import SimpleStatechartExecutorInterfacePrx
 from armarx import StateParameterIceBase
 
 from armarx import SingleVariantBase
+from armarx import SingleTypeVariantListBase
+from armarx import StringValueMapBase
 from armarx import VariantBase
 from armarx import ContainerType
 
 from armarx_core.variants import hash_type_name
+from armarx_core.variants import convert_to_variant_data
+
+
+logger = logging.getLogger(__name__)
 
 
 class StatechartExecutor(object):
@@ -47,13 +53,21 @@ class StatechartExecutor(object):
         state_parameters = state_parameters or {}
         self.logger.debug("with parameters %s", state_parameters)
 
-        preload_libraries = [v.ice_staticId() for k, v in state_parameters.items()]
-        self.logger.debug("preloading libraries %s", preload_libraries)
-        self.executor.preloadLibrariesFromHumanNames(preload_libraries)
+        # ..todo:: check if ice_staticId is available otherwise convert the data.
+        preload_libraries = []
+        preload_libraries.append("::armarx::StringVariantData")
+        preload_libraries.append("::armarx::DoubleVariantData")
+        preload_libraries.append("::armarx::FloatVariantData")
+        preload_libraries.append("::armarx::PoseBase")
 
         state_parameters: Dict[str, StateParameterIceBase] = {
-            k: self._convert_parameter(v) for k, v in state_parameters.items()
+            k: self._get_state_parameter(v) for k, v in state_parameters.items()
         }
+
+        # preload_libraries = [v.ice_staticId() for k, v in state_parameters.items() if not isinstance(v, list)]
+
+        self.logger.debug("preloading libraries %s", preload_libraries)
+        self.executor.preloadLibrariesFromHumanNames(preload_libraries)
 
         if not self.executor.hasExecutionFinished():
             self.logger.warning("another statechart is currently executed.")
@@ -90,11 +104,44 @@ class StatechartExecutor(object):
         self.executor.stopImmediatly()
 
     @staticmethod
-    def _convert_parameter(v):
-        type_container = ContainerType(None, v.ice_staticId())
-        v = VariantBase(v, hash_type_name(v.ice_staticId()))
-        v = SingleVariantBase(type_container, v)
-        return StateParameterIceBase(value=v, set=True)
+    def _get_state_parameter(data):
+        converted_parameter = StatechartExecutor._convert_parameter(data)
+        return StateParameterIceBase(value=converted_parameter, set=True)
+
+    @staticmethod
+    def _convert_parameter(data):
+        """ """
+
+        def _convert(v):
+            v = convert_to_variant_data(v)
+            v = StatechartExecutor._convert_parameter(v)
+            return v
+
+        if isinstance(data, (list, tuple)):
+            logger.warning("not tested yet")
+            container_ice_id = SingleTypeVariantListBase.ice_staticId()
+            # ..todo:: do we need a variant base?
+            elements = [_convert(i) for i in data]
+            parameter_ice_id = elements[0]._typeContainer.typeId
+            type_container = ContainerType(
+                ContainerType(None, parameter_ice_id), container_ice_id
+            )
+            return SingleTypeVariantListBase(type_container, elements)
+        elif isinstance(data, dict):
+            logger.warning("not tested yet")
+            container_ice_id = StringValueMapBase.ice_staticId()
+            elements = {k: _convert(v) for k, v in data}
+            parameter_ice_id = list(elements.values())[0]._typeContainer.typeId
+            type_container = ContainerType(
+                ContainerType(None, parameter_ice_id), container_ice_id
+            )
+            return StringValueMapBase(type_container, elements)
+        else:
+            data = convert_to_variant_data(data)
+            parameter_ice_id = data.ice_staticId()
+            type_container = ContainerType(None, parameter_ice_id)
+            variant = VariantBase(data, hash_type_name(parameter_ice_id))
+            return SingleVariantBase(type_container, variant)
 
     def __str__(self):
         return f"{self.__class__.__name__}{self.fullname}"
