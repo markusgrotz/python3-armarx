@@ -1,22 +1,28 @@
 from functools import lru_cache
 
 from visionx import ImageProviderInterfacePrx
-from visionx import ReferenceFrameInterfacePrx
 
 from armarx_vision.camera_utils import get_stereo_calibration
 from armarx_vision.camera_utils import get_calibration
 from armarx_vision.image_utils import read_images
 
 
+from visionx import ReferenceFrameInterfacePrx
+from functools import partial
+
 class Camera:
     def __init__(self, name):
         self.provider_name = name
-        self.images = property(lambda self: read_images(name))
+        self.images = partial(read_images, name)
 
     @property
     @lru_cache(1)
+    def proxy(self):
+        return ImageProviderInterfacePrx.get_proxy(self.provider_name)
+
+    @property
     def info(self):
-        proxy = ImageProviderInterfacePrx.get_proxy(self.provider_name)
+        proxy = self.proxy
         image_format = proxy.getImageFormat()
         image_format = proxy.getImageFormat()
         width = image_format.dimension.width
@@ -41,8 +47,7 @@ class Camera:
     @property
     @lru_cache(1)
     def num_images(self):
-        proxy = ImageProviderInterfacePrx.get_proxy(self.provider_name)
-        return proxy.getNumberImages()
+        return self.proxy.getNumberImages()
 
     @property
     @lru_cache(1)
