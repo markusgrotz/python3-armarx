@@ -8,7 +8,6 @@ from armarx import KinematicUnitInterfacePrx
 
 # from armarx import KinematicUnitObserverInterfacePrx
 
-from armarx import ControlMode
 
 from armarx_robots.statechart import StatechartExecutor
 from armarx_robots.sensors import Camera
