@@ -11,6 +11,7 @@ from armarx import KinematicUnitInterfacePrx
 from armarx import ControlMode
 
 from armarx_robots.statechart import StatechartExecutor
+from armarx_robots.sensors import Camera
 
 
 class A6(Robot):
@@ -48,6 +49,8 @@ class A6(Robot):
             "ArmR8_Wri2",
         ]
         self.on_connect()
+        self.rgbd_camera = Camera('OpenNIPointCloudProvider')
+        self.stereo_camera = Camera('RCPointCloudProvider')
 
         # self.poses =
 
