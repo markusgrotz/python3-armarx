@@ -140,3 +140,52 @@ class Robot(ABC, Bimanual):
         self.emergency_stop.setEmergencyStopState(
             EmergencyStopState.eEmergencyStopActive
         )
+
+
+    def wait_for_joints(self, joint_angles: Dict[str, float], eps=0.1, timeout=5):
+        """
+        Waits until the robot has reached a pose
+
+        :param eps: angle accuraccy in radiant
+        :param timeout: timeout in seconds
+        """
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            has_reached = True
+            actual_joint_angles = self.kinematic_unit.getJointAngles()
+            for joint_name, expected_joint_angle in joint_angles.items():
+                actual_joint_angle = actual_joint_angles[joint_name]
+                if abs(expected_joint_angle - actual_joint_angle) > eps:
+                    has_reached = False
+                    break
+            if has_reached:
+                return True
+            else:
+                time.sleep(0.05)
+        return False
+
+
+    def both_arms_zero_velocity(self, joint_names=None):
+        """
+        Sets zero velocity for both arms
+        """
+        joint_names = joint_names or self.both_arms_joint_names
+        control_mode = {n: ControlMode.eVelocityControl for n in joint_names}
+        joint_velocities = {n: 0 for n in joint_names}
+        self.kinematic_unit.switchControlMode(control_mode)
+        self.kinematic_unit.setJointVelocities(joint_velocities)
+
+    def move_joints(self, joint_angles: Dict[str, float]):
+        """
+        Sets the joint position
+
+        :param joint_angles: A map containing the joint names and positions.
+        """
+        control_mode = {
+            k: ControlMode.ePositionControl for k, _ in joint_angles.items()
+        }
+        self.kinematic_unit.switchControlMode(control_mode)
+        self.kinematic_unit.setJointAngles(joint_angles)
+
+
+
