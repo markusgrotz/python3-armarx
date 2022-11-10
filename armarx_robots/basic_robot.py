@@ -86,6 +86,28 @@ class Robot(ABC, Bimanual):
         )
         return statechart.run(state_parameters, True)
 
+    def navigate_to_location(self, location_name: str, state_parameters=None):
+
+        state_parameters = state_parameters or {}
+        state_parameters['location'] = location_name
+
+        statechart = StatechartExecutor(
+            self.profile_name, "NavigationGroup", "NavigateToLocation"
+        )
+        return statechart.run(state_parameters, True)
+
+    def navigate_to(self, x, y, yaw, state_parameters=None):
+        from armarx import Vector3Base
+
+        state_parameters = state_parameters or {}
+        state_parameters['TargetPosition'] = Vector3Base(x, y, yaw)
+
+        statechart = StatechartExecutor(
+            self.profile_name, "NavigationGroup", "NavigateToLocation"
+        )
+        return statechart.run(state_parameters, True)
+
+
     def say(self, text):
         """
         Verbalizes the given text.  SSML markup is supported
