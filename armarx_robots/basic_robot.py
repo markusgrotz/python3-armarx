@@ -16,6 +16,7 @@ from armarx import HandUnitInterfacePrx
 from armarx_robots.speech import TextStateListener
 from armarx_robots.statechart import StatechartExecutor
 from armarx_robots.arms import Bimanual
+from typing import Dict
 
 
 logger = logging.getLogger(__name__)
