@@ -6,6 +6,9 @@ from armarx_core import ice_manager
 from visionx import StereoCalibrationInterfacePrx
 from visionx import ImageProviderInterfacePrx
 from visionx import MonocularCalibration
+from visionx import MonocularCalibrationCapturingProviderInterface
+
+from visionx import ReferenceFrameInterfacePrx
 
 from typing import Dict
 
@@ -51,6 +54,36 @@ def build_calibration_matrix(
         K = K * scale
         K[2, 2] = 1
     return K
+
+
+def get_calibration(provider_name: str):
+
+    proxy = ImageProviderInterfacePrx.get_proxy(provider_name)
+    image_format = proxy.getImageFormat()
+    width = image_format.dimension.width
+    height = image_format.dimension.height
+
+    proxy = ReferenceFrameInterfacePrx.get_proxy(provider_name)
+    frame = proxy.getReferenceFrame()
+
+    proxy = MonocularCalibrationCapturingProviderInterface.get_proxy(provider_name)
+    calibration = proxy.getCalibration()
+
+
+    fx = calibration.cameraParam.focalLength[0]
+    fy = calibration.cameraParam.focalLength[1]
+
+    return {
+        "fx": fx,
+        "fy": fy,
+        "width": width,
+        "height": height,
+        "vertical_fov": 2.0 * math.atan(height / (2.0 * fy)),
+        "horizontal_fov": 2.0 * math.atan(width / (2.0 * fx)),
+        "frame": frame
+    }
+
+
 
 
 def get_stereo_calibration(provider_name: str):
