@@ -48,8 +48,8 @@ class A6(Robot):
             "ArmR8_Wri2",
         ]
         self.on_connect()
-        self.rgbd_camera = Camera('OpenNIPointCloudProvider')
-        self.stereo_camera = Camera('RCPointCloudProvider')
+        self.rgbd_camera = Camera("OpenNIPointCloudProvider")
+        self.stereo_camera = Camera("RCPointCloudProvider")
 
         # self.poses =
 

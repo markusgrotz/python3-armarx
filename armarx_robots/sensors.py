@@ -10,6 +10,7 @@ from armarx_vision.image_utils import read_images
 from visionx import ReferenceFrameInterfacePrx
 from functools import partial
 
+
 class Camera:
     def __init__(self, name):
         self.provider_name = name

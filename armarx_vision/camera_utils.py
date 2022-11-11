@@ -69,7 +69,6 @@ def get_calibration(provider_name: str):
     proxy = MonocularCalibrationCapturingProviderInterface.get_proxy(provider_name)
     calibration = proxy.getCalibration()
 
-
     fx = calibration.cameraParam.focalLength[0]
     fy = calibration.cameraParam.focalLength[1]
 
@@ -80,10 +79,8 @@ def get_calibration(provider_name: str):
         "height": height,
         "vertical_fov": 2.0 * math.atan(height / (2.0 * fy)),
         "horizontal_fov": 2.0 * math.atan(width / (2.0 * fx)),
-        "frame": frame
+        "frame": frame,
     }
-
-
 
 
 def get_stereo_calibration(provider_name: str):

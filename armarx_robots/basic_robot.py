@@ -91,7 +91,7 @@ class Robot(ABC, Bimanual):
     def navigate_to_location(self, location_name: str, state_parameters=None):
 
         state_parameters = state_parameters or {}
-        state_parameters['location'] = location_name
+        state_parameters["location"] = location_name
 
         statechart = StatechartExecutor(
             self.profile_name, "NavigationGroup", "NavigateToLocation"
@@ -102,13 +102,12 @@ class Robot(ABC, Bimanual):
         from armarx import Vector3Base
 
         state_parameters = state_parameters or {}
-        state_parameters['TargetPosition'] = Vector3Base(x, y, yaw)
+        state_parameters["TargetPosition"] = Vector3Base(x, y, yaw)
 
         statechart = StatechartExecutor(
             self.profile_name, "NavigationGroup", "NavigateToLocation"
         )
         return statechart.run(state_parameters, True)
-
 
     def say(self, text):
         """
@@ -143,7 +142,6 @@ class Robot(ABC, Bimanual):
             EmergencyStopState.eEmergencyStopActive
         )
 
-
     def wait_for_joints(self, joint_angles: Dict[str, float], eps=0.1, timeout=5):
         """
         Waits until the robot has reached a pose
@@ -166,7 +164,6 @@ class Robot(ABC, Bimanual):
                 time.sleep(0.05)
         return False
 
-
     def both_arms_zero_velocity(self, joint_names=None):
         """
         Sets zero velocity for both arms
@@ -188,6 +185,3 @@ class Robot(ABC, Bimanual):
         }
         self.kinematic_unit.switchControlMode(control_mode)
         self.kinematic_unit.setJointAngles(joint_angles)
-
-
-
