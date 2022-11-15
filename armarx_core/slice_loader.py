@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 def load_armarx_slice(armarx_package_name: str, filename: str):
     """
-    ..deprecated:: add your slice file to a project's VariantInfo-*.xml instead
+    ..deprecated:: add your slice file to a project's VariantInfo-ProjectName.xml instead
     """
     warnings.warn(
         "Add the slice definition to VariantInfo-*.xml instead.", DeprecationWarning

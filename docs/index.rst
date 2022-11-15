@@ -7,6 +7,7 @@ Welcome to armarx python binding's documentation. Grab the latest version with
    :maxdepth: 3
    :caption: Contents:
 
+   :ref:`Quickstart`
    installation
    examples
    api
@@ -24,8 +25,7 @@ Python bindings share some configuration with the statecharts.  Section
 Quickstart
 ----------
 
-Grab the latest version with `poetry add armarx` or
-`pip install --extra-index-url https://pypi.humanoids.kit.edu/ armarx`.
+Grab the latest version with `poetry add armarx` or `pip install armarx`.
 
 To access a proxy via ice you can load the interface with the import keyword.
 For convenience, functions such as `get_proxy` are automatically injected with
@@ -47,12 +47,12 @@ That's it. Happy coding.
 Robots module
 -------------
 
-The `armarx.robots` module is a easy and convient way to control a robot.
+The `armarx_robots` module is an easy and convient way to control a robot.
 
 .. highlight:: python
 .. code-block:: python
 
-    from armarx.robots import A6
+    from armarx_robots import A6
     
     # we use the ARMAR-6 robot
     robot = A6()

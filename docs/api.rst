@@ -1,12 +1,41 @@
 API Reference
 ==============
 
-If you are looking for information on a specific function 
+If you are looking for information on a specific function.
 
 
-.. automodule:: armarx.robots
+API Reference for Robot Module
+==============================
+
+
+ARMAR-6:
+--------
+
+.. automodule:: armarx_robots.armar_6
     :members:
-    :inherited-members:
+    :inherited-members: 
+    :show-inheritance:
+
+ARMAR-DE:
+---------
+
+.. automodule:: armarx_robots.armar_de
+    :members:
+    :inherited-members: 
+    :show-inheritance:
+
+ARMAR-3:
+--------
+.. automodule:: armarx_robots.armar_3
+    :members:
+    :inherited-members: 
+    :show-inheritance:
+
+
+
+
+API Reference for Ice Interaction
+=================================
 
 .. automodule:: armarx_core.ice_manager
     :members: 
@@ -15,28 +44,40 @@ If you are looking for information on a specific function
 .. automodule:: armarx_core.slice_loader
     :members: load_armarx_slice
 
-.. automodule:: armarx.statechart
+
+API Reference for Object Localization
+=====================================
+
+.. automodule:: armarx_objects
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+API Reference for Memory
+========================
+
+.. automodule:: armarx_memory
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 API Reference for Perception
 ============================
 
-visionx\.image\_processor module
---------------------------------
+armarx_vision\.image\_processor module
+--------------------------------------
 
-.. automodule:: visionx.image_processor
+.. automodule:: armarx_vision.image_processor
     :members:
     :undoc-members:
     :show-inheritance:
 
-visionx\.image\_provider module
--------------------------------
+armarx_vision\.image\_provider module
+-------------------------------------
 
-.. automodule:: visionx.image_provider
+.. automodule:: armarx_vision.image_provider
     :members:
     :undoc-members:
     :show-inheritance:
@@ -44,7 +85,6 @@ visionx\.image\_provider module
 
 API Reference for Remote GUI
 ============================
-
 
 .. automodule:: armarx.remote_gui.client
     :members: 
@@ -60,16 +100,12 @@ API Reference for Remote GUI
 API Reference for ArViz
 =======================
 
-
-If you are looking for information on a specific function 
-
 .. automodule:: armarx.arviz.elements.elements
     :members:
     :inherited-members:
 
 API Reference for Memory
 ========================
-
 
 .. automodule:: armarx_memory
     :members: 
