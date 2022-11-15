@@ -118,3 +118,10 @@ class A6(Robot):
             self.profile_name, "Armar6GraspingGroup", "GraspSingleObject"
         )
         return s.run(state_parameters, True)
+
+    @property
+    @lru_cache(1)
+    def gaze(self):
+        from armarx import GazeControlInterfacePrx
+
+        return GazeControlInterfacePrx.get_proxy()

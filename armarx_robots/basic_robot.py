@@ -49,13 +49,6 @@ class Robot(ABC, Bimanual):
 
     @property
     @lru_cache(1)
-    def gaze(self):
-        from armarx import GazeControlInterfacePrx
-
-        return GazeControlInterfacePrx.get_proxy()
-
-    @property
-    @lru_cache(1)
     def navigator(self):
         from armarx import PlatformNavigatorInterfacePrx
 
