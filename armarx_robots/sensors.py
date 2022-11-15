@@ -10,8 +10,13 @@ from armarx_vision.image_utils import read_images
 from visionx import ReferenceFrameInterfacePrx
 from functools import partial
 
+from typing import Any
+from typing import Dict
 
 class Camera:
+    """
+    Convenience class for accessing the camera information and images 
+    """
     def __init__(self, name):
         self.provider_name = name
         self.images = partial(read_images, name)
@@ -19,10 +24,16 @@ class Camera:
     @property
     @lru_cache(1)
     def proxy(self):
+        """
+        Returns the proxy of the visionx.ImageProvider
+        """
         return ImageProviderInterfacePrx.get_proxy(self.provider_name)
 
     @property
-    def info(self):
+    def info(self) -> Dict[str, Any]:
+        """
+        Returns camera information such as width, height of the image 
+        """
         proxy = self.proxy
         image_format = proxy.getImageFormat()
         image_format = proxy.getImageFormat()
@@ -42,17 +53,26 @@ class Camera:
     @property
     @lru_cache(1)
     def reference_frame_name(self):
+        """
+        Returns the frame the camera images are reported in
+        """
         proxy = ReferenceFrameInterfacePrx.get_proxy(self.provider_name)
         return proxy.getReferenceFrame()
 
     @property
     @lru_cache(1)
     def num_images(self):
+        """
+        Returns the number of images
+        """
         return self.proxy.getNumberImages()
 
     @property
     @lru_cache(1)
     def calibration(self):
+        """
+        Returns the camera calibration matrix
+        """
         if self.num_images == 2:
             return get_stereo_calibration(self.provider_name)
         else:
