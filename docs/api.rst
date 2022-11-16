@@ -1,8 +1,5 @@
 API Reference
-==============
-
-If you are looking for information on a specific function.
-
+*************
 
 API Reference for Robot Module
 ==============================
