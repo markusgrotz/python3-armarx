@@ -12,6 +12,9 @@ from armarx_memory.core.time import DateTimeIceConverter
 
 date_time_conv = DateTimeIceConverter()
 
+MIN_LONG_CPP = -9223372036854775808
+INVALID_TIME_USEC = MIN_LONG_CPP
+
 
 class MemoryID(ice_twin.IceTwin):
     def __init__(
@@ -20,7 +23,7 @@ class MemoryID(ice_twin.IceTwin):
         core_segment_name: str = "",
         provider_segment_name: str = "",
         entity_name: str = "",
-        timestamp_usec: int = -1,
+        timestamp_usec: int = INVALID_TIME_USEC,
         instance_index: int = -1,
     ):
         self.memory_name = memory_name
@@ -234,7 +237,7 @@ class MemoryID(ice_twin.IceTwin):
         self.core_segment_name = data["coreSegmentName"]
         self.provider_segment_name = data["providerSegmentName"]
         self.entity_name = data["entityName"]
-        self.timestamp_usec = int(data["timestamp"])
+        self.timestamp_usec = int(data["timestamp"]["timeSinceEpoch"]["microSeconds"])
         self.instance_index = data["instanceIndex"]
         return self
 
