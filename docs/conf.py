@@ -141,7 +141,7 @@ html_logo = "./_static/war-machine.jpg"
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': 'a4paper',
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
@@ -151,6 +151,9 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+
+    # remove empty pages
+    'extraclassoptions': 'openany',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -160,7 +163,7 @@ latex_documents = [
     (
         master_doc,
         "armarx.tex",
-        "armarx Documentation",
+        "ArmarX Python Documentation",
         "Markus Grotz",
         "manual",
     ),
@@ -171,7 +174,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "armarx", "armarx Documentation", [author], 1)]
+man_pages = [(master_doc, "armarx", "ArmarX Python Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -183,7 +186,7 @@ texinfo_documents = [
     (
         master_doc,
         "armarx",
-        "armarx Documentation",
+        "armarx Python Documentation",
         author,
         "armarx",
         "One line description of project.",
