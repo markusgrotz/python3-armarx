@@ -3,6 +3,8 @@ import typing as ty
 from armarx_core import ice_manager
 
 from armarx_memory.skills import dti, dto
+from armarx_memory.skills import skill_execution_request, skill_status_update
+
 
 
 class SkillManager:
@@ -14,6 +16,9 @@ class SkillManager:
             proxy: dti.SkillManagerInterfacePrx = None,
     ):
         self.proxy = proxy
+
+        self.skill_execution_request_conv = skill_execution_request.SkillExecutionRequestConv()
+        self.skill_status_update_conv = skill_status_update.SkillStatusUpdateConv()
 
     @classmethod
     def wait_for_manager(cls, name=DEFAULT_ICE_OBJECT_NAME) -> "SkillManager":
@@ -31,8 +36,13 @@ class SkillManager:
     def get_skill_execution_statuses(self) -> dto.SkillStatusUpdateMapMap:
         return self.proxy.getSkillExecutionStatuses()
 
-    def execute_skill(self, skill_execution_info: dto.SkillExecutionRequest) -> dto.SkillStatusUpdate:
-        return self.proxy.executeSkill(skillExecutionInfo=skill_execution_info)
+    def execute_skill(
+            self,
+            request: ty.Union[skill_execution_request.SkillExecutionRequest, dto.SkillExecutionRequest],
+    ) -> skill_status_update.SkillStatusUpdate:
+        request = self.skill_execution_request_conv.to_ice(request)
+        update: dto.SkillStatusUpdate = self.proxy.executeSkill(skillExecutionInfo=request)
+        return self.skill_status_update_conv.from_ice(update)
 
     def abort_skill(self, provider_name: str, skill_name: str) -> None:
         return self.proxy.abortSkill(providerName=provider_name, skillName=skill_name)
