@@ -7,6 +7,7 @@ Please note that the numpy array's data type must be np.float32
 
 import numpy as np
 import transforms3d as tf3d
+import typing as ty
 
 from armarx import slice_loader
 
@@ -58,20 +59,14 @@ def pose2mat(pose: FramedPoseBase) -> np.ndarray:
     return transform_mat
 
 
-def convert_position_to_global(f: FramedPositionBase) -> np.ndarray:
+def convert_position_to_global(
+        f: FramedPositionBase,
+        robot_state_component: ty.Optional[RobotStateComponentInterfacePrx] = None,
+) -> np.ndarray:
     pose = FramedPoseBase(
         position=f, orientation=FramedOrientationBase(), frame=f.frame, agent=f.agent
     )
-    return convert_pose_to_global(pose)
-
-
-def convert_mat_to_global(pose: np.ndarray, frame: str) -> np.ndarray:
-    robot_state = RobotStateComponentInterfacePrx.get_proxy()
-    current_robot_state = robot_state.getSynchronizedRobot()
-    robot_pose = current_robot_state.getGlobalPose()
-    robot_node = current_robot_state.getRobotNode(frame).getPoseInRootFrame()
-    transform_robot_node_to_root = pose2mat(robot_node)
-    transform_root_to_global = pose2mat(robot_pose)
+    return convert_pose_to_global(pose, robot_state_component=robot_state_component)
 
 
 def inv(pose: np.ndarray) -> np.ndarray:
@@ -84,15 +79,20 @@ def inv(pose: np.ndarray) -> np.ndarray:
     return inv_pose
 
 
-def robot_state(timestamp: int = None):
+def robot_state(
+        timestamp: int = None,
+        robot_state_component: ty.Optional[RobotStateComponentInterfacePrx] = None,
+):
     """
     Convenience method to get the robot state. If not timestamp is given return
     the current state
     """
-    robot_state = RobotStateComponentInterfacePrx.get_proxy()
+    if robot_state_component is None:
+        robot_state_component = RobotStateComponentInterfacePrx.get_proxy()
+
     if timestamp:
-        return robot_state.getRobotSnapshotAtTimestamp(timestamp)
-    return robot_state.getSynchronizedRobot()
+        return robot_state_component.getRobotSnapshotAtTimestamp(timestamp)
+    return robot_state_component.getSynchronizedRobot()
 
 
 def convert_mat_to_robot_node(
@@ -110,9 +110,10 @@ def convert_mat_to_robot_node(
 
 
 def convert_mat_to_global(
-    pose: np.ndarray, frame: str, timestamp: int = None
+        pose: np.ndarray, frame: str, timestamp: int = None,
+        robot_state_component: ty.Optional[RobotStateComponentInterfacePrx] = None,
 ) -> np.ndarray:
-    current_robot_state = robot_state(timestamp)
+    current_robot_state = robot_state(timestamp, robot_state_component=robot_state_component)
     robot_node = current_robot_state.getRobotNode(frame)
     robot_node_pose = pose2mat(robot_node.getGlobalPose())
     return np.dot(robot_node_pose, pose)
@@ -131,7 +132,10 @@ def convert_mat_to_root(
         return np.dot(transform_robot_node_to_root, pose)
 
 
-def convert_pose_to_global(f: FramedPoseBase) -> np.ndarray:
+def convert_pose_to_global(
+        f: FramedPoseBase,
+        robot_state_component: ty.Optional[RobotStateComponentInterfacePrx] = None,
+) -> np.ndarray:
     """
     Converts a armarx.FramedPoseBase to a numpy array in the global coordinate
     system
@@ -140,7 +144,7 @@ def convert_pose_to_global(f: FramedPoseBase) -> np.ndarray:
     transform = pose2mat(f)
     if f.frame == "Global" or f.frame == "armarx::Global":
         return transform
-    return convert_mat_to_global(transform, f.frame)
+    return convert_mat_to_global(transform, f.frame, robot_state_component=robot_state_component)
 
 
 def convert_pose_to_root(f: FramedPoseBase) -> np.ndarray:
