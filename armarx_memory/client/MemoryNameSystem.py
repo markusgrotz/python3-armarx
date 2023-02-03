@@ -65,7 +65,7 @@ class MemoryNameSystem:
         )
 
         if logger is not None:
-            logger.info("Done.")
+            logger.info("Connected to Memory Name System.")
 
         return MemoryNameSystem(mns_proxy, **kwargs)
 
