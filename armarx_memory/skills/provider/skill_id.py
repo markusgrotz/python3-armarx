@@ -1,7 +1,6 @@
 import dataclasses as dc
-import typing as ty
 
-from armarx_memory.skills import dto
+from armarx_memory.skills.provider import dto
 
 from armarx_memory.ice_conv.ice_converter import IceConverter
 

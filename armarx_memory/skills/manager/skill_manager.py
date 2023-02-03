@@ -2,8 +2,11 @@ import typing as ty
 
 from armarx_core import ice_manager
 
-from armarx_memory.skills import dti, dto
-from armarx_memory.skills import skill_execution_request, skill_status_update
+from armarx_memory.skills.manager import dti, dto
+from armarx_memory.skills.manager import skill_execution_request
+
+from armarx_memory.skills.provider import dto as provider_dto
+from armarx_memory.skills.provider import skill_status_update
 
 
 
@@ -41,7 +44,7 @@ class SkillManager:
             request: ty.Union[skill_execution_request.SkillExecutionRequest, dto.SkillExecutionRequest],
     ) -> skill_status_update.SkillStatusUpdate:
         request = self.skill_execution_request_conv.to_ice(request)
-        update: dto.SkillStatusUpdate = self.proxy.executeSkill(skillExecutionInfo=request)
+        update: provider_dto.SkillStatusUpdate = self.proxy.executeSkill(skillExecutionInfo=request)
         return self.skill_status_update_conv.from_ice(update)
 
     def abort_skill(self, provider_name: str, skill_name: str) -> None:

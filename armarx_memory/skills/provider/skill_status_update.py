@@ -5,8 +5,9 @@ import typing as ty
 
 from armarx_memory.ice_conv.ice_converter import IceConverter
 from armarx_memory.aron.conversion import pythonic_from_to_aron_ice as aron_conv
-from armarx_memory.skills import dto, dti
-from armarx_memory.skills.skill_id import SkillID, SkillIdConv
+from armarx_memory.skills.provider import dto
+from armarx_memory.skills.provider.skill_id import SkillID, SkillIdConv
+from armarx_memory.skills.callback import dti as callback_dti
 
 
 class ExecutionStatus(enum.Enum):
@@ -49,7 +50,7 @@ class SkillStatusUpdateHeader:
     skill_id: SkillID
     executor_name: str
     used_params: ty.Dict[str, ty.Any]
-    used_callback_interface: dti.SkillProviderCallbackInterfacePrx
+    used_callback_interface: callback_dti.SkillProviderCallbackInterfacePrx
     status: ExecutionStatus
 
 
