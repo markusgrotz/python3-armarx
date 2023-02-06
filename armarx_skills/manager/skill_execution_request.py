@@ -1,12 +1,12 @@
 import dataclasses as dc
 import typing as ty
 
-from armarx_memory.skills.manager import dto
+from armarx_skills.manager import dto
 
 from armarx_memory.ice_conv.ice_converter import IceConverter
 from armarx_memory.aron.conversion import pythonic_from_to_aron_ice
 
-from armarx_memory.skills.provider.skill_id import SkillID, SkillIdConv
+from armarx_skills.provider.skill_id import SkillID, SkillIdConv
 
 
 @dc.dataclass

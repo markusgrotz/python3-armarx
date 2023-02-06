@@ -1,6 +1,6 @@
 import dataclasses as dc
 
-from armarx_memory.skills.provider import dto
+from armarx_skills.provider import dto
 
 from armarx_memory.ice_conv.ice_converter import IceConverter
 

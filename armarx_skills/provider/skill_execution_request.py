@@ -1,9 +1,9 @@
 import dataclasses as dc
 import typing as ty
 
-from armarx_memory.skills.callback import dti as callback_dti
-from armarx_memory.skills.provider import dti as provider_dto
-from armarx_memory.skills.provider import dto as provider_dto
+from armarx_skills.callback import dti as callback_dti
+from armarx_skills.provider import dti as provider_dto
+from armarx_skills.provider import dto as provider_dto
 
 from armarx_memory.ice_conv.ice_converter import IceConverter
 from armarx_memory.aron.conversion import pythonic_from_to_aron_ice

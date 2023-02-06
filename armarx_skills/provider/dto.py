@@ -1,6 +1,6 @@
 import typing as ty
 
-from armarx_memory.skills.slice import load_slice
+from armarx_skills.slice import load_slice
 
 load_slice()
 

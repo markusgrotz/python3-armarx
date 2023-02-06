@@ -2,11 +2,11 @@ import typing as ty
 
 from armarx_core import ice_manager
 
-from armarx_memory.skills.manager import dti, dto
-from armarx_memory.skills.manager import skill_execution_request
+from armarx_skills.manager import dti, dto
+from armarx_skills.manager import skill_execution_request
 
-from armarx_memory.skills.provider import dto as provider_dto
-from armarx_memory.skills.provider import skill_status_update
+from armarx_skills.provider import dto as provider_dto
+from armarx_skills.provider import skill_status_update
 
 
 
