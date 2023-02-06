@@ -1,6 +1,7 @@
 import socket
 import time
 
+import armarx
 from armarx.ice_conv.ice_converter import IceConverter
 from armarx_core import slice_loader
 

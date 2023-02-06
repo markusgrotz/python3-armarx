@@ -18,7 +18,7 @@ def _load_config() -> configparser.ConfigParser:
     """
     config_file = os.path.join(_get_config_dir(), "armarx.ini")
     if not os.path.exists(config_file):
-        raise FileNotFoundError("ArmarX config file does not exists.")
+        raise FileNotFoundError(f"ArmarX config file '{config_file}' does not exists.")
     config_parser = configparser.ConfigParser()
     config_parser.read(config_file)
     return config_parser
