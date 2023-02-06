@@ -52,5 +52,8 @@ class SkillManager:
 
 
 if __name__ == '__main__':
-    manager = SkillManager.wait_for_manager()
-    manager.get_skill_execution_statuses()
+    def test_main():
+        manager = SkillManager.wait_for_manager()
+        manager.get_skill_execution_statuses()
+
+    test_main()
