@@ -1,1 +1,5 @@
-from .rescale import rescale
+import warnings
+
+warnings.warn(
+    "Use 'armarx_core.math' instead.", DeprecationWarning
+)
