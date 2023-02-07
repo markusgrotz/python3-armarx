@@ -1,4 +1,4 @@
-from typing import List, Union, Tuple
+from typing import List, Union
 
 
 from armarx.viz.data import Element

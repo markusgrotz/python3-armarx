@@ -1,10 +1,9 @@
 import abc
 
 import numpy as np
+import typing as ty
 
-from typing import List, Tuple, Union, Callable, Any, Optional
-
-from armarx_core.math import rescale
+from armarx_core.math.rescale import rescale
 
 
 class SizeModel(abc.ABC):
@@ -22,7 +21,7 @@ class SizeModel(abc.ABC):
         self,
         voxel_size: np.ndarray,
         c: Context,
-    ) -> Optional[np.ndarray]:
+    ) -> ty.Optional[np.ndarray]:
         pass
 
     def set_value_limits(

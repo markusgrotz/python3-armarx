@@ -1,9 +1,5 @@
-from typing import List, Union, Tuple, Any
-
 import numpy as np
-
-from armarx.viz.data import Element
-
+import typing as ty
 
 import armarx.viz as viz
 
@@ -80,7 +76,7 @@ class Mesh(Element):
         return self._faces
 
     @faces.setter
-    def faces(self, value: Union[np.ndarray, List[viz.data.Face]]):
+    def faces(self, value: ty.Union[np.ndarray, ty.List[viz.data.Face]]):
         value = self._to_array_checked(
             value, [(0,), (None, 6)], "mesh faces", dtype=int
         )

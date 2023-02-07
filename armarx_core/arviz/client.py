@@ -2,12 +2,11 @@ import logging
 
 from typing import List, Union
 
-from armarx import ice_manager
+from armarx_core import ice_manager
 
 from armarx_core.arviz.layer import Layer
 from armarx_core.arviz.stage import Stage
 from armarx_core.arviz.interaction_feedback import CommitResult
-from armarx.viz import StorageInterfacePrx
 import armarx.viz as viz
 
 logger = logging.getLogger(__name__)

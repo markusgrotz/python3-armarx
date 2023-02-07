@@ -1,4 +1,4 @@
-import armarx.arviz.load_slice
+import armarx.viz.data
 
 from armarx_core.ice_conversion.ice_converter import IceConverter
 from armarx_core.math.transform import Transform

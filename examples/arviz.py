@@ -5,7 +5,6 @@ import time
 import numpy as np
 import transforms3d as tf3d
 
-import armarx
 import armarx_core.arviz as viz
 
 
@@ -102,7 +101,7 @@ def fill_example_layer(layer: viz.Layer, time_sec):
     robot = viz.Robot(
         "robot",
         position=(500, 0, 0),
-        file=("Armar6RT", "Armar6RT/robotmodel/Armar6-SH/Armar6-SH.xml"),
+        file=("armar6_rt", "armar6_rt/robotmodel/Armar6-SH/Armar6-SH.xml"),
     )
     full_model = True
     if full_model:
