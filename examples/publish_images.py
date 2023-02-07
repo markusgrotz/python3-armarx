@@ -25,9 +25,9 @@ def main():
             random_images = np.random.randint(
                 0, 255, result_image_provider.data_dimensions, dtype=np.uint8
             )
-            time_provided = time.time() * 1000.0 * 1000.0
+            time_provided = int(time.time() * 1000.0 * 1000.0)
             time.sleep(args.delay)
-            result_image_provider.update_image(random_images, time_provided)
+            result_image_provider.update_images(random_images, time_provided)
     except KeyboardInterrupt:
         logger.info("shutting down")
 
