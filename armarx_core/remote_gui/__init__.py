@@ -1,10 +1,4 @@
-import warnings
-
-warnings.warn(
-    "Use 'armarx_core.remote_gui' instead.", DeprecationWarning
-)
-
-from armarx_core.remote_gui import (
+from .widgets import (
     Label,
     LineEdit,
     ComboBox,
@@ -21,8 +15,7 @@ from armarx_core.remote_gui import (
     GroupBox,
     VSpacer,
     HSpacer,
-
-    NdArrayWidget,
-
-    Client,
 )
+from .widgets.ndarray import NdArrayWidget
+
+from .client import Tab, Client
