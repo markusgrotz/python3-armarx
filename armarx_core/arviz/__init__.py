@@ -1,10 +1,4 @@
-import warnings
-
-warnings.warn(
-    "Use 'armarx_core.arviz' instead.", DeprecationWarning
-)
-
-from armarx_core.arviz import (
+from .elements import (
     Arrow,
     ArrowCircle,
     Box,
@@ -19,14 +13,12 @@ from armarx_core.arviz import (
     Sphere,
     Text,
     Mesh,
-
-    Layer,
-
-    Stage,
-
+)
+from .layer import Layer
+from .stage import Stage
+from .interaction_feedback import (
     InteractionFeedback,
     InteractionFeedbackType,
     CommitResult,
-
-    Client,
 )
+from .client import Client
