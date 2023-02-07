@@ -63,7 +63,7 @@ class ObjectPose(IceTwin):
         return self.local_oobb.to_aabb(self.object_pose_robot)
 
     def viz_oobb_robot(self, id: str, size_factor=1.0, **kwargs) -> "armarx.arviz.Box":
-        import armarx.arviz as viz
+        import armarx_core.arviz as viz
 
         return viz.Box(
             id,

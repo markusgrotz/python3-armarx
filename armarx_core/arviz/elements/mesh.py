@@ -7,7 +7,7 @@ from armarx.viz.data import Element
 
 import armarx.viz as viz
 
-from armarx.arviz import conversions as conv
+from armarx_core.arviz import conversions as conv
 from .Element import Element
 
 

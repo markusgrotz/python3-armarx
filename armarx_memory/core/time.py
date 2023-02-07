@@ -2,7 +2,7 @@ import socket
 import time
 
 import armarx
-from armarx.ice_conv.ice_converter import IceConverter
+from armarx_core.ice_conversion.ice_converter import IceConverter
 from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("ArmarXCore", "core/time.ice")

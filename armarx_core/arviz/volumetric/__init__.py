@@ -2,9 +2,9 @@ import numpy as np
 
 from typing import List, Tuple, Union, Callable, Any
 
-from armarx.arviz.elements import Box
-from armarx.arviz.layer import Layer
-from armarx.arviz.volumetric.size_models import SizeModel, FixedScaleSizeModel
+from armarx_core.arviz.elements import Box
+from armarx_core.arviz.layer import Layer
+from armarx_core.arviz.volumetric.size_models import SizeModel, FixedScaleSizeModel
 
 
 def get_grid_coordinates(

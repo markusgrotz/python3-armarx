@@ -5,8 +5,8 @@ import numpy as np
 
 
 import armarx.viz as viz
-from armarx.arviz import conversions
-from armarx.arviz.elements.Element import Element
+from armarx_core.arviz import conversions
+from armarx_core.arviz.elements.Element import Element
 
 
 def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:

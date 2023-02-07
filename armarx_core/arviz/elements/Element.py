@@ -9,9 +9,9 @@ slice_loader.load_armarx_slice("RobotAPI", "ArViz.ice")
 
 from armarx.viz.data import Element
 
-from armarx.arviz import conversions
+from armarx_core.arviz import conversions
 
-from armarx.math.transform import Transform
+from armarx_core.math.transform import Transform
 from armarx import Vector3f
 
 

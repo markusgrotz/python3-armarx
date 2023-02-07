@@ -1,7 +1,7 @@
 import armarx.arviz.load_slice
 
-from armarx.ice_conv.ice_converter import IceConverter
-from armarx.math.transform import Transform
+from armarx_core.ice_conversion.ice_converter import IceConverter
+from armarx_core.math.transform import Transform
 
 
 class GlobalPoseConv(IceConverter):

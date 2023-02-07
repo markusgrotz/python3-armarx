@@ -4,7 +4,7 @@ import numpy as np
 
 from typing import List, Tuple, Union, Callable, Any, Optional
 
-from armarx.math import rescale
+from armarx_core.math import rescale
 
 
 class SizeModel(abc.ABC):

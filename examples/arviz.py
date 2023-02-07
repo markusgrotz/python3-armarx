@@ -6,7 +6,7 @@ import numpy as np
 import transforms3d as tf3d
 
 import armarx
-import armarx.arviz as viz
+import armarx_core.arviz as viz
 
 
 def fill_test_layer(layer: viz.Layer, time_sec):

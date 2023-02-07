@@ -4,9 +4,9 @@ from typing import List, Union
 
 from armarx import ice_manager
 
-from armarx.arviz.layer import Layer
-from armarx.arviz.stage import Stage
-from armarx.arviz.interaction_feedback import CommitResult
+from armarx_core.arviz.layer import Layer
+from armarx_core.arviz.stage import Stage
+from armarx_core.arviz.interaction_feedback import CommitResult
 from armarx.viz import StorageInterfacePrx
 import armarx.viz as viz
 

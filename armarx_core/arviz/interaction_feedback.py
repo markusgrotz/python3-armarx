@@ -2,7 +2,7 @@ import enum
 import numpy as np
 
 from typing import List
-from armarx.math.transform import Transform
+from armarx_core.math.transform import Transform
 
 
 from armarx import Vector3f
@@ -81,7 +81,7 @@ class InteractionFeedback:
     @property
     def transformation(self) -> Transform:
 
-        from armarx.arviz.conv import GlobalPoseConv
+        from armarx_core.arviz.conv import GlobalPoseConv
 
         global_pose = self._data.transformation
         return self.global_pose_conv.from_ice(global_pose)
