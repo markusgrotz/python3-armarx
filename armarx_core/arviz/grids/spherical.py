@@ -83,7 +83,7 @@ def vis_sphere_mesh(
         The sphere mesh.
     """
     from armarx_core.math import spherical
-    from armarx import arviz as viz
+    from armarx_core import arviz as viz
 
     if grid_spherical is None:
         grid_spherical = make_spherical_grid(num=num, radius=radius)

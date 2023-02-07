@@ -21,11 +21,10 @@ Widget classes:
 """
 from typing import List, Tuple
 
-from armarx import RemoteGuiInterfacePrx
+from armarx_core.remote_gui.ice_wrapper import make_value_variant
+from armarx_core.remote_gui.ice_wrapper import make_widget_state
+from armarx_core.remote_gui.ice_wrapper import TabProxy
 from armarx import RemoteGui as rg
-from armarx.remote_gui.ice_wrapper import make_value_variant
-from armarx.remote_gui.ice_wrapper import make_widget_state
-from armarx.remote_gui.ice_wrapper import TabProxy
 
 
 class Widget:

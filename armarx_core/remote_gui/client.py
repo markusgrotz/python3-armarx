@@ -9,8 +9,8 @@ Classes:
 from armarx import RemoteGuiInterfacePrx
 from armarx import RemoteGui as rg
 
-from armarx.remote_gui.ice_wrapper import TabProxy
-from armarx.remote_gui.widgets import Widget
+from armarx_core.remote_gui.ice_wrapper import TabProxy
+from armarx_core.remote_gui.widgets import Widget
 
 from typing import Callable, List, Optional
 import abc

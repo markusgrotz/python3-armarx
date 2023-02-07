@@ -2,7 +2,7 @@ import numpy as np
 
 from typing import List, Tuple, Union
 
-from armarx import remote_gui as rg
+from armarx_core import remote_gui as rg
 
 
 class NdArrayWidget:
