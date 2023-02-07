@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 from armarx.ice_manager import is_alive
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 from visionx.pointcloud_receiver import PointCloudReceiver
 from visionx.pointcloud_provider import PointCloudProvider, dtype_point_color_xyz
 

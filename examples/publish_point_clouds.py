@@ -5,7 +5,7 @@ import time
 import math
 
 from armarx.ice_manager import is_alive
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 
 from armarx_vision.pointclouds import rgb_to_uint32
 from armarx_vision.pointcloud_provider import PointCloudProvider

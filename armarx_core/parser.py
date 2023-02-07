@@ -15,7 +15,7 @@ class ArmarXArgumentParser(ArgumentParser):
     ..highlight:: python
     ..codeblock:: python
 
-        from armarx.parser import ArmarXArgumentParser as ArgumentParser
+        from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 
         parser = ArgumentParser('test')
         parser.add_argument(...)

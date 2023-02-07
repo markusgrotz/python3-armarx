@@ -7,7 +7,7 @@ import numpy as np
 from armarx_vision.image_provider import ImageProvider
 
 from armarx_core.ice_manager import is_alive
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 
 logger = logging.getLogger(__name__)
 

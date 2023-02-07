@@ -2,7 +2,7 @@
 
 import logging
 
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 from armarx_vision.image_processor import ImageProcessor
 
 import numpy as np
