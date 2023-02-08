@@ -97,6 +97,9 @@ def pythonic_from_aron_ice(
     if isinstance(data, AronIceTypes.NDArray):
         return ndarray_from_aron(data)
 
+    if isinstance(data, AronIceTypes.Long):
+        return np.int64(data.value)
+
     try:
         return data.value
     except AttributeError:
