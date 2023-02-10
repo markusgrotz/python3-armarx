@@ -80,7 +80,7 @@ class ImageProcessor(ImageProcessorInterface, ABC):
         while is_alive():
             with self.cv:
                 self.cv.wait_for(lambda: self.image_available)
-
+                self.image_available = False
                 input_images, info = self._get_images_and_info()
 
                 if hasattr(self, "process_image") and callable(self.process_image):

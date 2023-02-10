@@ -12,3 +12,4 @@ __pycache__
 .venv
 
 armarx_dev.egg-info/
+docs/_build/

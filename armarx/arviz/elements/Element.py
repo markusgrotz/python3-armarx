@@ -62,7 +62,7 @@ class Element:
         if isinstance(value, Transform):
             value = value.transform
 
-        value = self._to_array_checked(value, (4, 4), "pose matrix", dtype=np.float)
+        value = self._to_array_checked(value, (4, 4), "pose matrix", dtype=float)
         self._pose = value
 
     @property
@@ -72,7 +72,7 @@ class Element:
     @position.setter
     def position(self, value):
         value = self._to_array_checked(
-            value, [(3,), (3, 1)], "position vector", dtype=np.float
+            value, [(3,), (3, 1)], "position vector", dtype=float
         )
         self._pose[:3, 3] = value
 
@@ -99,7 +99,7 @@ class Element:
     def ori_mat(self, value):
         """Set the orientation as 3x3 rotation matrix."""
         value = self._to_array_checked(
-            value, (3, 3), "orientation matrix", dtype=np.float
+            value, (3, 3), "orientation matrix", dtype=float
         )
         self._pose[:3, :3] = value
 
@@ -291,7 +291,7 @@ class Element:
         return np.all(
             np.logical_or(
                 np.array(shape) == shape_pattern,
-                np.isnan(np.array(shape_pattern, dtype=np.float)),
+                np.isnan(np.array(shape_pattern, dtype=float)),
             )
         )
 
