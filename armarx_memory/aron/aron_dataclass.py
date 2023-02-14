@@ -1,9 +1,14 @@
 import dataclasses as dc
 import typing as ty
 
+from armarx_memory.aron.conversion.options import ConversionOptions
+
 
 @dc.dataclass
 class AronDataclass:
+    # Make ConversionOptions available to subclasses via cls.ConversionOptions.
+    ConversionOptions = ConversionOptions
+
     def to_dict(self) -> ty.Dict[str, ty.Any]:
         from armarx_memory.aron.conversion.dataclass_from_to_pythonic import (
             dataclass_to_dict,

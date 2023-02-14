@@ -79,7 +79,7 @@ class SpecialWriterBase(SpecialClientBase):
 
         if data is None:
             aron_class = self._get_aron_class()
-            data = [aron_class(**data_kwargs).to_aron()]
+            data = [aron_class(**data_kwargs).to_aron_ice()]
         if not isinstance(data, list):
             data = [data]
         for i in range(len(data)):
