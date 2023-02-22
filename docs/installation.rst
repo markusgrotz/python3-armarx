@@ -1,22 +1,24 @@
 Installation
 ============
 
-You may install the ArmarX Python either as a pypi package, or from source. When installing from source, which guarantees you to use the most up-to-date version of the code and enables you to contribute to the development of the ArmarX Python code itself, you can choose between a manual installation and an automated installation via axii.
+You may install the ArmarX Python bindings either as a pypi package, or from source. 
 
-Option 1: Installation via PyPi Packages:
+Installing from source guarantees to use the most up-to-date version of the code and enables you to contribute to the development of the ArmarX Python bindings itself. For installation from source, you can choose between a manual installation and an automated installation via Axii.
+
+Option 1: Installation via PyPi Packages
 -----------------------------------------
 
 The ArmarX Python bindings are available as packages.
-Just grab the latest version from `pypi.org <https://pypi.org/armarx>`__ .
+Just grab the latest version from `pypi.org <https://pypi.org/project/armarx/>`__ .
 
-With poetry 
+With Poetry:
 
 .. highlight:: bash
 .. code-block:: bash
 
     poetry add armarx
 
-or with pip
+or with pip:
 
 .. highlight:: bash
 .. code-block:: bash
@@ -24,9 +26,14 @@ or with pip
     pip install armarx
 
 
-Alternatatively, you can create a project template with the `armarx-package`
-tool, i.e. `armarx-package add python <your project name>`.  Then you can use
-`poetry install` to setup a virtual env.
+Alternatively, you can create a project template with the `armarx-package` tool:
+
+.. highlight:: bash
+.. code-block:: bash
+
+    armarx-package add python <your python project name>
+
+Then you can use `poetry install` or Axii to setup a virtual environment.
 
 
 Since the `zeroc-ice` package requires a rebuild you can grab already precompiled packages
@@ -53,7 +60,7 @@ If you are using poetry then add the the following lines to `pyproject.toml`
 Option 2: Installation From Source, Manually
 --------------------------------------------
 
-Clone the ArmarX Python repository somewhere. If you are in an active axii workspace, executing `echo $armarx__python3_armarx__PATH` might return a path that indicates where that repository is already cloned on your computer.
+Clone the repository of the ArmarX Python bindings to a location of your choice. If you an ArmarX workspace with the module `armarx/python3-armarx` is active, executing `echo $armarx__python3_armarx__PATH` should return a path to the cloned repository in the workspace.
 
 Within the base directory of your ArmarX project, run
 
@@ -69,14 +76,14 @@ Still being in `python/subfolder-name/`, create a virtual environment by running
 .. highlight:: bash
 .. code-block:: bash
 
-    virtualenv venv
+    python3 -m venv .venv
 
 Update pip by running
 
 .. highlight:: bash
 .. code-block:: bash
 
-    source venv/bin/activate
+    source .venv/bin/activate
     pip install --upgrade pip
 
 Now you can install the dependencies of your python project, by running
@@ -84,14 +91,16 @@ Now you can install the dependencies of your python project, by running
 .. highlight:: bash
 .. code-block:: bash
 
-    pip install pyproject.toml
+    pip install -e .
     pip install -e path/to/the/armarx-python/repository
+    # With an active ArmarX workspace with the `armarx/python3-armarx` module:
+    pip install -e $armarx__python3_armarx__PATH
 
 
-Option 3: Installation From Source, via axii
+Option 3: Installation From Source, via Axii
 --------------------------------------------
 
-Create an axii module for your project. Below, you can find a short example. For an extensive documentation, visit https://git.h2t.iar.kit.edu/sw/armarx/meta/axii/-/blob/main/docs/module_authors/README.md.
+Create an Axii module for your project. Below, you can find a short example. For an extensive documentation, visit https://git.h2t.iar.kit.edu/sw/armarx/meta/axii/-/blob/main/docs/module_authors/README.md.
 
 .. highlight:: json
 .. code-block:: json
@@ -106,7 +115,7 @@ Create an axii module for your project. Below, you can find a short example. For
     
       "update": {
         "git": {
-      "h2t_gitlab_slug": "path-to-your-project"
+          "h2t_gitlab_slug": "path-to-your-project"
         }
       },
     
@@ -135,11 +144,11 @@ Create an axii module for your project. Below, you can find a short example. For
     
         "armarx/meta/compiler": {},
         "armarx/python3-armarx": {},
-        "optionally/add/further/packages/just/as/armarx/VisionX": {}
+        "optionally/add/further/packages/such/as/armarx/VisionX": {}
       }
     }
 
-Add the axii package to your workspace and upgrade your workspace as usual (see https://git.h2t.iar.kit.edu/sw/armarx/meta/axii). This will automatically create the virtual environment and setup ArmarX Python.
+Add the Axii module to your workspace and upgrade your workspace as usual (see https://git.h2t.iar.kit.edu/sw/armarx/meta/axii). This will automatically create the virtual environment and install the ArmarX Python bindings.
 
 
 
