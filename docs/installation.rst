@@ -1,7 +1,7 @@
 Installation
 ============
 
-You may install the ArmarX Python either as pypi packages, or from source via axii.
+You may install the ArmarX Python either as a pypi package, or from source. When installing from source, which guarantees you to use the most up-to-date version of the code and enables you to contribute to the development of the ArmarX Python code itself, you can choose between a manual installation and an automated installation via axii.
 
 Option 1: Installation via PyPi Packages:
 -----------------------------------------
@@ -49,8 +49,47 @@ If you are using poetry then add the the following lines to `pyproject.toml`
     name = "h2t"
     url = "https://pypi.humanoids.kit.edu/simple/"
 
-Option 2: Installation via axii
--------------------------------
+
+Option 2: Installation From Source, Manually
+--------------------------------------------
+
+Clone the ArmarX Python repository somewhere. If you are in an active axii workspace, executing `echo $armarx__python3_armarx__PATH` might return a path that indicates where that repository is already cloned on your computer.
+
+Within the base directory of your ArmarX project, run
+
+.. highlight:: bash
+.. code-block:: bash
+
+    armarx-package add python subfolder-name
+
+This creates a pyproject.toml at `python/subfolder-name/`, from which you can delete the armarx-dev dependency and the pypi.humanoids.kit.edu repository.
+
+Still being in `python/subfolder-name/`, create a virtual environment by running
+
+.. highlight:: bash
+.. code-block:: bash
+
+    virtualenv venv
+
+Update pip by running
+
+.. highlight:: bash
+.. code-block:: bash
+
+    source venv/bin/activate
+    pip install --upgrade pip
+
+Now you can install the dependencies of your python project, by running
+
+.. highlight:: bash
+.. code-block:: bash
+
+    pip install pyproject.toml
+    pip install -e path/to/the/armarx-python/repository
+
+
+Option 3: Installation From Source, via axii
+--------------------------------------------
 
 Create an axii module for your project. Below, you can find a short example. For an extensive documentation, visit https://git.h2t.iar.kit.edu/sw/armarx/meta/axii/-/blob/main/docs/module_authors/README.md.
 
@@ -100,6 +139,8 @@ Create an axii module for your project. Below, you can find a short example. For
     }
 
 Add the axii package to your workspace and upgrade your workspace as usual (see https://git.h2t.iar.kit.edu/sw/armarx/meta/axii). This will automatically create the virtual environment and setup ArmarX Python.
+
+
 
 Configuration
 -------------
