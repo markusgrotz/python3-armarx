@@ -95,6 +95,7 @@ Create an axii module for your project. Below, you can find a short example. For
 
 .. highlight:: json
 .. code-block:: json
+
     {
       "general": {
         "url": "https://git.h2t.iar.kit.edu/path-to-your-project",
