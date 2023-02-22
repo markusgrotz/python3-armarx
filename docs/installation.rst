@@ -60,7 +60,7 @@ If you are using poetry then add the the following lines to `pyproject.toml`
 Option 2: Installation From Source, Manually
 --------------------------------------------
 
-Clone the repository of the ArmarX Python bindings to a location of your choice. If you an ArmarX workspace with the module `armarx/python3-armarx` is active, executing `echo $armarx__python3_armarx__PATH` should return a path to the cloned repository in the workspace.
+Clone the repository of the ArmarX Python bindings to a location of your choice. If you have an ArmarX workspace with the module `armarx/python3-armarx` being active, executing `echo $armarx__python3_armarx__PATH` should return a path to the cloned repository in the workspace.
 
 Within the base directory of your ArmarX project, run
 
@@ -93,7 +93,7 @@ Now you can install the dependencies of your python project, by running
 
     pip install -e .
     pip install -e path/to/the/armarx-python/repository
-    # With an active ArmarX workspace with the `armarx/python3-armarx` module:
+    # Alternatively, with an active ArmarX workspace with the `armarx/python3-armarx` module:
     pip install -e $armarx__python3_armarx__PATH
 
 
