@@ -1,3 +1,5 @@
+import logging
+
 import dataclasses as dc
 import typing as ty
 
@@ -32,12 +34,16 @@ class AronDataclass:
         return dataclass_from_dict(cls, data)
 
     @classmethod
-    def from_aron_ice(cls, data: "armarx.aron.data.dto.Dict") -> "AronDataclass":
+    def from_aron_ice(
+            cls,
+            data: "armarx.aron.data.dto.Dict",
+            logger: logging.Logger = None,
+    ) -> "AronDataclass":
         from armarx_memory.aron.conversion.dataclass_from_to_aron_ice import (
             dataclass_from_aron_ice,
         )
 
-        return dataclass_from_aron_ice(cls, data, options=cls._get_conversion_options())
+        return dataclass_from_aron_ice(cls, data, options=cls._get_conversion_options(), logger=logger)
 
     @classmethod
     def _get_conversion_options(cls) -> ty.Optional["ConversionOptions"]:
