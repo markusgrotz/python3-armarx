@@ -9,27 +9,27 @@ import numpy as np
 import transforms3d as tf3d
 import typing as ty
 
-from armarx_core import slice_loader
+from armarx import slice_loader
 
 slice_loader.load_armarx_slice("ArmarXCore", "components/EmergencyStopInterface.ice")
 slice_loader.load_armarx_slice(
     "ArmarXCore", "components/SimpleStatechartExecutorInterface.ice"
 )
 
-from armarx_core import RobotStateComponentInterfacePrx
-from armarx_core import FramedPositionBase
-from armarx_core import FramedPoseBase
-from armarx_core import FramedOrientationBase
+from armarx import RobotStateComponentInterfacePrx
+from armarx import FramedPositionBase
+from armarx import FramedPoseBase
+from armarx import FramedOrientationBase
 
-from armarx_memory.ice_conv.RobotAPI import PoseBase
-from armarx_memory.ice_conv.RobotAPI.PoseBase import Vector3BaseConv
-from armarx_memory.ice_conv.RobotAPI.PoseBase import QuaternionBaseConv
+from armarx import PoseBase
+from armarx import Vector3Base
+from armarx import QuaternionBase
 
 
 def mat2pose(pose: np.ndarray, frame: str = None, agent: str = None) -> FramedPoseBase:
     q = tf3d.quaternions.mat2quat(pose[:3, :3])
-    q = QuaternionBaseConv(*q)
-    v = Vector3BaseConv(*pose[:3, 3])
+    q = QuaternionBase(*q)
+    v = Vector3Base(*pose[:3, 3])
     if not frame:
         return PoseBase(v, q)
     else:
