@@ -225,8 +225,9 @@ class MemoryID(ice_twin.IceTwin):
         self.timestamp_usec = date_time_conv.from_ice(ice.timestamp)
         self.instance_index = ice.instanceIndex
 
+
     @classmethod
-    def from_aron(cls, aron: "armarx.aron.data.dto.GenericData") -> "MemoryID":
+    def from_aron_ice(cls, aron: "armarx.aron.data.dto.GenericData") -> "MemoryID":
         from armarx_memory.aron.conversion import from_aron
 
         data = from_aron(aron)
@@ -239,7 +240,11 @@ class MemoryID(ice_twin.IceTwin):
         self.instance_index = data["instanceIndex"]
         return self
 
-    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
+    @classmethod
+    def from_aron(cls, aron: "armarx.aron.data.dto.GenericData") -> "MemoryID":
+        return cls.from_aron_ice(aron=aron)
+
+    def to_aron_ice(self) -> "armarx.aron.data.dto.GenericData":
         import numpy as np
         from armarx_memory.aron.conversion import to_aron
 
@@ -264,3 +269,7 @@ class MemoryID(ice_twin.IceTwin):
             "instanceIndex": self.instance_index,
         }
         return to_aron(data)
+
+
+    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
+        return self.to_aron_ice()
