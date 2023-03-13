@@ -12,17 +12,18 @@ import typing as ty
 from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("ArmarXCore", "components/EmergencyStopInterface.ice")
+slice_loader.load_armarx_slice("RobotAPI", "core/RobotState.ice")
 slice_loader.load_armarx_slice(
     "ArmarXCore", "components/SimpleStatechartExecutorInterface.ice"
 )
 
-from armarx_core import RobotStateComponentInterfacePrx
-from armarx_core import FramedPositionBase
-from armarx_core import FramedPoseBase
-from armarx_core import FramedOrientationBase
-from armarx_core import PoseBase
-from armarx_core import Vector3Base
-from armarx_core import QuaternionBase
+from armarx import RobotStateComponentInterfacePrx
+from armarx import FramedPositionBase
+from armarx import FramedPoseBase
+from armarx import FramedOrientationBase
+from armarx import PoseBase
+from armarx import Vector3Base
+from armarx import QuaternionBase
 
 
 def mat2pose(pose: np.ndarray, frame: str = None, agent: str = None) -> FramedPoseBase:
