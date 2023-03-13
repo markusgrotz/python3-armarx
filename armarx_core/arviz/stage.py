@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from .layer import Layer
+from armarx_core.arviz.layer import Layer
 
 
 class Stage:
