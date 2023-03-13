@@ -1,9 +1,7 @@
-import os
 import time
-
 import logging
-from typing import Any
-from typing import TypeVar
+
+import typing as ty
 
 from functools import lru_cache
 
@@ -23,7 +21,7 @@ from .name_helper import get_ice_default_name
 logger = logging.getLogger(__name__)
 
 
-T = TypeVar("T")
+T = ty.TypeVar("T")
 
 
 def register_object(
@@ -165,12 +163,13 @@ def wait_for_proxy(cls, proxy_name: str = None, timeout: int = 0):
             time.sleep(0.1)
 
 
-def get_proxy(cls: T, proxy_name: str = None) -> T:
+def get_proxy(cls: T, proxy_name: str = None, not_exist_ok=False) -> ty.Optional[T]:
     """
     Connects to a proxy.
 
     :param cls: the class definition of an ArmarXComponent
     :param proxy_name: name of the proxy
+    :param not_exist_ok: If true, do not print an error if the proxy does not exist.
     :type proxy_name: str
     :returns: the retrieved proxy
     :rtype: an instance of cls
@@ -181,7 +180,10 @@ def get_proxy(cls: T, proxy_name: str = None) -> T:
         proxy = freezer().communicator.stringToProxy(proxy_name)
         return cls.checkedCast(proxy)
     except NotRegisteredException:
-        logging.exception("Proxy %s does not exist", proxy_name)
+        if not not_exist_ok:
+            logging.exception("Proxy %s does not exist", proxy_name)
+
+        return None
 
 
 def get_admin():

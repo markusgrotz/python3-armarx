@@ -1,15 +1,14 @@
 import enum
+import logging
 
 import numpy as np
 import typing as ty
 
 from armarx_memory.aron.aron_ice_types import AronIceTypes, dtypes_dict
-from armarx_memory.aron.conversion.options import ConversionOptions
 
 
 def pythonic_to_aron_ice(
     value: ty.Any,
-    options: ty.Optional[ConversionOptions] = None,
 ) -> "armarx.aron.data.dto.GenericData":
     """
     Deeply converts objects/values of pythonic types to their Aron Ice counterparts.
@@ -37,14 +36,7 @@ def pythonic_to_aron_ice(
         return pythonic_to_aron_ice(value.value)  # int
 
     elif isinstance(value, dict):
-        a = AronIceTypes.dict(
-            {
-                (
-                    options.name_python_to_aron(k) if options is not None else k
-                ): pythonic_to_aron_ice(v)
-                for k, v in value.items()
-            }
-        )
+        a = AronIceTypes.dict({k: pythonic_to_aron_ice(v) for k, v in value.items()})
         return a
 
     elif isinstance(value, AronIceTypes.Dict):
@@ -63,23 +55,19 @@ def pythonic_to_aron_ice(
 
 def pythonic_from_aron_ice(
     data: "armarx.aron.data.dto.GenericData",
-    options: ty.Optional[ConversionOptions] = None,
+    logger: ty.Optional[logging.Logger] = None,
 ) -> ty.Any:
     """
     Deeply converts an Aron data Ice object to its pythonic representation.
 
+    :param logger:
     :param data: The Aron data Ice object.
     :param options: Conversion options.
     :return: The pythonic representation.
     """
 
     def handle_dict(elements):
-        return {
-            (
-                options.name_aron_to_python(k) if options is not None else k
-            ): pythonic_from_aron_ice(v)
-            for k, v in elements.items()
-        }
+        return {k: pythonic_from_aron_ice(v) for k, v in elements.items()}
 
     def handle_list(elements):
         return list(map(pythonic_from_aron_ice, elements))
