@@ -6,6 +6,9 @@ Classes:
  - Client: Remote GUI client.
 """
 
+# Import armarx core to enable loading modules from VariantInfo (kinda legacy but works pretty well)
+import armarx_core
+
 from armarx import RemoteGuiInterfacePrx
 from armarx import RemoteGui as rg
 
