@@ -1,6 +1,10 @@
 import copy
 import numpy as np
 
+
+#Necessary to load packages and modules from ice through the __init__.py of this module
+import armarx_core
+
 from armarx import RemoteGuiInterfacePrx
 from armarx import RemoteGui as rg
 
