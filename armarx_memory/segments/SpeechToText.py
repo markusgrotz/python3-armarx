@@ -59,12 +59,12 @@ class SpeechToTextWriter(SpeechToTextClientBase):
         )
 
     def commit(
-        self, entity_id: MemoryID, text: str, confidence: float, time_created_usec=None
+        self, entity_id: MemoryID, text: str, confidence: float, referenced_time_usec=None
     ):
         commit = Commit()
         commit.add(
             entity_id=entity_id,
-            time_created_usec=time_created_usec,
+            referenced_time_usec=referenced_time_usec,
             confidence=confidence,
             instances_data=[SpeechToText(text=text).to_aron()],
         )

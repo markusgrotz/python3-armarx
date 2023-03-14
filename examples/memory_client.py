@@ -57,7 +57,7 @@ def write(entity_id: mem.MemoryID, instances_data: List[Dict]):
     commit.add(
         memcl.EntityUpdate(
             entity_id=entity_id,
-            time_created_usec=now,
+            referenced_time_usec=now,
             instances_data=[aron_conv.to_aron(data) for data in instances_data],
         )
     )
