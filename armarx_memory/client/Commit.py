@@ -19,7 +19,7 @@ class EntityUpdate(ice_twin.IceTwin):
         self,
         entity_id: MemoryID = None,
         instances_data: List[AronIceTypes.Data] = None,
-        time_created_usec: Optional[int] = None,
+        time_referenced_usec: Optional[int] = None,
         confidence: Optional[float] = None,
         time_sent_usec: Optional[int] = None,
     ):
@@ -27,13 +27,13 @@ class EntityUpdate(ice_twin.IceTwin):
         self.entity_id: MemoryID = entity_id or MemoryID()
         self.instances_data = instances_data or []
 
-        self.time_created_usec = time_created_usec or time_usec()
+        self.time_referenced_usec = time_referenced_usec or time_usec()
 
         self.confidence = 1.0 if confidence is None else float(confidence)
         self.time_sent_usec: Optional[int] = time_sent_usec
 
-    def set_time_created_to_now(self):
-        self.time_created_usec = self.now()
+    def set_time_referenced_to_now(self):
+        self.time_referenced_usec = self.now()
 
     @staticmethod
     def now():
@@ -46,7 +46,7 @@ class EntityUpdate(ice_twin.IceTwin):
     def _set_to_ice(self, dto: armem.data.Commit):
         dto.entityID = self.entity_id.to_ice()
         dto.instancesData = self.instances_data
-        dto.timeCreated = date_time_conv.to_ice(self.time_created_usec)
+        dto.referencedTime = date_time_conv.to_ice(self.time_referenced_usec)
 
         dto.confidence = self.confidence
         dto.timeSent = date_time_conv.to_ice(
@@ -56,23 +56,23 @@ class EntityUpdate(ice_twin.IceTwin):
     def _set_from_ice(self, dto):
         self.entity_id.set_from_ice(dto.entityID)
         self.instances_data = dto.instancesData
-        self.time_created_usec = date_time_conv.from_ice(dto.timeCreated)
+        self.time_referenced_usec = date_time_conv.from_ice(dto.referencedTime)
 
         self.confidence = dto.confidence
         self.time_sent_usec = date_time_conv.from_ice(dto.timeSent)
 
         assert (
-            self.time_created_usec > 0
-        ), f"The time sent must be valid: {self.time_created_usec}"
+            self.time_referenced_usec > 0
+        ), f"The time sent must be valid: {self.time_referenced_usec}"
         assert (
             self.time_sent_usec > 0 or self.time_sent_usec is None
-        ), f"The time sent must be valid: {self.time_created_usec}"
+        ), f"The time sent must be valid: {self.time_sent_usec}"
 
     def __repr__(self):
         return "<{c} id={i} t={t} c={con:.3f} with {n} instance{ns}>".format(
             c=self.__class__.__name__,
             i=self.entity_id,
-            t=self.time_created_usec,
+            t=self.time_referenced_usec,
             n=len(self.instances_data),
             ns="" if len(self.instances_data) == 1 else "s",
             con=self.confidence,
