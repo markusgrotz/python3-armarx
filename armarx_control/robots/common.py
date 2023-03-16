@@ -368,6 +368,8 @@ def pose_to_vec(pose_matrix: np.ndarray):
 
 
 if __name__ == "__main__":
+    np.set_printoptions(suppress=True, precision=3)
+
     c = cfg.RobotConfig()
     # c.mono = cfg.MonocularCameraConfig()
     # c.stereo = cfg.StereoCameraConfig()
@@ -378,13 +380,13 @@ if __name__ == "__main__":
     c.platform = cfg.PlatformUnitConfig()
     robot = Robot(c)
 
-    # for i in range(100):
-    #     robot.set_platform_vel([0, -100, 0])
-    #     time.sleep(0.01)
-    # for i in range(100):
-    #     robot.set_platform_vel([0, 100, 0])
-    #     time.sleep(0.01)
-    # robot.set_platform_vel([0, 0, 0])
+    for i in range(100):
+        robot.set_platform_vel([0, -100, 0])
+        time.sleep(0.01)
+    for i in range(100):
+        robot.set_platform_vel([0, 100, 0])
+        time.sleep(0.01)
+    robot.set_platform_vel([0, 0, 0])
 
     control_type = "TSImpedance"  # "TSAdmittance"
     rns_left = "LeftArm"
@@ -394,73 +396,70 @@ if __name__ == "__main__":
     controller_name_l, ctrl_l, cfg_l = robot.create_controller("python", rns_left, control_type, "")
     controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, "")
 
-    init_target_pose_l = robot.get_prev_target(controller_name_l)
-    init_null_target_l = robot.get_prev_null_target(controller_name_l)
+    try:
+        init_target_pose_l = robot.get_prev_target(controller_name_l)
+        init_target_pose_r = robot.get_prev_target(controller_name_r)
+        init_null_target_l = robot.get_prev_null_target(controller_name_l)
+        init_null_target_r = robot.get_prev_null_target(controller_name_r)
 
-    ic(ctrl_l.getClassName())
-    ic(ctrl_r.isControllerActive())
+        json_file = get_armarx_package_data_dir("armarx_control") / "controller_config/NJointTaskspaceImpedanceController/default.json"
+        config = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
+        config.desired_pose = init_target_pose_l
+        config.desired_nullspace_joint_angles = init_null_target_l
+        # ic(config)
+        config_aron_ice = config.to_aron_ice()
+        # ic(config_aron_ice)
+        # ic(type(config_aron_ice))
 
-    json_file = get_armarx_package_data_dir("armarx_control") / "controller_config/NJointTaskspaceImpedanceController/default.json"
-    config = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
-    config.desired_pose = init_target_pose_l
-    config.desired_nullspace_joint_angles = init_null_target_l
-    # ic(config)
-    config_aron_ice = config.to_aron_ice()
-    # ic(config_aron_ice)
-    # ic(type(config_aron_ice))
+        # console.rule("set target")
+        # ctrl_l.updateConfig(config_aron_ice)
+        # console.rule("done")
 
-    console.rule("set target")
-    ctrl_l.updateConfig(config_aron_ice)
-    console.rule("done")
+        console.log("close hands")
+        robot.close_hand(cfg.Side.left, 1.0, 1.0)
+        robot.close_hand(cfg.Side.right, 1.0, 1.0)
+        time.sleep(1)
+        console.log("open hands")
+        robot.close_hand(cfg.Side.left, 0, 0)
+        robot.close_hand(cfg.Side.right, 0, 0)
+        time.sleep(1)
 
-    current_pose_left = robot.get_pose(tcp_left)
-    current_pose_right = robot.get_pose(tcp_right)
+        # target_left = copy.deepcopy(init_target_pose_l)
+        # target_right = copy.deepcopy(init_target_pose_r)
+        target_left = copy.deepcopy(robot.get_pose(tcp_left))
+        target_right = copy.deepcopy(robot.get_pose(tcp_right))
+        console.log(f"Initial target, left: \n{target_left} \nand right: \n{target_right}")
+        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \nand right: \n{robot.get_pose(tcp_right)}")
 
-    console.log("close hands")
-    robot.close_hand(cfg.Side.left, 1.0, 1.0)
-    robot.close_hand(cfg.Side.right, 1.0, 1.0)
-    time.sleep(2)
-    console.log("open hands")
-    robot.close_hand(cfg.Side.left, 0, 0)
-    robot.close_hand(cfg.Side.right, 0, 0)
-    time.sleep(2)
+        n_steps = 500
+        pose_z_range_left = np.linspace(target_left[2, 3], target_left[2, 3] + 300.0, n_steps)
+        pose_z_range_right = np.linspace(target_right[2, 3], target_right[2, 3] + 300.0, n_steps)
+        finger_range_left = np.linspace(0, 1, n_steps)
+        finger_range_right = np.linspace(0, 1, n_steps)
+        t = 0
+        dt = 0.01
+        for i in range(n_steps):
+            target_left[2, 3] = pose_z_range_left[i]
+            target_right[2, 3] = pose_z_range_right[i]
+            robot.close_hand(cfg.Side.left, finger_range_left[i], finger_range_left[i])
+            robot.close_hand(cfg.Side.right, finger_range_right[i], finger_range_right[i])
+            robot.set_control_target(controller_name_l, target_left)
+            robot.set_control_target(controller_name_r, target_right)
+            time.sleep(dt)
+            t += dt
 
-    initial_target_left = pose_to_vec(current_pose_left)
-    initial_target_right = pose_to_vec(current_pose_right)
-    console.log(f"Initial target {initial_target_left}")
-    console.log(f"Initial target {initial_target_right}")
+        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \n"
+                    f"and right: \n{robot.get_pose(tcp_right)}")
+        console.log(f"target pose : left: \n{robot.get_prev_target(controller_name_l)} \n"
+                    f"and right: \n{robot.get_prev_target(controller_name_r)}")
 
-    current_pose_left = robot.get_pose(tcp_left)
-    current_pose_right = robot.get_pose(tcp_right)
-    console.log(f"current_pose: {current_pose_left}")
-    console.log(f"current_pose: {current_pose_right}")
-
-    pose_left = copy.deepcopy(initial_target_left)
-    pose_right = copy.deepcopy(initial_target_right)
-    n_steps = 300
-    pose_z_range_left = np.linspace(initial_target_left[2], initial_target_left[2] + 300.0, n_steps)
-    pose_z_range_right = np.linspace(initial_target_right[2], initial_target_right[2] + 300.0, n_steps)
-    finger_range_left = np.linspace(0, 1, n_steps)
-    finger_range_right = np.linspace(0, 1, n_steps)
-    for i in range(n_steps):
-        pose_left[2] = pose_z_range_left[i]
-        pose_right[2] = pose_z_range_right[i]
-        robot.close_hand(cfg.Side.left, finger_range_left[i], finger_range_left[i])
-        robot.close_hand(cfg.Side.right, finger_range_right[i], finger_range_right[i])
-        robot.set_control_target(controller_name_l, control_type, pose_left)
-        robot.set_control_target(controller_name_r, control_type, pose_right)
-        time.sleep(0.006)
-
-    current_pose_left = robot.get_pose("Hand L TCP")
-    current_pose_right = robot.get_pose("Hand R TCP")
-    current_target_left = robot.get_prev_target(controller_name_l)
-    current_target_right = robot.get_prev_target(controller_name_r)
-    console.log(f"final current pose: {current_pose_left}")
-    console.log(f"final current pose: {current_pose_right}")
-    console.log(f"target pose : {current_target_left}")
-    console.log(f"target pose : {current_target_right}")
-    robot.close_hand(cfg.Side.left, 0, 0)
-    robot.close_hand(cfg.Side.right, 0, 0)
+    except RuntimeError as e:
+        console.log(f"error: {e}")
+    finally:
+        robot.close_hand(cfg.Side.left, 0, 0)
+        robot.close_hand(cfg.Side.right, 0, 0)
+        robot.delete_controller(controller_name_l)
+        robot.delete_controller(controller_name_r)
 
 
 
