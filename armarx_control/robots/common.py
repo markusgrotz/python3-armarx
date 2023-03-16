@@ -14,6 +14,8 @@ from armarx_control import console
 from armarx_control.utils.dataclass import load_dataclass
 from armarx_control.utils.load_slice import load_proxy, load_slice
 from armarx_vision.camera_utils import build_calibration_matrix
+from armarx_control.utils.cpy.load_armarx_package import get_armarx_package_data_dir
+from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
 
 load_slice("armarx_control", "../armarx/control/interface/ConfigurableNJointControllerInterface.ice")
 load_slice("RobotAPI", "interface/units/RobotUnit/RobotUnitInterface.ice")
@@ -45,7 +47,8 @@ class Robot:
     def __init__(self, config: Union[str, Path, Dict, cfg.RobotConfig]):
         self.c = config if isinstance(config, cfg.RobotConfig) else load_dataclass(cfg.RobotConfig, config)
 
-        self.controllers = {}  # type: Dict[str, Any]
+        self.controllers = {}       # type: Dict[str, Any]
+        self.controller_cfg = {}    # type: Dict[str, Any]
         self._load_mono_cam()
         self._load_stereo_cam()
         self._load_kinematic_unit()
@@ -193,10 +196,38 @@ class Robot:
             depth = cv2.resize(depth, resize_wh)
         return rgb, depth, info
 
-    def create_controller(self, control_name_prefix: str, robot_node_set: str, controller_type: str, config_filename: str):
+    def create_controller(
+            self,
+            control_name_prefix: str,
+            robot_node_set: str,
+            controller_type: str,
+            config_filename: str
+    ):
         controller_name = self.ctrl.createController(control_name_prefix, robot_node_set, controller_type, config_filename)
-        self.controllers[controller_name] = self.get_controller_by_name(controller_name, controller_type)
-        return controller_name, self.controllers[controller_name]
+        ctrl = self.get_controller_by_name(controller_name, controller_type)
+        self.controllers[controller_name] = ctrl
+
+        init_taskspace_target = self.get_prev_target(controller_name)
+        init_nullspace_target = self.get_prev_null_target(controller_name)
+
+        # TODO, this is here because we don't have the interface to retrieve the current controller configs yet
+        if controller_type == "TSImpedance":
+            json_file = get_armarx_package_data_dir(
+                "armarx_control") / f"controller_config/NJointTaskspaceImpedanceController/default.json"
+            config = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
+            config.desired_pose = init_taskspace_target
+            config.desired_nullspace_joint_angles = init_nullspace_target
+            self.controller_cfg[controller_name] = config
+        else:
+            config = None
+            console.log(f"[bold red]controller type {controller_type} is not supported yet.")
+        # TODO when it is possible to retieve config directly,
+        # config = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getUpToDateConfig())
+
+        return controller_name, ctrl, config
+
+    def update_controller_config(self, controller_name: str):
+        self.controllers[controller_name].updateConfig(self.controller_cfg[controller_name].to_aron_ice())
 
     def get_controller_by_name(self, controller_name: str, controller_type: str):
         if not self.robot_unit:
@@ -212,21 +243,39 @@ class Robot:
         assert isinstance(controller, NJointControllerInterfacePrx)
         return cast_controller(controller, controller_type)
 
-    def set_control_target(self, controller_name: str, controller_type: str, target: Union[np.ndarray, List[float]]):
+    def set_control_target(
+            self,
+            controller_name: str,
+            target: Union[np.ndarray, List[float]]
+    ) -> bool:
         """
         Args:
-            robot_node_set: e.g. LeftArm, RightArm
-            controller_type:
-            target: (4, 4) matrix or [x, y, z, w, rx, ry, rz]
+            controller_name: the name of the controller
+            target: (4, 4) matrix
         """
+        # if not (np.ndim(target) == 2 and np.size(target) == 16):
+        #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
+        #     return False
+        #
+        # ic(self.controller_cfg[controller_name].desired_pose)
+        # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
+        #     console.log(f"[red bold]target pose too far")
+        #     return False
+        #
+        # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
+        # ic(self.controller_cfg[controller_name].desired_pose)
+        # self.update_controller_config(controller_name)
+        # return True
+
         if np.ndim(target) == 2 and np.size(target) == 16:
             quat = tn.quaternion_from_matrix(target)
             target = np.concatenate((target[:3, 3], quat))
         if np.size(target) != 7:
             console.log(f"[bold red]target {target} is invalid")
-            return
-        if not self.ctrl.updateTargetPose(controller_name, controller_type, target.flatten().tolist()):
+            return False
+        if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target.flatten().tolist()):
             console.log(f"[bold red]update target pose failed")
+        return True
 
     def close_hand(self, side: cfg.Side, finger: float, thumb: float):
         if self.c.hand is None:
@@ -245,9 +294,11 @@ class Robot:
         return np.array(self.ctrl.getPoseInRootFrame(node_name), dtype=np.float32).reshape(4, 4)
 
     def get_prev_target(self, controller_name: str):
+        # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
         return np.array(self.ctrl.getPrevTargetPose(controller_name), dtype=np.float32).reshape(4, 4)
 
     def get_prev_null_target(self, controller_name: str):
+        # return copy.deepcopy(self.controller_cfg[controller_name].desired_nullspace_joint_angles)
         return np.array(self.ctrl.getPrevNullspaceTargetAngle(controller_name), dtype=np.float32).reshape(-1, 1)
 
     def set_platform_vel(self, velocity: Union[list, np.ndarray]):
@@ -293,9 +344,6 @@ def pose_to_vec(pose_matrix: np.ndarray):
 
 
 if __name__ == "__main__":
-    from armarx_control.utils.cpy.load_armarx_package import get_armarx_package_data_dir
-    from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
-
     c = cfg.RobotConfig()
     # c.mono = cfg.MonocularCameraConfig()
     # c.stereo = cfg.StereoCameraConfig()
@@ -319,8 +367,8 @@ if __name__ == "__main__":
     rns_right = "RightArm"
     tcp_left = "Hand L TCP"
     tcp_right = "Hand R TCP"
-    controller_name_l, ctrl_l = robot.create_controller("python", rns_left, control_type, "")
-    controller_name_r, ctrl_r = robot.create_controller("python", rns_right, control_type, "")
+    controller_name_l, ctrl_l, cfg_l = robot.create_controller("python", rns_left, control_type, "")
+    controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, "")
 
     init_target_pose_l = robot.get_prev_target(controller_name_l)
     init_null_target_l = robot.get_prev_null_target(controller_name_l)
