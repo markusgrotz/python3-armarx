@@ -157,7 +157,11 @@ class Robot:
             return
 
         self.controllers[f"left_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_l, self.c.hand.type)
+        if not self.controllers["left_hand"].isControllerActive():
+            self.controllers["left_hand"].activateController()
         self.controllers[f"right_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_r, self.c.hand.type)
+        if not self.controllers["left_hand"].isControllerActive():
+            self.controllers["left_hand"].activateController()
 
     def _load_robot_state_component(self):
         if self.c.state is None:
@@ -364,6 +368,14 @@ def pose_to_vec(pose_matrix: np.ndarray):
     pose = np.zeros(7, dtype=float)
     pose[3:] = tn.quaternion_from_matrix(pose_matrix)
     pose[:3] = pose_matrix[:3, 3]
+    return pose
+
+
+def vec_to_pose(pose_vec: np.ndarray):
+    if not (np.ndim(pose_vec) == 1 and np.size(pose_vec) == 7):
+        raise ValueError(f"Vector {pose_vec} must have 7 dimensions.")
+    pose = tn.quaternion_matrix(pose_vec[3:])
+    pose[:3, 3] = pose_vec[:3]
     return pose
 
 
