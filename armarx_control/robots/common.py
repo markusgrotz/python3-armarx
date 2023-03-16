@@ -159,6 +159,14 @@ class Robot:
         self.controllers[f"left_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_l, self.c.hand.type)
         self.controllers[f"right_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_r, self.c.hand.type)
 
+    def _load_robot_state_component(self):
+        if self.c.state is None:
+            console.log(f"[red]hand unit is not configured, skip")
+            return
+
+        from armarx import RobotStateComponentInterfacePrx
+        self.state = RobotStateComponentInterfacePrx.get_proxy()
+
     def get_stereo_frames(self) -> Union[None, Tuple[np.ndarray, np.ndarray, float]]:
         if not self.ctrl:
             console.log(f"[red]controller builder is not initialized")

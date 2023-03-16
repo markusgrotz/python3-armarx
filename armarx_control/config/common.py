@@ -100,6 +100,11 @@ class RobotUnitConfig:
 
 
 @dataclass
+class RobotStateConfig:
+    proxy_name:         str = "RobotStateComponent"
+
+
+@dataclass
 class PlatformUnitConfig:
     proxy_name:         str = "Armar6PlatformUnit"
 
@@ -113,3 +118,4 @@ class RobotConfig:
     hand:               HandUnitConfig = None
     robot_unit:         RobotUnitConfig = None
     platform:           PlatformUnitConfig = None
+    state:              RobotStateConfig = None
