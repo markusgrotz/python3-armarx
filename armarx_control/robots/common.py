@@ -285,6 +285,22 @@ class Robot:
             console.log(f"[bold red]update target pose failed")
         return True
 
+    def deactivate(self, controller_name: str):
+        ctrl = self.controllers.get(controller_name, None)
+        if ctrl is None:
+            console.log(f"controller: {controller_name} not found")
+            return False
+        ctrl.deactivateController()
+        return True
+
+    def delete_controller(self, controller_name: str):
+        ctrl = self.controllers.get(controller_name, None)
+        if ctrl is None:
+            console.log(f"controller: {controller_name} not found")
+            return False
+        ctrl.deactivateAndDeleteController()
+        return True
+
     def close_hand(self, side: cfg.Side, finger: float, thumb: float):
         if self.c.hand is None:
             console.log(f"[red]hand unit is not initialized")
