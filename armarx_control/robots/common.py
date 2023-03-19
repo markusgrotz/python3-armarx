@@ -188,7 +188,7 @@ class Robot:
     def get_mono_images(
             self,
             depth_unit_in_meter: bool,
-            resize_wh: list = None
+            resize_wh: tuple = None
     ) -> Tuple[np.ndarray, np.ndarray, Dict]:
         """
         Get azure kinect images, return [rgb, depth] images as a tuple
@@ -202,9 +202,9 @@ class Robot:
         if depth_unit_in_meter:
             depth *= 0.001
 
+        rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
         if resize_wh is not None:
             rgb = cv2.resize(rgb, resize_wh)
-            rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
             depth = cv2.resize(depth, resize_wh)
         return rgb, depth, info
 
@@ -318,8 +318,17 @@ class Robot:
             fingersRelativeMaxPwm=self.c.hand.max_pwm_finger, thumbRelativeMaxPwm=self.c.hand.max_pwm_thumb
         )
 
-    def get_pose(self, node_name: str):
+    def get_pose(self, node_name: str) -> np.ndarray:
+        """
+        return the 4 by 4 matrix representing a pose in root frame of the robot
+        """
         return np.array(self.ctrl.getPoseInRootFrame(node_name), dtype=np.float32).reshape(4, 4)
+
+    def get_joint_angles(self, joint_name_lists: list = None) -> Dict[str, float]:
+        if joint_name_lists is None or len(joint_name_lists) == 0:
+            return self.kinematic_unit.getJointAngles()
+        else:
+            raise NotImplementedError
 
     def get_prev_target(self, controller_name: str):
         # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
