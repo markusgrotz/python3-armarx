@@ -1,3 +1,6 @@
+#To inject the variantinfo.xml mappings automatically
+import armarx_core
+
 from armarx import HandUnitInterfacePrx
 
 
