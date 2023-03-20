@@ -6,6 +6,8 @@ from typing import Iterable, Union, List
 from armarx_core import slice_loader
 
 slice_loader.load_armarx_slice("RobotAPI", "ArViz.ice")
+slice_loader.load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+
 
 from armarx.viz.data import Element
 

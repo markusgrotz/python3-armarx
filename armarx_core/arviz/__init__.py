@@ -1,4 +1,4 @@
-from .elements import (
+from armarx_core.arviz.elements.elements import (
     Arrow,
     ArrowCircle,
     Box,
@@ -11,14 +11,14 @@ from .elements import (
     Pose,
     Robot,
     Sphere,
-    Text,
-    Mesh,
+    Text
 )
-from .layer import Layer
-from .stage import Stage
-from .interaction_feedback import (
+from armarx_core.arviz.elements.mesh import Mesh
+from armarx_core.arviz.layer import Layer
+from armarx_core.arviz.stage import Stage
+from armarx_core.arviz.interaction_feedback import (
     InteractionFeedback,
     InteractionFeedbackType,
     CommitResult,
 )
-from .client import Client
+from armarx_core.arviz.client import Client

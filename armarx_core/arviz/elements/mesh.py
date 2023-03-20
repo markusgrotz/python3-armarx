@@ -1,10 +1,13 @@
 import numpy as np
 import typing as ty
 
+from armarx_core.slice_loader import load_armarx_slice
+load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+
 import armarx.viz as viz
 
 from armarx_core.arviz import conversions as conv
-from .Element import Element
+from armarx_core.arviz.elements.Element import Element
 
 
 class Mesh(Element):

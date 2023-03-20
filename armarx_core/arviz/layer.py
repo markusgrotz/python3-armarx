@@ -1,10 +1,14 @@
 from typing import List, Union
 
+from armarx_core.slice_loader import load_armarx_slice
+
+load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+load_armarx_slice("RobotAPI", "ArViz/Component.ice")
 
 from armarx.viz.data import Element
 from armarx.viz.data import LayerUpdate
 
-from .elements import Element as E
+from armarx_core.arviz.elements.elements import Element as E
 
 
 class Layer:

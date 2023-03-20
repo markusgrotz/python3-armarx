@@ -1,5 +1,4 @@
-from .Element import Element
-from .elements import (
+from armarx_core.arviz.elements.elements import (
     Arrow,
     ArrowCircle,
     Box,
@@ -14,4 +13,4 @@ from .elements import (
     Sphere,
     Text,
 )
-from .mesh import Mesh
+from armarx_core.arviz.elements.mesh import Mesh

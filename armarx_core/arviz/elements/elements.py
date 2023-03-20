@@ -3,6 +3,10 @@ from typing import Dict, Tuple
 
 import numpy as np
 
+from armarx_core.slice_loader import load_armarx_slice
+
+load_armarx_slice("RobotAPI", "ArViz/Elements.ice")
+
 
 import armarx.viz as viz
 from armarx_core.arviz import conversions
