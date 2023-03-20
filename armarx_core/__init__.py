@@ -17,16 +17,13 @@ def inject() -> bool:
     activated
     """
 
-    print("start inject")
     if get_code_generation_type() == CodeGenerationType.STATIC:
-        print("static")
         python_build_dir = get_python_build_dir()
         if python_build_dir in sys.path:
             return False
         sys.path.append(python_build_dir)
         return True
     else:
-        print("dynamic")
         if any(isinstance(c, ArmarXProxyFinder) for c in sys.meta_path):
             return False
         sys.meta_path.insert(0, ArmarXProxyFinder())
