@@ -1,6 +1,8 @@
 import Ice
 
-from armarx_core.ice_manager import ice_communicator
+
+
+from armarx_core.ice_manager import Freezer
 from armarx_core.slice_loader import load_armarx_slice
 
 load_armarx_slice("RobotAPI", "observers/KinematicUnitObserverInterface.ice")
@@ -106,6 +108,10 @@ class TimestampFactory(Ice.ObjectFactory):
 
 
 def register():
+    #TODO: Check if this is correct
+    freezer = Freezer()
+    ice_communicator = freezer.communicator
+
     ice_communicator.addObjectFactory(VariantFactory(), Variant.ice_staticId())
     ice_communicator.addObjectFactory(
         TimedVariantFactory(), TimedVariant.ice_staticId()
