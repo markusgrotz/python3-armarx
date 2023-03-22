@@ -4,7 +4,8 @@ setup(
     version='0.23.3',
     author='Jianfeng Gao',
     author_email='jianfeng.gao@kit.edu',
-    description="This package contains armarx python bindings",
+    description="This package contains armarx python bindings, "
+                "this is temporal setup script for testing armarx_control features",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -17,5 +18,10 @@ setup(
         'lxml>=4.8.0',
         'numpy>=1.19.5',
         'transforms3d>=0.4.1',
+        'marshmallow',
+        'marshmallow_dataclass',
+        'pyyaml',
+        'icecream',
+        'rich'
     ]
 )

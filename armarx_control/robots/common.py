@@ -6,8 +6,7 @@ import numpy as np
 from pathlib import Path
 from typing import Union, Dict, Tuple, List, Any
 
-import robot_utils.math.transformations as tn
-
+import armarx_control.utils.math as math
 import armarx_control.config.common as cfg
 from armarx_robots.sensors import Camera
 from armarx_control import console
@@ -280,7 +279,7 @@ class Robot:
         # return True
 
         if np.ndim(target) == 2 and np.size(target) == 16:
-            quat = tn.quaternion_from_matrix(target)
+            quat = math.quaternion_from_matrix(target)
             target = np.concatenate((target[:3, 3], quat))
         if np.size(target) != 7:
             console.log(f"[bold red]target {target} is invalid")
@@ -375,7 +374,7 @@ def framed_pose_to_vec(framed_pose: dict):
 
 def pose_to_vec(pose_matrix: np.ndarray):
     pose = np.zeros(7, dtype=float)
-    pose[3:] = tn.quaternion_from_matrix(pose_matrix)
+    pose[3:] = math.quaternion_from_matrix(pose_matrix)
     pose[:3] = pose_matrix[:3, 3]
     return pose
 
@@ -383,7 +382,7 @@ def pose_to_vec(pose_matrix: np.ndarray):
 def vec_to_pose(pose_vec: np.ndarray):
     if not (np.ndim(pose_vec) == 1 and np.size(pose_vec) == 7):
         raise ValueError(f"Vector {pose_vec} must have 7 dimensions.")
-    pose = tn.quaternion_matrix(pose_vec[3:])
+    pose = math.quaternion_matrix(pose_vec[3:])
     pose[:3, 3] = pose_vec[:3]
     return pose
 
@@ -424,16 +423,17 @@ if __name__ == "__main__":
         init_null_target_r = robot.get_prev_null_target(controller_name_r)
 
         json_file = get_armarx_package_data_dir("armarx_control") / "controller_config/NJointTaskspaceImpedanceController/default.json"
-        config = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
-        config.desired_pose = init_target_pose_l
-        config.desired_nullspace_joint_angles = init_null_target_l
-        # ic(config)
-        config_aron_ice = config.to_aron_ice()
+        config_l = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
+        config_l.desired_pose = init_target_pose_l
+        config_l.desired_nullspace_joint_angles = init_null_target_l
+        ic(config_l)
+        # config_aron_ice = config.to_aron_ice()
         # ic(config_aron_ice)
         # ic(type(config_aron_ice))
 
         # console.rule("set target")
-        # ctrl_l.updateConfig(config_aron_ice)
+        ctrl_l.updateConfig(config_l.to_aron_ice())
+        # assert False
         # console.rule("done")
 
         console.log("close hands")
@@ -464,10 +464,14 @@ if __name__ == "__main__":
             target_right[2, 3] = pose_z_range_right[i]
             robot.close_hand(cfg.Side.left, finger_range_left[i], finger_range_left[i])
             robot.close_hand(cfg.Side.right, finger_range_right[i], finger_range_right[i])
+            config_l.desired_pose = target_right
+            # ctrl_l.updateConfig(config_l.to_aron_ice())
             robot.set_control_target(controller_name_l, target_left)
             robot.set_control_target(controller_name_r, target_right)
             time.sleep(dt)
             t += dt
+
+        ic(config_l)
 
         console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \n"
                     f"and right: \n{robot.get_pose(tcp_right)}")
