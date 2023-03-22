@@ -15,9 +15,9 @@ publishing or subscribing to images.
 to use the armarx_control feature, you need the following packages at the moment, it will
 be cleaner soon.
 - This package in `armarx_control` branch
+- `armarx/skills/control` package (`new_mp_controller_refactor` branch) is where the NJointControllers are implemented.
 - `RobotControllers` package (`refactor` branch) contains the glue code, the `kvil` components, which helps you to create a controller and 
 manipulate the controllers. It also provides you with functions to get pose from and set target to the robot.
-- `armarx/skills/control` package (`new_mp_controller_refactor` branch) is where the NJointControllers are implemented. 
 
 ---
 
