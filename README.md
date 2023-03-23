@@ -43,8 +43,25 @@ More examples can be found in the `examples` folder.
 
 ### Using the robot and armarx_control module
 
+Steps to check:
+- To use it on the robot, you should make sure the above packages are compiled on the local machine where you run your 
+Python applications. 
+- Start ArmarX on the control PC (armar6a-1) and start low/high-level scenarios. 
+- Start the kvil scenario also on armar6a-1
+- Start the robot-unit, make sure the `armarx/skills/control` package is on branch `new_mp_controller_refactor` in your 
+workspace on armar6a-0.
+- Run the demo script. The robot will move back and forth, then close and open both hand, and then raise both arms straight up 300 mm, in
+the meanwhile, the hands close gradually. This demonstrates how you can connect to the proxies on the robot and interact with them.
+```shell
+cd python3-armarx
+python armarx_control/robots/common.py
+```
+
+The above steps is temporal now, they will be simplified in the future.
+
 examples:
 - see `armarx_control/robots/commom.py` for platform, hand and arm motion control, basic set up of robot configurations.
+- see the teleoperation control in `robot-utils/robot_utils/armar/teleoperation/holistic_teleop.py`
 - see `robot-policy-learning` package for movement primitive controllers. 
   - task space impedance controller on both real and simulated robot: `robot-policy-learning/robot_policy/classical/real/taskspace_impedance_mp_controller.py`
 
