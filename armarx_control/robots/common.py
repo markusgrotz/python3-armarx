@@ -13,7 +13,7 @@ from armarx_control import console
 from armarx_control.utils.dataclass import load_dataclass
 from armarx_control.utils.load_slice import load_proxy, load_slice
 from armarx_vision.camera_utils import build_calibration_matrix
-from armarx_control.utils.cpy.load_armarx_package import get_armarx_package_data_dir
+from armarx_control.utils.pkg import get_armarx_package_data_dir
 from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
 
 load_slice("armarx_control", "../armarx/control/interface/ConfigurableNJointControllerInterface.ice")
@@ -88,7 +88,7 @@ class Robot:
             image_format.bytesPerPixel
         )
         self.c.mono.intrinsic = build_calibration_matrix(self.mono.calibration["left"])
-        console.log('[bold green]data dimensions {}'.format(self.c.mono.image_dimension))
+        console.log(f'[bold green]data dimensions {self.c.mono.image_dimension} with intrinsic {self.c.mono.intrinsic}')
 
     def _load_stereo_cam(self):
         if self.c.stereo is None:
