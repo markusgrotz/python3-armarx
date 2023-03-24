@@ -12,16 +12,14 @@ class ConversionOptions:
 
     def name_python_to_aron(self, python_name: str) -> str:
         aron_name = self.names_python_to_aron_dict.get(python_name, None)
+        if aron_name is not None:
+            return aron_name
 
-        if aron_name is None:
-            if self.names_snake_case_to_camel_case:
-                from .name_conversion import snake_case_to_camel_case
+        if self.names_snake_case_to_camel_case:
+            from .name_conversion import snake_case_to_camel_case
+            return snake_case_to_camel_case(python_name)
 
-                aron_name = snake_case_to_camel_case(python_name)
-            else:
-                aron_name = python_name
-
-        return aron_name
+        return python_name
 
     def name_aron_to_python(self, aron_name: str) -> str:
         for python, aron in self.names_python_to_aron_dict.items():
@@ -30,9 +28,6 @@ class ConversionOptions:
 
         if self.names_snake_case_to_camel_case:
             from .name_conversion import camel_case_to_snake_case
+            return camel_case_to_snake_case(aron_name)
 
-            python_name = camel_case_to_snake_case(aron_name)
-        else:
-            python_name = aron_name
-
-        return python_name
+        return aron_name
