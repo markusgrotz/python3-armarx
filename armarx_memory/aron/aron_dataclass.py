@@ -23,11 +23,15 @@ class AronDataclass:
         return dataclass_from_to_aron_ice.dataclass_to_aron_ice(self, logger=logger)
 
     @classmethod
-    def from_dict(cls, data: ty.Dict[str, ty.Any]) -> "AronDataclass":
+    def from_dict(
+            cls,
+            data: ty.Dict[str, ty.Any],
+            logger: ty.Optional[logging.Logger] = None,
+    ) -> "AronDataclass":
         from armarx_memory.aron.conversion.dataclass_from_to_pythonic import (
             dataclass_from_dict,
         )
-        return dataclass_from_dict(cls, data)
+        return dataclass_from_dict(cls, data, logger=logger)
 
     @classmethod
     def from_aron_ice(
