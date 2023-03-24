@@ -3,10 +3,13 @@ import numpy as np
 
 from armarx_core import ice_manager
 
+from armarx_core import slice_loader
+slice_loader.load_armarx_slice("VisionX", "components/Calibration.ice")
+
 from visionx import StereoCalibrationInterfacePrx
 from visionx import ImageProviderInterfacePrx
 from visionx import MonocularCalibration
-from visionx import MonocularCalibrationCapturingProviderInterface
+from visionx import MonocularCalibrationCapturingProviderInterface, MonocularCalibrationCapturingProviderInterfacePrx
 
 from visionx import ReferenceFrameInterfacePrx
 
@@ -57,16 +60,18 @@ def build_calibration_matrix(
 
 
 def get_calibration(provider_name: str):
-
-    proxy = ImageProviderInterfacePrx.get_proxy(provider_name)
+    # proxy = ImageProviderInterfacePrx.get_proxy(provider_name)
+    proxy = ice_manager.get_proxy(ImageProviderInterfacePrx, provider_name)
     image_format = proxy.getImageFormat()
     width = image_format.dimension.width
     height = image_format.dimension.height
 
-    proxy = ReferenceFrameInterfacePrx.get_proxy(provider_name)
+    # proxy = ReferenceFrameInterfacePrx.get_proxy(provider_name)
+    proxy = ice_manager.get_proxy(ReferenceFrameInterfacePrx, provider_name)
     frame = proxy.getReferenceFrame()
 
-    proxy = MonocularCalibrationCapturingProviderInterface.get_proxy(provider_name)
+    # proxy = MonocularCalibrationCapturingProviderInterface.get_proxy(provider_name)
+    proxy = ice_manager.get_proxy(MonocularCalibrationCapturingProviderInterfacePrx, provider_name)
     calibration = proxy.getCalibration()
 
     fx = calibration.cameraParam.focalLength[0]
@@ -93,12 +98,12 @@ def get_stereo_calibration(provider_name: str):
     :param provider_name: name of the component to connect to
     :returns: the calibration as dict
     """
-    proxy = ImageProviderInterfacePrx.get_proxy(provider_name)
+    proxy = ice_manager.get_proxy(ImageProviderInterfacePrx, provider_name)
     image_format = proxy.getImageFormat()
     width = image_format.dimension.width
     height = image_format.dimension.height
 
-    proxy = StereoCalibrationInterfacePrx.get_proxy(provider_name)
+    proxy = ice_manager.get_proxy(StereoCalibrationInterfacePrx, provider_name)
     frame = proxy.getReferenceFrame()
     stereo_calibration = proxy.getStereoCalibration()
 
