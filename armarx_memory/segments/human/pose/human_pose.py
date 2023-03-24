@@ -56,7 +56,7 @@ class HumanPose(AronDataclass):
         """
         Compute the axis aligned bounding box of all keypoints in
         :param frame: One of "global", "robot", "camera".
-        :return: The limits in a (3, 2) array, i.e.
+        :return: The limits in a (2, 3) array, i.e.
             [[min_x, min_y, min_z], [max_x, max_y, max_z]]
         """
         minimum, maximum = None, None
