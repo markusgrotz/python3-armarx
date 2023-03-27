@@ -49,7 +49,7 @@ class EntityUpdate(ice_twin.IceTwin):
         dto.referencedTime = date_time_conv.to_ice(self.time_referenced_usec)
 
         dto.confidence = self.confidence
-        dto.timeSent = date_time_conv.to_ice(
+        dto.sentTime = date_time_conv.to_ice(
             self.time_sent_usec if self.time_sent_usec is not None else -1
         )
 
@@ -59,7 +59,7 @@ class EntityUpdate(ice_twin.IceTwin):
         self.time_referenced_usec = date_time_conv.from_ice(dto.referencedTime)
 
         self.confidence = dto.confidence
-        self.time_sent_usec = date_time_conv.from_ice(dto.timeSent)
+        self.time_sent_usec = date_time_conv.from_ice(dto.sentTime)
 
         assert (
             self.time_referenced_usec > 0
