@@ -129,3 +129,5 @@ def register():
         FramedPositionFactory(), FramedPosition.ice_staticId()
     )
     ice_communicator.addObjectFactory(FramedPoseFactory(), FramedPose.ice_staticId())
+
+register()
