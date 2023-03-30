@@ -97,13 +97,13 @@ class BaseWriter(BaseClient, ABC):
         super().__init__()
         self.writer = writer
 
-    def commit(self, entity_id: MemoryID, time_created_usec=None, **kwargs):
+    def commit(self, entity_id: MemoryID, referenced_time_usec=None, **kwargs):
         from armarx_memory.aron.conversion import to_aron
 
         commit = Commit()
         commit.add(
             entity_id=entity_id,
-            time_created_usec=time_created_usec,
+            referenced_time_usec=referenced_time_usec,
             instances_data=[to_aron(kwargs)],
         )
         return self.writer.commit(commit.to_ice())

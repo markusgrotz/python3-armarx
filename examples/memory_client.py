@@ -57,8 +57,8 @@ def write(entity_id: mem.MemoryID, instances_data: List[Dict]):
     commit.add(
         memcl.EntityUpdate(
             entity_id=entity_id,
-            time_created_usec=now,
-            instances_data=[pythonic_from_to_aron_ice.pythonic_to_aron_ice(data) for data in instances_data],
+            referenced_time_usec=now,
+            instances_data=[aron_conv.to_aron(data) for data in instances_data],
         )
     )
     print(commit.updates[-1].instances_data)

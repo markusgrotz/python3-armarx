@@ -1,55 +1,36 @@
-from typing import List, Optional
+import dataclasses as dc
+import typing as ty
 
-from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
+from armarx_memory.aron.aron_dataclass import AronDataclass
 from armarx_memory.core import MemoryID
+from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 
 
-class Person:
-    def __init__(self, given_name: str, family_name: str, roles: List):
-        self.roles = roles
-        self.given_name = given_name
-        self.family_name = family_name
-
-    def to_aron(self) -> "armarx.aron.data.dto.GenericData":
-        from armarx_memory.aron.conversion import to_aron
-
-        dto = to_aron(
-            {
-                "given_name": self.given_name,
-                "family_name": self.family_name,
-                "roles": self.roles,
-            }
-        )
-        return dto
-
-    @classmethod
-    def from_aron(cls, dto: "armarx.aron.data.dto.GenericData"):
-        from armarx_memory.aron.conversion import from_aron
-
-        d = from_aron(dto)
-        return cls(**d)
+@dc.dataclass
+class TextToSpeech(AronDataclass):
+    text: str
 
 
-class PersonClientBase:
+class TextToSpeechClientBase:
 
-    core_segment_id = MemoryID("Human", "Person")
+    core_segment_id = MemoryID("Speech", "TextToSpeech")
 
     def __init__(self):
         pass
 
-    def make_entity_name(self, provider_name: str, entity_name: str = "person"):
+    def make_entity_name(self, provider_name: str, entity_name: str = "text"):
         return self.core_segment_id.with_provider_segment_name(
             provider_name
         ).with_entity_name(entity_name)
 
 
-class PersonWriter(PersonClientBase):
+class TextToSpeechWriter(TextToSpeechClientBase):
     def __init__(self, writer: Writer):
         super().__init__()
         self.writer = writer
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonWriter":
+    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "TextToSpeechWriter":
         return cls(
             mns.wait_for_writer(cls.core_segment_id)
             if wait
@@ -59,29 +40,30 @@ class PersonWriter(PersonClientBase):
     def commit(
         self,
         entity_id: MemoryID,
-        given_name: str,
-        family_name: str,
-        roles: List,
+        text: str,
         referenced_time_usec=None,
-        **kwargs
+        **kwargs,
     ):
-        person = Person(given_name=given_name, family_name=family_name, roles=roles)
         commit = Commit()
         commit.add(
             entity_id=entity_id,
             referenced_time_usec=referenced_time_usec,
-            instances_data=[person.to_aron()],
+            instances_data=[TextToSpeech(text=text).to_aron_ice()],
             **kwargs,
         )
         return self.writer.commit(commit)
 
 
-class PersonReader(PersonClientBase):
+class TextToSpeechReader(TextToSpeechClientBase):
     def __init__(self, reader: Reader):
         super().__init__()
         self.reader = reader
 
-    def fetch_latest_instance(self, updated_ids: Optional[List[MemoryID]] = None):
+    def fetch_latest_instance(self, updated_ids: ty.Optional[ty.List[MemoryID]] = None):
+        """
+        Query the latest snapshot of the given updated IDs and
+        return its first instance.
+        """
         if updated_ids is None:
             memory = self.reader.query_latest(self.core_segment_id)
 
@@ -105,14 +87,11 @@ class PersonReader(PersonClientBase):
             latest_snapshot_id = max(updated_ids, key=lambda i: i.timestamp_usec)
             latest_snapshot = self.reader.query_snapshot(latest_snapshot_id)
 
-        if not latest_snapshot:
-            return None
-
         latest_instance = latest_snapshot.instances[0]
         return latest_instance
 
     @classmethod
-    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "PersonReader":
+    def from_mns(cls, mns: MemoryNameSystem, wait=True) -> "TextToSpeechReader":
         return cls(
             mns.wait_for_reader(cls.core_segment_id)
             if wait
