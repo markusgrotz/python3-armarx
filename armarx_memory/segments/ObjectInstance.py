@@ -67,14 +67,14 @@ class ObjectInstanceWriter(ObjectInstanceClientBase):
         classID: MemoryID,
         sourceID: MemoryID,
         pose: np.ndarray,
-        time_created_usec=None,
+        referenced_time_usec=None,
         **kwargs
     ):
         object_instance = ObjectInstance(classID=classID, sourceID=sourceID, pose=pose)
         commit = Commit()
         commit.add(
             entity_id=entity_id,
-            time_created_usec=time_created_usec,
+            referenced_time_usec=referenced_time_usec,
             instances_data=[object_instance.to_aron()],
             **kwargs
         )
