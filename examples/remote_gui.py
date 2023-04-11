@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import typing as ty
 
-import armarx.remote_gui as rg
+import armarx_core.remote_gui as rg
 
 
 # Example code here

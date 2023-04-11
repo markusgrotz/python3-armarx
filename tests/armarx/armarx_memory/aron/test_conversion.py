@@ -97,7 +97,7 @@ class ContainersOfDataclasses(AronDataclass):
 
 
 def _test_preamble(cls):
-    from armarx_memory.aron.conversion.aron_ice_types import AronIceTypes
+    from armarx_memory.aron.aron_ice_types import AronIceTypes
 
     data_in = cls.make_test_data()
     print(f"Input:\n{data_in}")

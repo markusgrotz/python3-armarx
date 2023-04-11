@@ -4,6 +4,7 @@
 """
 
 import warnings
-from armarx_core.ice_manager import *
 
 warnings.warn("Use armarx_core.ice_manager instead", DeprecationWarning)
+
+from armarx_core.ice_manager import *

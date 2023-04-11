@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 
-import visionx.pointclouds as vpc
+import armarx_vision.pointclouds as vpc
 
 
 def test_store_and_load_pcd_file():

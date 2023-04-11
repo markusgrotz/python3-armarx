@@ -2,8 +2,8 @@
 
 import numpy as np
 
-import armarx.arviz as viz
-from armarx.arviz import grids
+import armarx_core.arviz as viz
+from armarx_core.arviz import grids
 
 
 def vis_blue_sphere(alpha=255):

@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List
 
-from armarx_memory.aron import conversion as aron_conv
+from armarx_memory.aron.conversion import pythonic_from_to_aron_ice
 from armarx_memory import core as mem, client as memcl
 
 
@@ -33,7 +33,7 @@ def read(core_segment_id: mem.MemoryID):
 
                     print_title(f"Instance {instance_id}:")
 
-                    data: Dict[str, Any] = aron_conv.from_aron(instance.data)
+                    data: Dict[str, Any] = pythonic_from_to_aron_ice.pythonic_from_aron_ice(instance.data)
                     # Print data.
                     for k, v in data.items():
                         print(f"- '{k}' ({type(v)}):\n{v}")

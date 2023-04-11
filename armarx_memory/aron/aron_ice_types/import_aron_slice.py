@@ -6,7 +6,7 @@ def import_aron_slice():
 
     def handle_error():
         import armarx
-        from armarx import slice_loader
+        from armarx_core import slice_loader
 
         slice_loader.load_armarx_slice("RobotAPI", "aron.ice")
 

@@ -4,16 +4,10 @@ from typing import Dict, Optional
 
 from armarx_core import slice_loader
 
-from armarx_core.time import date_time
 from armarx_memory.ice_conv.ice_twin import IceTwin
 from armarx_memory.ice_conv.RobotAPI.Box import Box
 from armarx_memory.ice_conv.RobotAPI.ObjectID import ObjectID
 from armarx_memory.ice_conv.RobotAPI.PoseBase import PoseBaseConv
-
-slice_loader.load_armarx_slice("RobotAPI", "objectpose/object_pose_types.ice")
-
-
-date_time_conv = date_time.DateTimeIceConverter()
 
 
 class ObjectPose(IceTwin):
@@ -34,7 +28,6 @@ class ObjectPose(IceTwin):
         object_pose_original_frame: str = "",
         robot_pose=None,
         local_oobb: Optional[Box] = None,
-        timestamp_usec: Optional[int] = None,
     ):
         self.provider_name = provider_name
         self.object_id = ObjectID() if object_id is None else object_id
@@ -60,7 +53,7 @@ class ObjectPose(IceTwin):
         # attachment
 
         self.confidence: float = 0.0
-        self.timestamp_usec: int = timestamp_usec if timestamp_usec is not None else date_time.INVALID_TIME_USEC
+        self.timestamp_usec: int = -1
 
         self.local_oobb = local_oobb
 
@@ -70,7 +63,8 @@ class ObjectPose(IceTwin):
         return self.local_oobb.to_aabb(self.object_pose_robot)
 
     def viz_oobb_robot(self, id: str, size_factor=1.0, **kwargs) -> "armarx.arviz.Box":
-        import armarx.arviz as viz
+        import armarx_core.arviz as viz
+
         return viz.Box(
             id,
             pose=self.object_pose_robot @ self.local_oobb.pose,
@@ -80,12 +74,14 @@ class ObjectPose(IceTwin):
 
     @classmethod
     def _get_ice_cls(cls):
+        slice_loader.load_armarx_slice("RobotAPI", "objectpose/object_pose_types.ice")
         from armarx.objpose.data import ObjectPose
+
         return ObjectPose
 
     def _set_from_ice(self, dto: "armarx.objpose.data.ObjectPose"):
         self.provider_name = dto.providerName
-        self.object_id = self.object_id.from_ice(dto.objectID)
+        self.object_id = ObjectID(dto.objectID)
         self.object_pose_robot = self._pose_conv.from_ice(dto.objectPoseRobot)
         self.object_pose_global = self._pose_conv.from_ice(dto.objectPoseGlobal)
         self.object_pose_original = self._pose_conv.from_ice(dto.objectPoseOriginal)
@@ -97,8 +93,7 @@ class ObjectPose(IceTwin):
         self.robot_pose = self._pose_conv.from_ice(dto.robotPose)
 
         self.confidence = dto.confidence
-
-        self.timestamp_usec = date_time_conv.from_ice(dto.timestamp)
+        self.timestamp_usec = dto.timestamp.timeSinceEpoch.microSeconds
 
         if all(
             [dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]
@@ -121,7 +116,7 @@ class ObjectPose(IceTwin):
         dto.robotPose = self._pose_conv.to_ice(self.robot_pose)
 
         dto.confidence = self.confidence
-        dto.timestamp = date_time_conv.to_ice(self.timestamp_usec)
+        dto.timestamp.timeSinceEpoch.microSeconds = self.timestamp_usec
 
         if dto.localOOBB is not None and all(
             [dto.localOOBB.position, dto.localOOBB.orientation, dto.localOOBB.extents]

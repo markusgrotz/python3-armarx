@@ -1,17 +1,7 @@
-from .Element import Element
-from .elements import (
-    Arrow,
-    ArrowCircle,
-    Box,
-    Cylinder,
-    Ellipsoid,
-    Line,
-    Object,
-    PointCloud,
-    Polygon,
-    Pose,
-    Robot,
-    Sphere,
-    Text,
+import warnings
+
+warnings.warn(
+    "Use 'armarx_core.arviz' instead.", DeprecationWarning
 )
-from .mesh import Mesh
+
+from armarx_core.arviz.elements import *

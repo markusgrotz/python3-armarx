@@ -7,7 +7,7 @@ import numpy as np
 from armarx_vision.image_provider import ImageProvider
 
 from armarx_core.ice_manager import is_alive
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,9 @@ def main():
             random_images = np.random.randint(
                 0, 255, result_image_provider.data_dimensions, dtype=np.uint8
             )
-            time_provided = time.time() * 1000.0 * 1000.0
+            time_provided = int(time.time() * 1000.0 * 1000.0)
             time.sleep(args.delay)
-            result_image_provider.update_image(random_images, time_provided)
+            result_image_provider.update_images(random_images, time_provided)
     except KeyboardInterrupt:
         logger.info("shutting down")
 

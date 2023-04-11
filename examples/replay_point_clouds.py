@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from armarx.ice_manager import is_alive
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 
 from visionx.pointclouds import load_point_cloud
 from visionx.pointcloud_provider import PointCloudProvider
