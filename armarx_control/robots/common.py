@@ -29,6 +29,13 @@ def cast_controller(controller_ptr, controller_type: str):
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceImpedanceControllerInterfacePrx
         return NJointTaskspaceImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
+
+    elif controller_type == "TSImpedanceMP":
+        load_slice("armarx_control", "../armarx/control/njoint_mp_controller/task_space/ControllerInterface.ice")
+        from armarx.control import NJointTSImpedanceMPControllerInterfacePrx
+        console.log(f"cast controller for type {controller_type}")
+        return NJointTSImpedanceMPControllerInterfacePrx.checkedCast(controller_ptr)
+
     elif controller_type == "TSAdmittance":
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceAdmittanceControllerInterfacePrx
@@ -142,13 +149,13 @@ class Robot:
             self.ctrl = None
             return
 
-        # load_slice("armarx_control", "../armarx/control/components/controller_creator/ComponentInterface.ice")
-        # from armarx.control.components.controller_creator import ComponentInterface
-        # self.ctrl = load_proxy(self.c.ctrl.proxy_name, ComponentInterface)
+        load_slice("armarx_control", "../armarx/control/components/controller_creator/ComponentInterface.ice")
+        from armarx.control.components.controller_creator import ComponentInterfacePrx
+        self.ctrl = load_proxy(self.c.ctrl.proxy_name, ComponentInterfacePrx)
 
-        load_slice("RobotControllers", "components/kvil/KVILInterface.ice")
-        from armarx.RobotControllers.components.kvil import KVILInterfacePrx
-        self.ctrl = load_proxy(self.c.ctrl.proxy_name, KVILInterfacePrx)
+        # load_slice("RobotControllers", "components/kvil/KVILInterface.ice")
+        # from armarx.RobotControllers.components.kvil import KVILInterfacePrx
+        # self.ctrl = load_proxy(self.c.ctrl.proxy_name, KVILInterfacePrx)
         
     def _load_hand_controller(self):
         if self.c.hand is None:
@@ -216,6 +223,10 @@ class Robot:
     ):
         controller_name = self.ctrl.createController(control_name_prefix, robot_node_set, controller_type, config_filename)
         ctrl = self.get_controller_by_name(controller_name, controller_type)
+        if ctrl is None:
+            console.log(f"[bold red]got null pointer to the {controller_name}, "
+                        f"you need to check your interface implementation")
+            exit(1)
         self.controllers[controller_name] = ctrl
 
         init_taskspace_target = self.get_prev_target(controller_name)
@@ -231,7 +242,7 @@ class Robot:
             self.controller_cfg[controller_name] = config
         else:
             config = None
-            console.log(f"[bold red]controller type {controller_type} is not supported yet.")
+            console.log(f"[bold red]controller config in Python for type {controller_type} is not supported yet.")
         # TODO when it is possible to retieve config directly,
         # config = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getUpToDateConfig())
 
@@ -373,6 +384,8 @@ def framed_pose_to_vec(framed_pose: dict):
 
 
 def pose_to_vec(pose_matrix: np.ndarray):
+    if np.shape(pose_matrix) != (4, 4):
+        raise ValueError(f"pose matrix {pose_matrix} is supposed to be a (4, 4) np.ndarray")
     pose = np.zeros(7, dtype=float)
     pose[3:] = math.quaternion_from_matrix(pose_matrix)
     pose[:3] = pose_matrix[:3, 3]
@@ -395,7 +408,7 @@ if __name__ == "__main__":
     # c.stereo = cfg.StereoCameraConfig()
     c.robot_unit = cfg.RobotUnitConfig("Armar6Unit")
     c.kinematic_unit = cfg.KinematicUnitConfig("Armar6KinematicUnit")
-    c.ctrl = cfg.ControllerCreatorConfig("kvil")
+    c.ctrl = cfg.ControllerCreatorConfig()
     c.hand = cfg.HandUnitConfig()
     c.platform = cfg.PlatformUnitConfig()
     robot = Robot(c)
