@@ -243,7 +243,7 @@ class DataclassFromToDict:
             if self.logger is not None:
                 self.logger.debug(f"{pre}> Process NoneType")
 
-            # assert type_ == type(None), type_
+            assert type_ == type(None), type_  # Note, If this fails, comment out
             return None
 
         elif isinstance(value, list):
