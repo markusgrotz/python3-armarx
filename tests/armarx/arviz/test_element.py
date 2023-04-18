@@ -3,14 +3,15 @@ import pytest
 import numpy as np
 import transforms3d as tf3d
 
-import armarx.arviz as viz
+import armarx
+import armarx_core.arviz as viz
 
 
 @pytest.fixture
 def element():
-    import armarx.viz
+    from armarx_core.arviz.elements import Element
 
-    e = viz.Element(armarx.viz.data.ElementPose, "id")
+    e = Element(armarx.viz.data.ElementPose, "id")
     return e
 
 

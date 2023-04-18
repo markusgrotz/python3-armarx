@@ -6,7 +6,7 @@ import os.path
 
 import numpy as np
 
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 from armarx.ice_manager import is_alive
 
 from visionx.pointclouds import store_point_cloud

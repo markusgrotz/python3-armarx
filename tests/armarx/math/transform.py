@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from transforms3d.axangles import axangle2mat
 
-from armarx.math.transform import Transform
+from armarx_core.math.transform import Transform
 
 
 @pytest.fixture

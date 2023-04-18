@@ -16,6 +16,7 @@ def inject() -> bool:
     :returns: true if the slice loading is activated, false if it was already
     activated
     """
+
     if get_code_generation_type() == CodeGenerationType.STATIC:
         python_build_dir = get_python_build_dir()
         if python_build_dir in sys.path:
@@ -27,6 +28,7 @@ def inject() -> bool:
             return False
         sys.meta_path.insert(0, ArmarXProxyFinder())
         return True
+
 
 
 # auto inject

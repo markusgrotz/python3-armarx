@@ -41,13 +41,13 @@ class TextToSpeechWriter(TextToSpeechClientBase):
         self,
         entity_id: MemoryID,
         text: str,
-        time_created_usec=None,
+        referenced_time_usec=None,
         **kwargs,
     ):
         commit = Commit()
         commit.add(
             entity_id=entity_id,
-            time_created_usec=time_created_usec,
+            referenced_time_usec=referenced_time_usec,
             instances_data=[TextToSpeech(text=text).to_aron_ice()],
             **kwargs,
         )

@@ -1,6 +1,9 @@
 import logging
 import threading
 
+#To inject the variantinfo.xml mappings automatically
+import armarx_core
+
 from armarx import TextListenerInterfacePrx
 
 from armarx import TextToSpeechStateInterface

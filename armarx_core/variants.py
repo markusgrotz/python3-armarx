@@ -2,14 +2,15 @@ from datetime import datetime
 
 import numpy as np
 
+#Done to trigger the inject of this module preserve old behaviour
+import armarx_core
+
 from armarx import VariantBase
 from armarx import TimedVariantBase
-
 from armarx import StringVariantData
 from armarx import FloatVariantData
 from armarx import BoolVariantData
 from armarx import IntVariantData
-
 
 def hash_type_name(type_id: str) -> int:
     """

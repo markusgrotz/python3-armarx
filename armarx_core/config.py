@@ -54,7 +54,7 @@ def get_packages() -> str:
     Lists all packages that are considered by the statecharts
     """
     default_packages = (
-        "ArmarXCore,ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates,ActiveVision"
+        "ArmarXCore,ArmarXGui,RobotAPI,VisionX,RobotSkillTemplates"
     )
     return config.get("AutoCompletion", "packages", fallback=default_packages)
 

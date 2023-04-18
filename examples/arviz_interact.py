@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import enum
 
-import time
 import numpy as np
 from typing import List, Optional
 
-import armarx.arviz as viz
-from armarx.math.transform import Transform
-from armarx.tools.metronome import Metronome
+import armarx_core.arviz as viz
+from armarx_core.math.transform import Transform
+from armarx_core.tools.metronome import Metronome
 
 
 # SLIDER EXAMPLE
