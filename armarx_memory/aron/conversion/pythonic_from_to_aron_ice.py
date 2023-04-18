@@ -115,8 +115,14 @@ def pythonic_from_aron_ice(
 
 def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
     shape = (*value.shape, value.itemsize)
+    if value.dtype == np.float32:
+        type_str = "float"
+    elif value.dtype == np.float64:
+        type_str = "double"
+    else:
+        type_str = str(value.dtype)
     return AronIceTypes.NDArray(
-        shape=shape, type=str(value.dtype), data=value.tobytes()
+        shape=shape, type=type_str, data=value.tobytes()
     )
 
 

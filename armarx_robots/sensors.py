@@ -6,7 +6,7 @@ from armarx_vision.camera_utils import get_stereo_calibration
 from armarx_vision.camera_utils import get_calibration
 from armarx_vision.image_utils import read_images
 
-
+from visionx import ImageFormatInfo
 from visionx import ReferenceFrameInterfacePrx
 from functools import partial
 
@@ -30,12 +30,15 @@ class Camera:
         return ImageProviderInterfacePrx.get_proxy(self.provider_name)
 
     @property
+    def image_format(self) -> ImageFormatInfo:
+        return self.proxy.getImageFormat()
+
+    @property
     def info(self) -> Dict[str, Any]:
         """
         Returns camera information such as width, height of the image 
         """
         proxy = self.proxy
-        image_format = proxy.getImageFormat()
         image_format = proxy.getImageFormat()
         width = image_format.dimension.width
         height = image_format.dimension.height
