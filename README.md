@@ -12,7 +12,16 @@ publishing or subscribing to images.
 
 ## Installation
 
+using pip: 
+
 `pip install --upgrade --extra-index-url https://pypi.humanoids.kit.edu/ armarx`
+
+or install locally
+
+```shell
+cd python3-armarx
+pip install -e .
+```
 
 ## Using the bindings
 
@@ -31,6 +40,9 @@ Slice definitions can be loaded using the `slice_loader.load_armarx_slice`
 function. Default values for the proxy name will also be mapped.
 
 More examples can be found in the `examples` folder.
+
+## Use armarx_control
+see [tutorial](docs/_tutorial_armarx_control.md)
 
 ## Documentation
 
