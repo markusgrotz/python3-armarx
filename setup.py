@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 setup(
     name='python3-armarx',
     version='0.23.3',
-    author='Jianfeng Gao',
-    author_email='jianfeng.gao@kit.edu',
+    author='',
+    author_email='',
     description="This package contains armarx python bindings, "
                 "this is temporal setup script for testing armarx_control features",
     packages=find_packages(),

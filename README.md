@@ -12,7 +12,16 @@ publishing or subscribing to images.
 
 ## Installation
 
+using pip: 
+
 `pip install --upgrade --extra-index-url https://pypi.humanoids.kit.edu/ armarx`
+
+or install locally
+
+```shell
+cd python3-armarx
+pip install -e .
+```
 
 ## Using the bindings
 
