@@ -1,7 +1,7 @@
 import numpy as np
 import transforms3d as tf3d
 
-from armarx import slice_loader
+from armarx_core import slice_loader
 from armarx_core.ice_conversion.ice_converter import IceConverter
 
 SLICE_INCLUDE = ("RobotAPI", "core/PoseBase.ice")
