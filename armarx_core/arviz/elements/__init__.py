@@ -1,3 +1,4 @@
+from .Element import Element
 from armarx_core.arviz.elements.elements import (
     Arrow,
     ArrowCircle,
