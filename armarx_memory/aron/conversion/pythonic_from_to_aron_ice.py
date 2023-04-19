@@ -61,9 +61,8 @@ def pythonic_from_aron_ice(
     """
     Deeply converts an Aron data Ice object to its pythonic representation.
 
-    :param logger:
     :param data: The Aron data Ice object.
-    :param options: Conversion options.
+    :param logger: Logger for additional logging.
     :return: The pythonic representation.
     """
 
