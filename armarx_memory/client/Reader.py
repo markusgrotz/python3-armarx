@@ -8,6 +8,7 @@ from armarx import armem
 from armarx.armem import data as dto  # The ice type namespace.
 
 from armarx_memory.core import MemoryID
+from armarx_memory.aron.aron_ice_types import AronIceTypes
 
 
 class Reader:
@@ -190,6 +191,7 @@ class Reader:
         memory = self.query([q_memory])
         return memory
 
+
     @classmethod
     def for_each_instance_data(
         cls,
@@ -225,12 +227,31 @@ class Reader:
         :param discard_none: If true, None return values are excluded from the result list.
         :return: The values returned by the calls to `fn`.
         """
-        from armarx_memory.aron.conversion import from_aron
+        from armarx_memory.aron.conversion.pythonic_from_to_aron_ice import pythonic_from_aron_ice
 
+        def convert_and_fn(id_, data_):
+            pythonic_data: ty.Dict[str, ty.Any] = pythonic_from_aron_ice(data_)
+            memory_id = MemoryID.from_ice(id_)
+            return fn(memory_id, pythonic_data)
+
+        return cls.for_each_instance_data_ice(convert_and_fn, data)
+
+    @classmethod
+    def for_each_instance_data_ice(
+        cls,
+        fn: ty.Callable[[dto.MemoryID, AronIceTypes.Dict], ty.Any],
+        data: ty.Union[
+            dto.Memory,
+            dto.CoreSegment,
+            dto.ProviderSegment,
+            dto.Entity,
+            dto.EntitySnapshot,
+            dto.EntityInstance,
+        ],
+        discard_none=False,
+    ) -> ty.List[ty.Any]:
         if isinstance(data, dto.EntityInstance):
-            pythonic_data: ty.Dict[str, ty.Any] = from_aron(data.data)
-            memory_id = MemoryID.from_ice(data.id)
-            return [fn(memory_id, pythonic_data)]
+            return [fn(data.id, data.data)]
 
         elif isinstance(data, dto.EntitySnapshot):
             children = data.instances
@@ -247,12 +268,13 @@ class Reader:
 
         results = []
         for child in children:
-            results += cls.for_each_instance_data(fn, child)
+            results += cls.for_each_instance_data_ice(fn, child)
 
         if discard_none:
             results = list(filter(lambda r: r is not None, results))
 
         return results
+
 
     def __bool__(self):
         return bool(self.server)
