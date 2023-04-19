@@ -4,7 +4,8 @@ import logging
 import numpy as np
 import typing as ty
 
-from armarx_memory.aron.aron_ice_types import AronIceTypes, dtypes_dict
+from armarx_memory.aron.aron_ice_types import AronIceTypes, dtypes_dict_to_python, dtypes_dict_to_aron
+from armarx_memory.aron.conversion.options import ConversionOptions
 
 
 def pythonic_to_aron_ice(
@@ -115,14 +116,10 @@ def pythonic_from_aron_ice(
 
 def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
     shape = (*value.shape, value.itemsize)
-    if value.dtype == np.float32:
-        type_str = "float"
-    elif value.dtype == np.float64:
-        type_str = "double"
-    else:
-        type_str = str(value.dtype)
     return AronIceTypes.NDArray(
-        shape=shape, type=type_str, data=value.tobytes()
+        shape=shape,
+        type=dtypes_dict_to_aron[str(value.dtype)],
+        data=value.tobytes(),
     )
 
 
@@ -137,7 +134,7 @@ def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
         shape = data.shape[:-1]
     shape = tuple(shape)
 
-    dtype = dtypes_dict.get(data.type, None)
+    dtype = dtypes_dict_to_python.get(data.type, None)
     if dtype is None:
         size = np.product(shape)
         if size == 0:
