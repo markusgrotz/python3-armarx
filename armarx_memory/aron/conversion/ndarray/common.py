@@ -37,6 +37,16 @@ def ndarray_to_aron(
     :param value: The numpy array.
     :return: The ARON Ice NDArray.
     """
+    try:
+        fields = value.dtype.fields
+    except AttributeError:
+        pass
+    else:
+        # This is a point cloud.
+        assert "position" in fields, fields
+        return PointCloudConversions.pcl_point_cloud_from_py_point_cloud(value)
+
+    # General case.
     shape = (*value.shape, value.itemsize)
     return AronIceTypes.NDArray(
         shape=shape,
@@ -66,7 +76,7 @@ def ndarray_from_aron(
     shape = tuple(shape)
 
     if "pcl::" in data.type:
-        return PointCloudConversions.point_cloud_to_array(
+        return PointCloudConversions.pcl_point_cloud_to_py_point_cloud(
             byte_data=byte_data, type_str=data.type, shape=shape, bytes_per_element=bytes_per_element)
 
     dtype = dtypes_dict_to_python.get(data.type, None)

@@ -1,6 +1,8 @@
 import numpy as np
 import typing as ty
 
+from armarx_memory.aron.aron_ice_types import AronIceTypes
+
 
 class PointCloudConversions:
 
@@ -32,7 +34,6 @@ class PointCloudConversions:
         v: k for k, v in point_type_string_dtype_to_dict.items()
     }
 
-
     @classmethod
     def dtype_from_point_type_string(cls, point_type: str):
         original_argument = point_type
@@ -48,6 +49,27 @@ class PointCloudConversions:
             return dtype
         else:
             raise Exception(f"Point type '{original_argument}' not supported yet.")
+
+    @classmethod
+    def dtype_to_point_type_string(cls, dtype: np.dtype) -> str:
+        suffix = cls.dtype_to_point_type_string_dict.get(dtype, None)
+
+        if suffix is None:
+            fields = dtype.fields
+            # Determine from dtype fields.
+            assert "position" in fields, fields
+            if "color" in fields:
+                if "label" in fields:
+                    return "XYZRGBL"
+                else:
+                    return "XYZRGBA"
+            else:
+                if "label" in fields:
+                    return "XYZL"
+                else:
+                    return "XYZ"
+
+        return f"pcl::Point{suffix}"
 
     @classmethod
     def dtype_without_paddings(cls, pcl_dtype: np.dtype) -> np.dtype:
@@ -74,33 +96,65 @@ class PointCloudConversions:
         return np.dtype(fields)
 
     @classmethod
-    def point_cloud_without_paddings(cls, point_cloud: np.ndarray) -> np.ndarray:
+    def point_cloud_without_paddings(cls, pcl_point_cloud: np.ndarray) -> np.ndarray:
         # Remove paddings to dtypes defined for point cloud providers/processors.
-        new_dtype = cls.dtype_without_paddings(point_cloud.dtype)
-        new_point_cloud = np.zeros(point_cloud.shape, dtype=new_dtype)
-        for key in new_point_cloud.dtype.fields:
-            sub_array = point_cloud[key]
+        py_dtype = cls.dtype_without_paddings(pcl_point_cloud.dtype)
+        py_point_cloud = np.zeros(pcl_point_cloud.shape, dtype=py_dtype)
+        for key in py_point_cloud.dtype.fields:
             if key == "position":
-                sub_array = sub_array[..., :3]
+                py_point_cloud[key] = pcl_point_cloud[key][..., :3]
+            else:
+                py_point_cloud[key] = pcl_point_cloud[key]
 
-            new_point_cloud[key] = sub_array
-
-        return new_point_cloud
+        return py_point_cloud
 
     @classmethod
-    def point_cloud_to_array(
+    def point_cloud_with_paddings(
+            cls,
+            py_point_cloud: np.ndarray,
+            pcl_dtype,
+    ) -> np.ndarray:
+        # Add paddings to dtypes defined for point cloud providers/processors.
+        pcl_point_cloud = np.zeros(py_point_cloud.shape, dtype=pcl_dtype)
+        for key in pcl_point_cloud.dtype.fields:
+            if key == "position":
+                pcl_point_cloud[key][..., :3] = py_point_cloud[key]
+            else:
+                pcl_point_cloud[key] = py_point_cloud[key]
+
+
+    @classmethod
+    def pcl_point_cloud_to_py_point_cloud(
             cls,
             byte_data: bytes,
             type_str: str,
             shape: ty.Tuple,
             bytes_per_element: int,
     ):
-        pcl_dtype = PointCloudConversions.dtype_from_point_type_string(type_str)
+        pcl_dtype = cls.dtype_from_point_type_string(type_str)
         assert pcl_dtype.itemsize == bytes_per_element, f"{pcl_dtype.itemsize} == {bytes_per_element}"
 
-        array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=pcl_dtype)
-        array = array.reshape(shape)
-        assert array.shape == shape, f"{array.shape} == {shape}"
+        pcl_array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=pcl_dtype)
+        pcl_array = pcl_array.reshape(shape)
+        assert pcl_array.shape == shape, f"{pcl_array.shape} == {shape}"
 
-        point_cloud = PointCloudConversions.point_cloud_without_paddings(array)
-        return point_cloud
+        py_point_cloud = cls.point_cloud_without_paddings(pcl_array)
+        return py_point_cloud
+
+    @classmethod
+    def pcl_point_cloud_from_py_point_cloud(
+            cls,
+            py_point_cloud: np.ndarray,
+    ):
+        type_string = cls.dtype_to_point_type_string(py_point_cloud.dtype)
+        pcl_dtype = cls.point_type_string_dtype_to_dict[type_string]
+
+        # Add paddings to match PCL byte alignment.
+        pcl_point_cloud = cls.point_cloud_with_paddings(py_point_cloud, pcl_dtype)
+
+        shape = (*pcl_point_cloud.shape, pcl_point_cloud.itemsize)
+        return AronIceTypes.NDArray(
+            shape=shape,
+            type=type_string,
+            data=pcl_point_cloud.tobytes(),
+        )
