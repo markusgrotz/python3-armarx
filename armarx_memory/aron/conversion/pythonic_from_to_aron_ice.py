@@ -5,8 +5,7 @@ import numpy as np
 import typing as ty
 
 import armarx
-from armarx_memory.aron.aron_ice_types import AronIceTypes, dtypes_dict_to_python, dtypes_dict_to_aron
-from armarx_memory.aron.conversion.options import ConversionOptions
+from armarx_memory.aron.aron_ice_types import AronIceTypes
 
 
 def pythonic_to_aron_ice(
@@ -19,6 +18,7 @@ def pythonic_to_aron_ice(
     :param options: Conversion options.
     :return: An Aron data Ice object.
     """
+    from .ndarray.common import ndarray_to_aron
 
     if value is None:
         return None
@@ -66,6 +66,7 @@ def pythonic_from_aron_ice(
     :param logger: Logger for additional logging.
     :return: The pythonic representation.
     """
+    from .ndarray.common import ndarray_from_aron
 
     def handle_dict(elements):
         return {k: pythonic_from_aron_ice(v) for k, v in elements.items()}
@@ -112,148 +113,3 @@ def pythonic_from_aron_ice(
     raise TypeError(
         f"Could not handle aron object of type '{type(data)}'.\n" f"dir(a): {dir(data)}"
     )
-
-
-def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
-    shape = (*value.shape, value.itemsize)
-    return AronIceTypes.NDArray(
-        shape=shape,
-        type=dtypes_dict_to_aron[str(value.dtype)],
-        data=value.tobytes(),
-    )
-
-
-class PointClouds:
-    dtype_point_color_xyz = np.dtype([
-        ("position", np.float32, (4,)), ("color", np.uint32), ("padding", np.uint8, (12,))
-    ])
-    dtype_point_xyz_color_label = np.dtype([
-        ("position", np.float32, (4,)), ("color", np.uint32), ("label", np.int32)
-    ])
-
-    point_type_string_dtype_to_dict = {
-        # "XYZ": dtype_point_xyz,
-        "XYZRGBA": dtype_point_color_xyz,
-        # "XYZL": dtype_point_xyz_label,
-        "XYZRGBL": dtype_point_xyz_color_label,
-        # "XYZI": dtype_point_xyz_intensity,
-        # "XYZNormal": dtype_point_normal_xyz,
-        # "XYZRGBANormal": dtype_point_color_normal_xyz,
-    }
-
-    dtype_to_point_type_string_dict = {
-        v: k for k, v in point_type_string_dtype_to_dict.items()
-    }
-
-    @classmethod
-    def dtype_from_point_type_string(cls, point_type: str):
-        original_argument = point_type
-
-        if point_type.startswith("pcl::"):
-            point_type = point_type[len("pcl::"):]
-
-        assert point_type.startswith("Point"), point_type
-        point_type = point_type[len("Point"):]
-
-        dtype = cls.point_type_string_dtype_to_dict.get(point_type, None)
-        if dtype is not None:
-            return dtype
-        else:
-            raise Exception(f"Point type '{original_argument}' not supported yet.")
-
-    @classmethod
-    def dtype_without_paddings(cls, pcl_dtype: np.dtype) -> np.dtype:
-        fields = []
-        for key, (dtype, offset) in pcl_dtype.fields.items():
-            if key == "padding":
-                continue
-
-            if dtype.subdtype is None:
-                subdtype = dtype
-                shape = None
-            else:
-                subdtype, shape = dtype.subdtype
-
-            if key == "position":
-                assert shape == (4,)
-                shape = (3,)
-
-            if shape is None:
-                fields.append((key, subdtype))
-            else:
-                fields.append((key, subdtype, shape))
-
-        return np.dtype(fields)
-
-    @classmethod
-    def point_cloud_without_paddings(cls, point_cloud: np.ndarray) -> np.ndarray:
-        # Remove paddings to dtypes defined for point cloud providers/processors.
-        new_dtype = cls.dtype_without_paddings(point_cloud.dtype)
-        new_point_cloud = np.zeros(point_cloud.shape, dtype=new_dtype)
-        for key in new_point_cloud.dtype.fields:
-            sub_array = point_cloud[key]
-            if key == "position":
-                sub_array = sub_array[..., :3]
-
-            new_point_cloud[key] = sub_array
-
-        return new_point_cloud
-
-    @classmethod
-    def point_cloud_to_array(
-            cls,
-            byte_data: bytes,
-            type_str: str,
-            shape: ty.Tuple,
-            bytes_per_element: int,
-    ):
-        pcl_dtype = PointClouds.dtype_from_point_type_string(type_str)
-        assert pcl_dtype.itemsize == bytes_per_element, f"{pcl_dtype.itemsize} == {bytes_per_element}"
-
-        array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=pcl_dtype)
-        array = array.reshape(shape)
-        assert array.shape == shape, f"{array.shape} == {shape}"
-
-        point_cloud = PointClouds.point_cloud_without_paddings(array)
-        return point_cloud
-
-
-def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
-    byte_data: bytes = data.data
-
-    # Last entry is #bytes per element.
-    shape: ty.Tuple[int]
-    try:
-        bytes_per_element = data.dimensions[-1]
-        shape = data.dimensions[:-1]
-    except AttributeError:
-        bytes_per_element = data.shape[-1]
-        shape = data.shape[:-1]
-    shape = tuple(shape)
-
-    if "pcl::" in data.type:
-        return PointClouds.point_cloud_to_array(
-            byte_data=byte_data, type_str=data.type, shape=shape, bytes_per_element=bytes_per_element)
-
-    dtype = dtypes_dict_to_python.get(data.type, None)
-
-    if dtype is None:
-        size = np.product(shape)
-        if size == 0:
-            dtype = np.uint8
-        else:
-            dtype_size = len(byte_data) // size
-            dtype_dict = {1: np.uint8, 2: np.uint16, 4: np.uint32, 8: np.uint64}
-            dtype = dtype_dict.get(dtype_size, None)
-            if dtype is None:
-                # Build a structured dtype with sequence of bytes.
-                dtype = np.dtype([("bytes", np.uint8, dtype_size)])
-
-        print(
-            f"Unknown type '{data.type}' of array with shape {shape} and {len(byte_data)} bytes. "
-            f"Falling back to {dtype}."
-        )
-
-    array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=dtype)
-    array = array.reshape(shape)
-    return array
