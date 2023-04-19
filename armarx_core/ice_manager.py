@@ -15,8 +15,8 @@ from IceStorm import TopicManagerPrx
 from IceStorm import NoSuchTopic
 from IceStorm import AlreadySubscribed
 
-from .config import get_ice_config_files
-from .name_helper import get_ice_default_name
+from armarx_core.config import get_ice_config_files
+from armarx_core.name_helper import get_ice_default_name
 
 logger = logging.getLogger(__name__)
 

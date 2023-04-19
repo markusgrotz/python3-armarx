@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 import transforms3d as tf3d
 
-from armarx import slice_loader
-from armarx.ice_conv.robot_api import pose_base as conv
+from armarx_core import slice_loader
+from armarx_core.ice_conversion.robot_api import pose_base as conv
 
 slice_loader.load_armarx_slice("RobotAPI", "core/PoseBase.ice")
 from armarx import Vector3Base, QuaternionBase, PoseBase

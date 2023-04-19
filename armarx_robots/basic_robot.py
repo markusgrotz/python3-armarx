@@ -8,6 +8,8 @@ from abc import abstractmethod
 
 from functools import lru_cache
 
+import armarx_core
+
 from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
 from armarx import KinematicUnitInterfacePrx

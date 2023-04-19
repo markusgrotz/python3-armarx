@@ -1,8 +1,8 @@
 import pytest
 
 import numpy as np
-from armarx import slice_loader
-from armarx.ice_conv.armarx_core import basic_vector_types as conv
+from armarx_core import slice_loader
+from armarx_core.ice_conversion.armarx_core import basic_vector_types as conv
 
 slice_loader.load_armarx_slice("ArmarXCore", "core/BasicVectorTypes.ice")
 from armarx import Vector2f, Vector3f

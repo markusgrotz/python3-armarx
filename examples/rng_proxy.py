@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from armarx.parser import ArmarXArgumentParser as ArgumentParser
+from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 from armarx_core import ice_manager
 from armarx_core import slice_loader
 
@@ -10,7 +10,6 @@ slice_loader.load_armarx_slice(
 )
 from armarx import RNGProviderComponentInterface
 
-import time
 import logging
 import random
 

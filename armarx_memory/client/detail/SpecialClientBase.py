@@ -45,7 +45,7 @@ class SpecialWriterBase(SpecialClientBase):
     def commit(
         self,
         entity_id: MemoryID,
-        time_created_usec: Optional[int] = None,
+        referenced_time_usec: Optional[int] = None,
         confidence: Optional[float] = None,
         **data_kwargs,
     ):
@@ -54,7 +54,7 @@ class SpecialWriterBase(SpecialClientBase):
         commit.add(
             self.make_update(
                 entity_id=entity_id,
-                time_created_usec=time_created_usec,
+                referenced_time_usec=referenced_time_usec,
                 confidence=confidence,
                 **data_kwargs,
             )
@@ -66,7 +66,7 @@ class SpecialWriterBase(SpecialClientBase):
         provider_name: Optional[str] = None,
         entity_name: Optional[str] = None,
         entity_id: Optional[MemoryID] = None,
-        time_created_usec: Optional[int] = None,
+        referenced_time_usec: Optional[int] = None,
         confidence: Optional[float] = None,
         data=None,
         **data_kwargs,
@@ -90,7 +90,7 @@ class SpecialWriterBase(SpecialClientBase):
 
         return EntityUpdate(
             entity_id=entity_id,
-            time_created_usec=time_created_usec,
+            referenced_time_usec=referenced_time_usec,
             confidence=confidence,
             instances_data=data,
         )

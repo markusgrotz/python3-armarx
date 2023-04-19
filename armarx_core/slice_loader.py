@@ -67,6 +67,33 @@ class ArmarXProxyFinder(MetaPathFinder):
             python_package_name, _type_name = v.fullname.rsplit(".", 1)
             self.package_namespaces.add(python_package_name)
 
+    def _load_slice_file(self, armarx_package_name: str, filename: str):
+        package_dependencies = get_dependencies(armarx_package_name)
+        package_dependencies.append(armarx_package_name)
+
+        include_paths = ["-I{}".format(Ice.getSliceDir())]
+
+        for package_name in package_dependencies:
+            interface_include_path = get_include_path(package_name)
+            if interface_include_path:
+                include_paths.extend(interface_include_path)
+            else:
+                logger.error("Include path for project %s is empty", package_name)
+                raise Exception(f"Invalid include path for project {package_name}")
+
+        filename = os.path.join(
+            include_paths[-1], armarx_package_name, filename
+        )
+        filename = os.path.abspath(filename)
+
+        search_path = " -I".join(include_paths)
+        logger.debug("Looking for slice files in %s", search_path)
+        logger.debug("Looking for %s", filename)
+        if not os.path.exists(filename):
+            raise IOError("Path not found: " + filename)
+        Ice.loadSlice("{} --underscore --all {}".format(search_path, filename))
+
+
     def _load_armarx_slice(self, armarx_package_name: str, filename: str):
         """
         Simple helper function to load a slice definition file.

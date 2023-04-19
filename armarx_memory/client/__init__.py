@@ -4,3 +4,4 @@ from .MemoryNameSystem import MemoryNameSystem
 from .Commit import Commit, EntityUpdate
 from .MemoryListener import MemoryListener
 from .Commit import MemoryID
+from .EntityStream import EntityStream

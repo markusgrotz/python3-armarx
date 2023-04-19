@@ -1,21 +1,7 @@
-from .widgets import (
-    Label,
-    LineEdit,
-    ComboBox,
-    IntSpinBox,
-    IntSlider,
-    FloatSpinBox,
-    FloatSlider,
-    Button,
-    ToggleButton,
-    CheckBox,
-    HBoxLayout,
-    VBoxLayout,
-    GridLayout,
-    GroupBox,
-    VSpacer,
-    HSpacer,
-)
-from .widgets.ndarray import NdArrayWidget
+import warnings
 
-from .client import Tab, Client
+warnings.warn(
+    "Use 'armarx_core.remote_gui' instead.", DeprecationWarning
+)
+
+from armarx_core.remote_gui import *

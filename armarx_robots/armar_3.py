@@ -1,6 +1,9 @@
 from typing import Dict
 from functools import lru_cache
 
+#To inject the variantinfo.xml mappings automatically
+import armarx_core
+
 from armarx_robots.basic_robot import Robot
 
 from armarx import KinematicUnitInterfacePrx
