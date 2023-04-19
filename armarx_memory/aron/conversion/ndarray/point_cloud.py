@@ -5,11 +5,18 @@ import typing as ty
 class PointCloudConversions:
 
     dtype_point_color_xyz = np.dtype([
-        ("position", np.float32, (4,)), ("color", np.uint32), ("padding", np.uint8, (12,))
-    ])
+        ("position", np.float32, (4,)),  # 4 * 4 = 16
+        ("color", np.uint32),  # 1 x 4 = 4
+        ("padding", np.uint8, (12,)),  # 12 x 1 = 12
+    ])  # 32 bytes in total
+
     dtype_point_xyz_color_label = np.dtype([
-        ("position", np.float32, (4,)), ("color", np.uint32), ("label", np.int32)
-    ])
+        ("position", np.float32, (4,)),  # 4 * 4 = 16
+        ("color", np.uint32),  # 1 x 4 = 4
+        ("label", np.uint32),  # 1 x 4 = 4
+        ("padding", np.uint8, (8,)),  # 8 x 1 = 8
+    ])  # 32 bytes in total
+
 
     point_type_string_dtype_to_dict = {
         # "XYZ": dtype_point_xyz,
@@ -24,6 +31,7 @@ class PointCloudConversions:
     dtype_to_point_type_string_dict = {
         v: k for k, v in point_type_string_dtype_to_dict.items()
     }
+
 
     @classmethod
     def dtype_from_point_type_string(cls, point_type: str):

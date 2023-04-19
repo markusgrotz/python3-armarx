@@ -18,6 +18,7 @@ dtypes_dict_to_python = {
     "16": dtype_rgb,  # "16" == OpenCV 8UC3 = RGB image
     # "16": np.float32,  # "16" == OpenCV F1C1 = Depth image
 }
+
 # dtypes_dict_to_aron serves as a lookup table for the python type to aron's data type string.
 # As the mapping is not bijective, querying dtypes_dict_to_python in a reverse direction is not suitable.
 # The python types are converted to string, as it may happen that they are unhashable (like dtype_rgb, being a list)
@@ -28,19 +29,14 @@ dtypes_dict_to_aron = {
 }
 
 
-def convert_dtype_rgb_to_int8(array: np.ndarray) -> np.ndarray:
+def ndarray_to_aron(
+        value: np.ndarray,
+) -> AronIceTypes.NDArray:
     """
-    Converts an array with shape (m, n) and dtype dtype_rgb
-    to an array with shape (m, n, 3) and dtype int8.
-
-    :param array: The RGB image with structured dtype.
-    :return: The RGB image with native dtype.
+    Convert a numpy array to an ARON Ice NDArray.
+    :param value: The numpy array.
+    :return: The ARON Ice NDArray.
     """
-    return np.stack([array[c] for c in "rgb"], axis=-1)
-
-
-
-def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
     shape = (*value.shape, value.itemsize)
     return AronIceTypes.NDArray(
         shape=shape,
@@ -49,8 +45,14 @@ def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
     )
 
 
-
-def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
+def ndarray_from_aron(
+        data: AronIceTypes.NDArray,
+) -> np.ndarray:
+    """
+    Convert an ARON Ice NDArray to a suitable numpy array.
+    :param data: The ARON Ice NDArray.
+    :return: A numpy array.
+    """
     byte_data: bytes = data.data
 
     # Last entry is #bytes per element.
@@ -89,3 +91,15 @@ def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
     array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=dtype)
     array = array.reshape(shape)
     return array
+
+
+
+def convert_dtype_rgb_to_int8(array: np.ndarray) -> np.ndarray:
+    """
+    Convert an array with shape (m, n) and dtype dtype_rgb
+    to an array with shape (m, n, 3) and dtype int8.
+
+    :param array: The RGB image with structured dtype.
+    :return: The RGB image with native dtype.
+    """
+    return np.stack([array[c] for c in "rgb"], axis=-1)
