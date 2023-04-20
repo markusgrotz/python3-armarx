@@ -8,8 +8,7 @@ from armarx.ice_manager import is_alive
 from armarx_core.parser import ArmarXArgumentParser as ArgumentParser
 
 from armarx_vision.pointclouds import rgb_to_uint32
-from armarx_vision.pointcloud_provider import PointCloudProvider
-from armarx_vision.pointcloud_provider import dtype_point_color_xyz
+from armarx_vision import pointcloud_provider as pcp
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +17,9 @@ HEIGHT = 120
 
 
 def main():
-    pc_provider = PointCloudProvider(
+    pc_provider = pcp.PointCloudProvider(
         "ExamplePointCloudProvider",
-        point_dtype=dtype_point_color_xyz,
+        point_dtype=pcp.dtype_point_color_xyz,
         initial_capacity=WIDTH * HEIGHT,
     )
     pc_provider.on_connect()
