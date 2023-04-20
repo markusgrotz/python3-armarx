@@ -12,8 +12,8 @@ import numpy as np
 
 from armarx_core import ice_manager
 
-from visionx.pointclouds import dtype_point_color_xyz, get_point_cloud_format
-from visionx.pointclouds import (
+from armarx_vision.pointclouds import dtype_point_color_xyz, get_point_cloud_format
+from armarx_vision.pointclouds import (
     PointCloudProviderInterface,
     PointCloudProcessorInterfacePrx,
 )

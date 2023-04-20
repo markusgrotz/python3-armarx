@@ -1,29 +1,4 @@
-import numpy as np
-
 from .import_aron_slice import import_aron_slice
-
-
-dtype_rgb = [("r", "i1"), ("g", "i1"), ("b", "i1")]
-
-dtypes_dict = {
-    "float": np.float32,
-    "float32": np.float32,
-    "double": np.float64,
-    "float64": np.float64,
-    "16": dtype_rgb,  # "16" == OpenCV 8UC3 = RGB image
-    # "16": np.float32,  # "16" == OpenCV F1C1 = Depth image
-}
-
-
-def convert_dtype_rgb_to_int8(array: np.ndarray) -> np.ndarray:
-    """
-    Converts an array with shape (m, n) and dtype dtype_rgb
-    to an array with shape (m, n, 3) and dtype int8.
-
-    :param array: The RGB image with structured dtype.
-    :return: The RGB image with native dtype.
-    """
-    return np.stack([array[c] for c in "rgb"], axis=-1)
 
 
 try:

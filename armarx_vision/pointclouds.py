@@ -9,6 +9,10 @@ from typing import Tuple, List
 
 import numpy as np
 
+from armarx_core import slice_loader
+slice_loader.load_armarx_slice("VisionX", "core/PointCloudProviderInterface.ice")
+slice_loader.load_armarx_slice("VisionX", "core/PointCloudProcessorInterface.ice")
+
 from visionx import PointCloudProviderInterfacePrx
 from visionx import PointCloudProviderInterface
 from visionx import PointCloudProcessorInterfacePrx

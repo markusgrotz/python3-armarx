@@ -4,7 +4,8 @@ import logging
 import numpy as np
 import typing as ty
 
-from armarx_memory.aron.aron_ice_types import AronIceTypes, dtypes_dict
+import armarx
+from armarx_memory.aron.aron_ice_types import AronIceTypes
 
 
 def pythonic_to_aron_ice(
@@ -17,6 +18,7 @@ def pythonic_to_aron_ice(
     :param options: Conversion options.
     :return: An Aron data Ice object.
     """
+    from .ndarray.common import ndarray_to_aron
 
     if value is None:
         return None
@@ -60,11 +62,11 @@ def pythonic_from_aron_ice(
     """
     Deeply converts an Aron data Ice object to its pythonic representation.
 
-    :param logger:
     :param data: The Aron data Ice object.
-    :param options: Conversion options.
+    :param logger: Logger for additional logging.
     :return: The pythonic representation.
     """
+    from .ndarray.common import ndarray_from_aron
 
     def handle_dict(elements):
         return {k: pythonic_from_aron_ice(v) for k, v in elements.items()}
@@ -111,50 +113,3 @@ def pythonic_from_aron_ice(
     raise TypeError(
         f"Could not handle aron object of type '{type(data)}'.\n" f"dir(a): {dir(data)}"
     )
-
-
-def ndarray_to_aron(value: np.ndarray) -> AronIceTypes.NDArray:
-    shape = (*value.shape, value.itemsize)
-    if value.dtype == np.float32:
-        type_str = "float"
-    elif value.dtype == np.float64:
-        type_str = "double"
-    else:
-        type_str = str(value.dtype)
-    return AronIceTypes.NDArray(
-        shape=shape, type=type_str, data=value.tobytes()
-    )
-
-
-def ndarray_from_aron(data: AronIceTypes.NDArray) -> np.ndarray:
-    # Last entry is #bytes per entry
-    byte_data: bytes = data.data
-
-    shape: ty.Tuple[int]
-    try:
-        shape = data.dimensions[:-1]
-    except AttributeError:
-        shape = data.shape[:-1]
-    shape = tuple(shape)
-
-    dtype = dtypes_dict.get(data.type, None)
-    if dtype is None:
-        size = np.product(shape)
-        if size == 0:
-            dtype = np.uint8
-        else:
-            dtype_size = len(byte_data) // size
-            dtype_dict = {1: np.uint8, 2: np.uint16, 4: np.uint32, 8: np.uint64}
-            dtype = dtype_dict.get(dtype_size, None)
-            if dtype is None:
-                # Build a structured dtype with sequence of bytes.
-                dtype = np.dtype([("bytes", np.uint8, dtype_size)])
-
-        print(
-            f"Unknown type '{data.type}' of array with shape {shape} and {len(byte_data)} bytes. "
-            f"Falling back to {dtype}."
-        )
-
-    array: np.ndarray = np.frombuffer(buffer=byte_data, dtype=dtype)
-    array = array.reshape(shape)
-    return array
