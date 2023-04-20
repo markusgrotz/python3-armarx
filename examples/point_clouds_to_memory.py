@@ -10,8 +10,9 @@ from armarx_core.tools.metronome import Metronome
 from armarx_core.parser import ArmarXArgumentParser
 from armarx_memory import client as amc
 from armarx_memory import core as amcore
+from armarx_memory.aron.conversion import pythonic_from_to_aron_ice
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 WIDTH = 160
 HEIGHT = 120
@@ -33,21 +34,23 @@ def main():
 
     dtype = np.dtype([("position", np.float32, (3,)), ("color", np.uint32)])
 
+    logged_once = False
+
     try:
         metronome = Metronome(frequency_hertz=30)
 
         while ice_manager.is_alive():
             metronome.wait_for_next_tick()
 
-            pc = np.zeros((WIDTH, HEIGHT), dtype=dtype)
+            point_cloud = np.zeros((WIDTH, HEIGHT), dtype=dtype)
 
             time_usec = amcore.time_usec()
 
             # You can slice the relevant data fields out of the structured data
-            positions = pc[
+            positions = point_cloud[
                 "position"
             ]  # This is a view to the position data (3D array float32)
-            colors = pc[
+            colors = point_cloud[
                 "color"
             ]  # This is a view to the color data (1D array of uint32)
 
@@ -59,31 +62,37 @@ def main():
                 for x in range(WIDTH):
                     g = int(255.0 * height_t)
                     b = int(255 * (1.0 - height_t))
-                    colors[index] = 255 + g * 256 + b * 256 * 256
-                    # The following code is very slow and is therefore commented out
-                    # colors[index] = rgb_to_uint32(255, g, b)
-                    point = positions[index]
+                    r = 255
+                    # Colors of PCL point clouds are encoded as BGRA.
+                    colors[x, y] = b + (g * 256) + (r * 256 * 256)
+
+                    point = positions[x, y]
                     point[0] = x
                     point[1] = y
                     point[2] = 50 * height_t
 
                     index += 1
 
+            if not logged_once:
+                log.info(f"Commit first point cloud with shape {point_cloud.shape} ...")
+                logged_once = True
+
             data = {
-                "pointcloud": point_cloud_entity_id,
+                "pointcloud": point_cloud,
             }
+            data_aron_ice = pythonic_from_to_aron_ice.pythonic_to_aron_ice(data)
 
             commit = amc.Commit()
             commit.add(amc.EntityUpdate(
                 entity_id=point_cloud_entity_id,
-                instances_data=[data],
+                instances_data=[data_aron_ice],
                 time_referenced_usec=time_usec,
             ))
 
             writer.commit(commit)
 
     except KeyboardInterrupt:
-        logger.info("Shutting down.")
+        log.info("Shutting down.")
 
 
 if __name__ == "__main__":
