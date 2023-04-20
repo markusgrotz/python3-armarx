@@ -60,14 +60,14 @@ class PointCloudConversions:
             assert "position" in fields, fields
             if "color" in fields:
                 if "label" in fields:
-                    return "XYZRGBL"
+                    suffix = "XYZRGBL"
                 else:
-                    return "XYZRGBA"
+                    suffix = "XYZRGBA"
             else:
                 if "label" in fields:
-                    return "XYZL"
+                    suffix = "XYZL"
                 else:
-                    return "XYZ"
+                    suffix = "XYZ"
 
         return f"pcl::Point{suffix}"
 
@@ -119,9 +119,12 @@ class PointCloudConversions:
         for key in pcl_point_cloud.dtype.fields:
             if key == "position":
                 pcl_point_cloud[key][..., :3] = py_point_cloud[key]
+            elif key == "padding":
+                pass
             else:
                 pcl_point_cloud[key] = py_point_cloud[key]
 
+        return pcl_point_cloud
 
     @classmethod
     def pcl_point_cloud_to_py_point_cloud(
@@ -147,7 +150,7 @@ class PointCloudConversions:
             py_point_cloud: np.ndarray,
     ):
         type_string = cls.dtype_to_point_type_string(py_point_cloud.dtype)
-        pcl_dtype = cls.point_type_string_dtype_to_dict[type_string]
+        pcl_dtype = cls.dtype_from_point_type_string(type_string)
 
         # Add paddings to match PCL byte alignment.
         pcl_point_cloud = cls.point_cloud_with_paddings(py_point_cloud, pcl_dtype)
