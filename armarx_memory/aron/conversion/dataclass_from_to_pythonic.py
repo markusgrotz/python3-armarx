@@ -145,10 +145,15 @@ class DataclassFromToDict:
                 self.logger.debug(f"{pre}> Process union.")
 
             union_types = field_type.__args__
+
+            if type(None) in union_types and value is None:
+                return None
+
             for union_type in union_types:
                 if self.logger is not None:
                     self.logger.debug(f"{pre}  - Try option {union_type} ...")
 
+                # ToDo: Correctly capture when this conversion fails and proceed with next one.
                 result = self.dataclass_from_dict(union_type, value, depth=depth+1)
                 if isinstance(result, union_type):
                     return result

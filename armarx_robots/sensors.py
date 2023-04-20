@@ -1,5 +1,8 @@
 from functools import lru_cache
 
+from armarx_core import slice_loader
+slice_loader.load_armarx_slice("VisionX", "components/Calibration.ice")
+
 from visionx import ImageProviderInterfacePrx
 
 from armarx_vision.camera_utils import get_stereo_calibration
@@ -27,7 +30,8 @@ class Camera:
         """
         Returns the proxy of the visionx.ImageProvider
         """
-        return ImageProviderInterfacePrx.get_proxy(self.provider_name)
+        from armarx_core import ice_manager
+        return ice_manager.get_proxy(ImageProviderInterfacePrx, self.provider_name)
 
     @property
     def image_format(self) -> ImageFormatInfo:
