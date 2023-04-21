@@ -29,6 +29,15 @@ dtypes_dict_to_aron = {
 }
 
 
+def is_point_cloud(array: np.ndarray):
+    try:
+        fields = array.dtype.fields
+    except AttributeError:
+        pass
+    else:
+        return fields is not None
+
+
 def ndarray_to_aron(
         value: np.ndarray,
 ) -> AronIceTypes.NDArray:
@@ -37,13 +46,8 @@ def ndarray_to_aron(
     :param value: The numpy array.
     :return: The ARON Ice NDArray.
     """
-    try:
-        fields = value.dtype.fields
-    except AttributeError:
-        pass
-    else:
-        # This is a point cloud.
-        assert "position" in fields, fields
+    if is_point_cloud(value):
+        assert "position" in value.dtype.fields, value.dtype.fields
         return PointCloudConversions.pcl_point_cloud_from_py_point_cloud(value)
 
     # General case.
