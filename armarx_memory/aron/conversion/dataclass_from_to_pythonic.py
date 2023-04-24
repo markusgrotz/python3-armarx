@@ -1,8 +1,7 @@
 import logging
 
+import dataclasses as dc
 import typing as ty
-
-from armarx_memory.aron.conversion.options import ConversionOptions
 
 
 class DataclassFromToDict:
@@ -178,7 +177,6 @@ class DataclassFromToDict:
         Deeply converts an ARON dataclass to a dict.
 
         :param obj: An object of a dataclass.
-        :param logger: An optional logger.
         :param depth:
         :return: A dict containing pythonic data types.
         """
@@ -197,11 +195,17 @@ class DataclassFromToDict:
         if self.logger is not None:
             self.logger.debug(f"{pre}Construct dictionary from object of class {obj.__class__.__name__} ...")
 
-        field_types = obj.__annotations__
+        try:
+            fields: ty.Iterable[dc.Field] = dc.fields(obj)
+        except TypeError:
+            # Not a dataclass => return as-is.
+            return obj
 
         # Build kwargs for cls.
         data = dict()
-        for field_name, field_type in field_types.items():
+        for field in fields:
+            field_name = field.name
+            field_type = field.type
             origin = field_type.__dict__.get("__origin__", None)
 
             if ty.ClassVar in [field_type, origin]:
