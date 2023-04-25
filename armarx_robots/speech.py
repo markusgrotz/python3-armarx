@@ -2,7 +2,11 @@ import logging
 import threading
 
 #To inject the variantinfo.xml mappings automatically
-import armarx_core
+import armarx
+
+from armarx_core import slice_loader
+
+slice_loader.load_armarx_slice("RobotAPI", "speech/SpeechInterface.ice")
 
 from armarx import TextListenerInterfacePrx
 

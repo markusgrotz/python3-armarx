@@ -6,6 +6,10 @@ import armarx_core
 
 from armarx_robots.basic_robot import Robot
 
+from armarx_core import slice_loader
+
+slice_loader.load_armarx_slice("RobotAPI", "components/ViewSelectionInterface.ice")
+
 from armarx import KinematicUnitInterfacePrx
 from armarx import ViewSelectionInterfacePrx
 from armarx import ViewTargetBase

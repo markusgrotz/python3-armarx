@@ -10,6 +10,13 @@ from functools import lru_cache
 
 import armarx_core
 
+import armarx
+from armarx_core import slice_loader
+
+slice_loader.load_armarx_slice("ArmarXCore", "components/EmergencyStopInterface.ice")
+slice_loader.load_armarx_slice("RobotAPI", "units/KinematicUnitInterface.ice")
+slice_loader.load_armarx_slice("RobotAPI", "units/HandUnitInterface.ice")
+
 from armarx import EmergencyStopMasterInterfacePrx
 from armarx import EmergencyStopState
 from armarx import KinematicUnitInterfacePrx

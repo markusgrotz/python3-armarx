@@ -9,6 +9,10 @@ from typing import Any
 #To inject the variantinfo.xml mappings automatically
 import armarx_core
 
+from armarx_core import slice_loader
+
+slice_loader.load_armarx_slice("ArmarXCore", "components/SimpleStatechartExecutorInterface.ice")
+
 from armarx import SimpleStatechartExecutorInterfacePrx
 
 from armarx import StateParameterIceBase
