@@ -250,9 +250,14 @@ class DataclassFromToDict:
 
         if value is None:
             if self.logger is not None:
-                self.logger.debug(f"{pre}> Process NoneType")
+                self.logger.debug(f"{pre}> Process None-cType")
 
-            assert type_ == type(None), type_  # Note, If this fails, comment out
+            if origin == ty.Union:
+                union_types = type_.__args__
+                assert type(None) in union_types, (type_, origin, union_types)
+            else:
+                assert type_ == type(None), (type_, origin)  # Note, If this fails, comment out
+
             return None
 
         elif isinstance(value, list):
