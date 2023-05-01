@@ -253,6 +253,9 @@ class Robot:
 
         return controller_name, ctrl, config
 
+    def teach(self, kinematic_chain: str, side: str, filename: str):
+        return self.ctrl.kinestheticTeaching(kinematic_chain, side, filename)
+
     def update_controller_config(self, controller_name: str):
         self.controllers[controller_name].updateConfig(self.controller_cfg[controller_name].to_aron_ice())
 
