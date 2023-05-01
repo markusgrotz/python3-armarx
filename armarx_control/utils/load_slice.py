@@ -2,7 +2,7 @@ import sys
 from typing import Any
 from armarx_core import ice_manager
 from armarx_core.slice_loader import ArmarXProxyFinder
-from robot_utils import console
+from armarx_control import console
 
 
 def load_slice(armarx_package_name: str, filename: str):

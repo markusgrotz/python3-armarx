@@ -1,6 +1,6 @@
 import json
 from marshmallow_dataclass import dataclass
-from robot_utils.py.utils import default_field
+from armarx_control.utils.dataclass import default_field
 from armarx_memory.aron.aron_dataclass import AronDataclass
 from enum import Enum
 
@@ -91,7 +91,7 @@ class ControllerCreatorConfig:
 
 @dataclass
 class KinematicUnitConfig:
-    proxy_name:         str = "KinematicUnit"
+    proxy_name:         str = "Armar6KinematicUnit"
 
 
 @dataclass
