@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-# from armarx_core.cmake_helper import get_data_path
+from armarx_core.cmake_helper import get_data_path
 
 
 def get_package_evn_variable(package_name: str) -> str:
@@ -27,9 +27,9 @@ def get_armarx_package_data_dir(package_name: str) -> Path:
     return root / "data" / package_name
 
 
-# def get_armarx_package_dir(package_name: str) -> Path:
-#     return Path(get_data_path(package_name)[0]).parent
-#
-#
-# def get_armarx_package_data_dir(package_name: str) -> Path:
-#     return Path(get_data_path(package_name)[0]) / package_name
+def get_cmake_package_dir(package_name: str) -> Path:
+    return Path(get_data_path(package_name)[0]).parent
+
+
+def get_cmake_package_data_dir(package_name: str) -> Path:
+    return Path(get_data_path(package_name)[0]) / package_name
