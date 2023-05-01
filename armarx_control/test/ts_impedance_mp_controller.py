@@ -8,8 +8,8 @@ def main():
     np.set_printoptions(suppress=True, precision=3)
 
     c = cfg.RobotConfig()
-    c.robot_unit = cfg.RobotUnitConfig("Armar6Unit")
-    c.kinematic_unit = cfg.KinematicUnitConfig("Armar6KinematicUnit")
+    c.robot_unit = cfg.RobotUnitConfig()
+    c.kinematic_unit = cfg.KinematicUnitConfig()
     c.ctrl = cfg.ControllerCreatorConfig()
     c.hand = cfg.HandUnitConfig()
     c.platform = cfg.PlatformUnitConfig()
@@ -18,7 +18,9 @@ def main():
     control_type = "TSImpedanceMP"
     rns_right = "RightArm"
     tcp_right = "Hand R TCP"
-    controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, "")
+    config_filename = ""
+    # config_filename = "/common/homes/staff/gao/projects/control/python3-armarx/armarx_control/test/config/approach_kettle.json"
+    controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, config_filename)
 
     try:
         init_target_pose_r = robot.get_prev_target(controller_name_r)
