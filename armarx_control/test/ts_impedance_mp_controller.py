@@ -40,6 +40,7 @@ def main():
         duration = 5.0
         input("start? ... ")
         ctrl_r.start("default", current_pose_r, target_pose_r, duration)
+        # ctrl_r.start("default", current_pose_r, [], duration)
         console.log("[bold yellow]controller is running")
 
         console.log("close hands")
