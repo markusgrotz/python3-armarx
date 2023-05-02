@@ -94,7 +94,7 @@ def main():
             commit.add(amc.EntityUpdate(
                 entity_id=point_cloud_entity_id,
                 instances_data=[data_aron_ice],
-                time_referenced_usec=time_usec,
+                referenced_time_usec=time_usec,
             ))
 
             writer.commit(commit)
