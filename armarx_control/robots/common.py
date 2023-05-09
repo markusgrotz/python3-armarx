@@ -288,10 +288,10 @@ class Robot:
         #     return False
         #
         # ic(self.controller_cfg[controller_name].desired_pose)
-        if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
-            console.log(f"[red bold]target pose too far")
-            return False
-        self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
+        # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
+        #     console.log(f"[red bold]target pose {target} too far")
+        #     return False
+        # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
         # ic(self.controller_cfg[controller_name].desired_pose)
         # self.update_controller_config(controller_name)
         # return True
