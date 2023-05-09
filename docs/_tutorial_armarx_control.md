@@ -57,6 +57,7 @@ If you only need the monocular or stereo cameras, then you don't need the `Contr
 Just do the following
 
 ```shell
+from armarx_control.robots.common import Robot, cfg
 robot_cfg = cfg.RobotConfig()
 if cam_mode == "stereo":
     robot_cfg.stereo = cfg.StereoCameraConfig()
