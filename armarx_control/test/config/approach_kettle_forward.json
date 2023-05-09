@@ -1,0 +1,146 @@
+{
+  "kpImpedance": {
+    "type": "float",
+    "dims": [
+      6,
+      1
+    ],
+    "data": [
+      500,
+      500,
+      500,
+      30,
+      30,
+      30
+    ]
+  },
+  "kdImpedance": {
+    "type": "float",
+    "dims": [
+      6,
+      1
+    ],
+    "data": [
+      100,
+      100,
+      100,
+      10,
+      10,
+      10
+    ]
+  },
+  "kpNullspace": {
+    "type": "float",
+    "dims": [
+      8,
+      1
+    ],
+    "data": [
+      25.0,
+      15.0,
+      15.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0
+    ]
+  },
+  "kdNullspace": {
+    "type": "float",
+    "dims": [
+      8,
+      1
+    ],
+    "data": [
+      4.0,
+      2.0,
+      2.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      2.0
+    ]
+  },
+  "desiredPose": {
+    "type": "float",
+    "dims": [
+      4,
+      4
+    ],
+    "data": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "desiredTwist": {
+    "type": "float",
+    "dims": [
+      6,
+      1
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "torqueLimit": 20,
+  "qvelFilter": 0.9,
+  "desiredNullspaceJointAngles": null,
+  "mpConfig":
+  {
+    "mpList": [
+      {
+        "name":                 "default",
+        "className":            "TSMP",
+        "mpTypeString":         "TaskSpacePrincipalComponent",
+        "mpMode":               "Linear",
+        "mpStyle":              "Discrete",
+        "regressionModel":      "default",
+        "kernelSize":           30,
+        "damping":              20.0,
+        "tau":                  1.0,
+        "amplitude":            1.0,
+        "durationSec":          5.0,
+
+        "fileList":             [
+          "/home/armar-user/code_jianfeng_ext/RobotControllers/data/RobotControllers/kinesthetic_teaching/approach_kettle-2023-05-01-13-18-02-ts-forward.csv"
+        ],
+        "stopWithMP":           true,
+        "viaPoints": [
+
+        ],
+
+        "enablePhaseStop":      false,
+        "maxValue":             10,
+        "slop":                 10,
+        "goDist":               50,
+        "backDist":             10,
+        "psKpPos":              1,
+        "psKdPos":              2,
+        "psKpOri":              1,
+        "psKdOri":              0.1,
+        "psMM2Radian":          100
+      }
+    ]
+  }
+}
