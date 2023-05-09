@@ -19,7 +19,7 @@ def main():
     rns_right = "RightArm"
     tcp_right = "Hand R TCP"
     config_filename = ""
-    # config_filename = "/common/homes/staff/gao/projects/control/python3-armarx/armarx_control/test/config/approach_kettle.json"
+    # config_filename = "./config/approach_kettle.json"
     controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, config_filename)
 
     try:

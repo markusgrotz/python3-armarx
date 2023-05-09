@@ -1,9 +1,11 @@
 import time
+import click
 from pathlib import Path
 import numpy as np
 from armarx_control import console
 from armarx_control.robots.common import cfg, Robot, pose_to_vec
 from armarx_control.utils.pkg import get_armarx_package_data_dir
+from armarx_control.utils.file import copy_file_to_robot
 from robot_utils.py.utils import load_dict_from_yaml, save_to_yaml
 from robot_utils.py.filesystem import validate_file
 from robot_utils.py.interact import ask_list
@@ -11,39 +13,39 @@ import json
 
 # 'paramiko',  # required for ssh connection, copy files, etc
 # 'scp',
-from paramiko import SSHClient
-from scp import SCPClient
-
-
-ssh_info = {
-    'hostname': '10.6.2.100',
-    'port': 22,
-    'username': "armar-user",
-    'timeout': 5
-}
-
-
-def copy_to_robot(filename: Path):
-    with SSHClient() as ssh:
-        ssh.load_system_host_keys()
-        try:
-            ssh.connect(**ssh_info)
-        except paramiko.SSHException as ex:
-            console.print(f"[bold red]{ex}")
-            console.log(f"[bold red]Cannot connect to {ssh_info}")
-            return None
-        try:
-            with SCPClient(ssh.get_transport()) as scp:
-                if filename.is_file():
-                    folder = "/home/armar-user/armar6_motion/kinesthetic_teaching"
-                    scp.put(str(filename), folder, recursive=True)
-                    console.rule("control config sent to robot")
-                    return Path(folder) / filename.name
-                else:
-                    console.log(f"[bold red]{filename} doesn't exist")
-                    return None
-        except RuntimeError:
-            console.log(f"ssh copy failed")
+# from paramiko import SSHClient, SSHException
+# from scp import SCPClient
+#
+#
+# ssh_info = {
+#     'hostname': '10.6.2.100',
+#     'port': 22,
+#     'username': "armar-user",
+#     'timeout': 5
+# }
+#
+#
+# def copy_to_robot(filename: Path):
+#     with SSHClient() as ssh:
+#         ssh.load_system_host_keys()
+#         try:
+#             ssh.connect(**ssh_info)
+#         except SSHException as ex:
+#             console.print(f"[bold red]{ex}")
+#             console.log(f"[bold red]Cannot connect to {ssh_info}")
+#             return None
+#         try:
+#             with SCPClient(ssh.get_transport()) as scp:
+#                 if filename.is_file():
+#                     folder = "/home/armar-user/armar6_motion/kinesthetic_teaching"
+#                     scp.put(str(filename), folder, recursive=True)
+#                     console.rule("control config sent to robot")
+#                     return Path(folder) / filename.name
+#                 else:
+#                     console.log(f"[bold red]{filename} doesn't exist")
+#                     return None
+#         except RuntimeError:
+#             console.log(f"ssh copy failed")
 
 
 def run_ts_imp_mp_controller(robot: Robot, config_filename: Path, duration: float = 5.0):
@@ -86,7 +88,11 @@ def run_ts_imp_mp_controller(robot: Robot, config_filename: Path, duration: floa
         robot.delete_controller(controller_name_r)
 
 
-def main():
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
+@click.option("--name",         "-n",   type=str,      help="the absolute path to demonstration root")
+def main(name):
+    if not name:
+        name = "kinesthetic_teaching"
     controller_type = "NJointTSImpedanceMPController"
     config_file = get_armarx_package_data_dir("armarx_control") / f"controller_config/{controller_type}/default.json"
     mp_config = load_dict_from_yaml(config_file)
@@ -104,7 +110,7 @@ def main():
     nodeset = "RightArm"
     side = "right"
     console.log(f"[bold yellow]you can press the FT sensor of {nodeset} to start")
-    filename = robot.teach(nodeset, side, "kinesthetic_teaching")
+    filename = robot.teach(nodeset, side, name)
     console.log(f"[bold cyan]writing to {filename}")
 
     console.log(f"[bold green]preparing the backward mp config")
@@ -114,7 +120,7 @@ def main():
 
     def move_backward():
         motion_file = validate_file(f"{filename}-ts-backward.csv", throw_error=True)[0]
-        motion_file = copy_to_robot(motion_file)
+        motion_file = copy_file_to_robot(motion_file)
         mp_cfg["fileList"] = [str(motion_file)]
         controller_config_filename = current_dir / "config/teaching_backward.json"
         with open(controller_config_filename, 'w') as fp:
@@ -124,7 +130,7 @@ def main():
 
     def move_forward():
         motion_file = validate_file(f"{filename}-ts-forward.csv", throw_error=True)[0]
-        motion_file = copy_to_robot(motion_file)
+        motion_file = copy_file_to_robot(motion_file)
         mp_cfg["fileList"] = [str(motion_file)]
         controller_config_filename = current_dir / "config/teaching_forward.json"
         with open(controller_config_filename, 'w') as fp:
