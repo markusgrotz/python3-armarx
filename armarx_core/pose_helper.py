@@ -30,6 +30,9 @@ def mat2pose(pose: np.ndarray, frame: str = None, agent: str = None) -> FramedPo
     q = tf3d.quaternions.mat2quat(pose[:3, :3])
     q = QuaternionBase(*q)
     v = Vector3Base(*pose[:3, 3])
+    v.x = float(pose[0, 3])
+    v.y = float(pose[1, 3])
+    v.z = float(pose[2, 3])
     if not frame:
         return PoseBase(v, q)
     else:

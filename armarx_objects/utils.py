@@ -28,6 +28,7 @@ from armarx.objpose import ObjectPoseTopicPrx
 
 from armarx.data import ObjectID
 
+from armarx_core.time.date_time import DateTimeIceConverter
 
 def provide_poses(
     provider_name: str,
@@ -49,11 +50,14 @@ def provide_poses(
         timestamp = timestamp or (time.time() * 1e6)
         dataset, object_name = name.split("/")
         object_id = ObjectID(dataset, object_name, object_name)
+        time_converter = DateTimeIceConverter()
+        t = time_converter.to_ice(timestamp)
+
         object_pose = ProvidedObjectPose(
             providerName=provider_name,
             objectPose=pose,
             objectID=object_id,
-            timestampMicroSeconds=timestamp,
+            timestamp=t,
         )
         object_poses.append(object_pose)
     pose_topic.reportObjectPoses(provider_name, object_poses)
