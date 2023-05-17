@@ -20,9 +20,9 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.6.9,<4.0"
-zeroc-ice = "3.7.0"
+zeroc-ice = "3.7.9"
 lxml = ">=4.8.0"
-numpy = ">=1.19.5"
+numpy = "~1.22"
 transforms3d = ">=0.4.1"
 dataclasses = { version = ">=0.8", python = "<3.7" }
 marshmallow = "*"
