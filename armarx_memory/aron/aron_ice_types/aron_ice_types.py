@@ -29,7 +29,7 @@ try:
             ret = DateTime()
             ret.clockType = int(ClockTypeEnum.Realtime) # TODO FIX ME!
             ret.hostname = "localhost"
-            ret.timeSinceEpoch.microSeconds = value.microsecond
+            ret.timeSinceEpoch.microSeconds = value.timestamp() * 1000000
 
             return ret.to_aron_ice()
 
