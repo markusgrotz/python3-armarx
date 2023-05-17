@@ -1,5 +1,8 @@
 from .import_aron_slice import import_aron_slice
 
+from armarx_memory.aron.common.time import * 
+
+from datetime import datetime
 
 try:
     # beta 0.2.3
@@ -20,6 +23,15 @@ try:
         Dict = ns.Dict
 
         NDArray = ns.NDArray
+
+        @classmethod
+        def datetime(cls, value: datetime) -> Dict:
+            ret = DateTime()
+            ret.clockType = int(ClockTypeEnum.Realtime) # TODO FIX ME!
+            ret.hostname = "localhost"
+            ret.timeSinceEpoch.microSeconds = value.microsecond
+
+            return ret.to_aron_ice()
 
         @classmethod
         def string(cls, value: str) -> String:

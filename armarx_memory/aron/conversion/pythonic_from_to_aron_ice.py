@@ -7,6 +7,7 @@ import typing as ty
 import armarx
 from armarx_memory.aron.aron_ice_types import AronIceTypes
 
+from datetime import datetime
 
 def pythonic_to_aron_ice(
     value: ty.Any,
@@ -22,6 +23,8 @@ def pythonic_to_aron_ice(
 
     if value is None:
         return None
+    if isinstance(value, datetime):
+        return AronIceTypes.datetime(value)
     if isinstance(value, str):
         return AronIceTypes.string(value)
     elif isinstance(value, bool):
