@@ -1,8 +1,11 @@
 import dataclasses as dc
-import typing as ty
 from enum import IntEnum
+import typing as ty
+
+import numpy as np
 
 from armarx_memory.aron.aron_dataclass import AronDataclass, AronIntEnumDataclass
+
 
 class ClockTypeEnum(IntEnum):
     Realtime = 0,
@@ -14,9 +17,11 @@ class ClockTypeEnum(IntEnum):
 # class ClockType(AronIntEnumDataclass):
 #     value: ClockTypeEnum = dc.field(default=ClockTypeEnum.Realtime)
 
+
 @dc.dataclass
 class Duration(AronDataclass):
-    microSeconds: int = 0
+    microSeconds: np.int64 = np.int64(0)
+
 
 @dc.dataclass
 class Frequency(AronDataclass):

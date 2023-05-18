@@ -34,7 +34,7 @@ def dataclass_to_aron_ice(
     from .pythonic_from_to_aron_ice import pythonic_to_aron_ice
 
     if logger is not None:
-        logger.debug(f"Convert object of ARON dataclass {type(obj)} to Pythonic types  ...")
+        logger.debug(f"Convert object of ARON dataclass {type(obj)} to Pythonic types ...")
     data = dataclass_to_dict(obj, logger=logger)
 
     return to_aron_ice(data, logger=logger)

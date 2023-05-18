@@ -1,7 +1,8 @@
 from .import_aron_slice import import_aron_slice
 
-from armarx_memory.aron.common.time import * 
+import numpy as np
 
+from armarx_memory.aron.common.time import *
 from datetime import datetime
 
 try:
@@ -29,7 +30,7 @@ try:
             ret = DateTime()
             ret.clockType = int(ClockTypeEnum.Realtime) # TODO FIX ME!
             ret.hostname = "localhost"
-            ret.timeSinceEpoch.microSeconds = value.timestamp() * 1000000
+            ret.timeSinceEpoch.microSeconds = np.int64(value.timestamp() * 1e6)
 
             return ret.to_aron_ice()
 
