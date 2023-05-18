@@ -57,7 +57,7 @@ class AronIntEnumDataclass:
     ) -> "armarx.aron.data.dto.AronInt":
         from armarx_memory.aron.conversion import dataclass_from_to_aron_ice
         return dataclass_from_to_aron_ice.to_aron_ice(self, logger=logger)
-    
+
     @classmethod
     def from_aron_ice(
             cls,
