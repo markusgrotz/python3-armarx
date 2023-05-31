@@ -2,12 +2,16 @@ import typing as ty
 
 from armarx_core import ice_manager
 
+from armarx_memory.aron.conversion import pythonic_from_to_aron_ice
+
+from armarx_skills import error
 from armarx_skills.manager import dti, dto
 from armarx_skills.manager import skill_execution_request
 
 from armarx_skills.provider import dto as provider_dto
 from armarx_skills.provider import skill_status_update
 from armarx_skills.provider.skill_id import SkillID
+
 
 
 
@@ -37,6 +41,24 @@ class SkillManager:
     def get_skill_descriptions(self) -> dto.SkillDescriptionMapMap:
         return self.proxy.getSkillDescriptions()
 
+    def get_default_params_ice(self, skill_id: SkillID):
+        descriptions_ice = self.get_skill_descriptions()
+        if skill_id.provider_name not in descriptions_ice:
+            raise error.SkillProviderUnknown(skill_id.provider_name)
+
+        skill_provider_descriptions = descriptions_ice[skill_id.provider_name]
+        if skill_id.skill_name not in skill_provider_descriptions:
+            raise error.SkillUnknown(skill_id.skill_name)
+
+        description_ice = skill_provider_descriptions[skill_id.skill_name]
+        default_params = description_ice.defaultParams
+        return default_params
+
+    def get_default_params(self, skill_id: SkillID) -> ty.Dict:
+        params_ice = self.get_default_params_ice(skill_id=skill_id)
+        params = pythonic_from_to_aron_ice.pythonic_from_aron_ice(params_ice)
+        return params
+
     def get_skill_execution_statuses(self) -> dto.SkillStatusUpdateMapMap:
         return self.proxy.getSkillExecutionStatuses()
 
@@ -52,12 +74,19 @@ class SkillManager:
             self,
             executor_name: str,
             skill_id: SkillID,
-    ):
-        descriptions_ice = self.get_skill_descriptions()
-        description_ice = descriptions_ice[skill_id.provider_name][skill_id.skill_name]
-        default_params = description_ice.defaultParams
+    ) -> skill_status_update.SkillStatusUpdate:
 
-        self.execute_skill(skill_execution_request.SkillExecutionRequest(
+        try:
+            default_params = self.get_default_params(skill_id)
+        except (error.SkillProviderUnknown, error.SkillUnknown) as e:
+            message = str(e)
+            header = skill_status_update.SkillStatusUpdateHeader(skill_id, executor_name, None, None,
+                                                                 skill_status_update.ExecutionStatus.Failed)
+            data = {"speak_dialog": message}
+            ret = skill_status_update.SkillStatusUpdate(header, data)
+            return ret
+
+        return self.execute_skill(skill_execution_request.SkillExecutionRequest(
             executor_name=executor_name,
             skill_id=skill_id,
             params=default_params,
@@ -83,11 +112,15 @@ class ReconnectingSkillManager:
             if logger is not None:
                 logger.info(f"Waiting for skill manager '{name}' ...")
             self._skill_manager = SkillManager.wait_for_manager(name=name)
+            if logger is not None:
+                logger.info(f"Connected to skill manager '{name}'.")
 
 
 if __name__ == '__main__':
     def test_main():
-        manager = SkillManager.wait_for_manager()
+        manager = SkillManager.wait_for_manager(name=SkillManager.DEFAULT_ICE_OBJECT_NAME)
+        descriptions = manager.get_skill_descriptions()
+        print("\n".join(descriptions.keys()))
         manager.get_skill_execution_statuses()
 
     test_main()
