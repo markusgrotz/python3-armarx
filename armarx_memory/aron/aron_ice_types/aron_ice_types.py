@@ -4,7 +4,7 @@ from .import_aron_slice import import_aron_slice
 try:
     # beta 0.2.3
     class AronIceTypes:
-        ARON_VERSION = "beta 0.2.3"
+        ARON_VERSION = "2.0.0"
 
         ns = import_aron_slice().data.dto
 
