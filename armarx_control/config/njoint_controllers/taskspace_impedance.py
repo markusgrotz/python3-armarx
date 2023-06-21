@@ -5,7 +5,8 @@ from armarx_control.config.common import CommonControlConfig
 
 
 @dataclass
-class TaskspaceImpedanceControllerConfig(CommonControlConfig):
+class TSImpedanceConfig:
+    node_set_name: str = ""
     kp_impedance: np.ndarray = field(default_factory=lambda: np.zeros((6, 1), dtype=np.float32))
     kd_impedance: np.ndarray = field(default_factory=lambda: np.zeros((6, 1), dtype=np.float32))
 
@@ -35,3 +36,8 @@ class TaskspaceImpedanceControllerConfig(CommonControlConfig):
 
         self.torque_limit = float(self.torque_limit)
         self.qvel_filter = float(self.qvel_filter)
+
+
+@dataclass
+class TaskspaceImpedanceControllerConfig(CommonControlConfig, TSImpedanceConfig):
+    pass
