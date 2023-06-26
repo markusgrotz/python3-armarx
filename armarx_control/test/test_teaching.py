@@ -56,7 +56,7 @@ def run_ts_imp_mp_controller(robot: Robot, config_filename: Path, duration: floa
     validate_file(config_filename, throw_error=True)
 
     controller_name_r, ctrl_r, cfg_r = robot.create_controller(
-        "kvil_deploy", rns_right, control_type, str(config_filename)
+        "kvil_deploy", rns_right, control_type, str(config_filename), False
     )
 
     try:
@@ -114,7 +114,7 @@ def main(name):
     console.log(f"[bold cyan]writing to {filename}")
 
     console.log(f"[bold green]preparing the backward mp config")
-    mp_cfg = mp_config["mpConfig"]["mpList"][0]
+    mp_cfg = mp_config["mpList"][0]
     if mp_cfg["name"] != "default":
         raise ValueError("the mp name should be set to 'default'")
 
