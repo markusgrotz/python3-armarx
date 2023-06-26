@@ -266,6 +266,8 @@ class Robot:
             self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
         elif controller_type == "TSBiImpedance":
             self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
+        elif controller_type == "TSImpedanceMP":
+            self.controller_cfg[controller_name] = None
 
         return controller_name, ctrl, self.controller_cfg[controller_name]
 
@@ -274,6 +276,9 @@ class Robot:
 
     def update_controller_config(self, controller_name: str):
         self.controllers[controller_name].updateConfig(self.controller_cfg[controller_name].to_aron_ice())
+
+    def update_controller_config_with_creator(self, controller_name: str, config: Any):
+        self.ctrl.updateConfig(controller_name, self.controller_type[controller_name], config)
 
     def get_controller_config(self, controller_name: str):
         config_ice = self.controllers[controller_name].getConfig()
@@ -365,6 +370,14 @@ class Robot:
         return the 4 by 4 matrix representing a pose in root frame of the robot
         """
         return np.array(self.ctrl.getPoseInRootFrame(node_name), dtype=np.float32).reshape(4, 4)
+
+    def update_pose(self, controller_name, config, desired_pose):
+        ctrl = self.controllers.get(controller_name, None)
+        if ctrl is None:
+            console.log(f"[bold red]{controller_name} is not available, check your code")
+            return
+        config.desired_pose = desired_pose.T
+        ctrl.updateConfig(config.to_aron_ice())
 
     def get_joint_angles(self, joint_name_lists: list = None) -> Dict[str, float]:
         if joint_name_lists is None or len(joint_name_lists) == 0:
@@ -475,15 +488,15 @@ if __name__ == "__main__":
         # config_aron_ice = config_l.to_aron_ice()
         # ic(config_aron_ice)
         # ic(type(config_aron_ice))
-        config_l = robot.get_controller_config(controller_name_r)
-        console.rule("update controller parameter in python")
-        robot.update_controller_config(controller_name_l)
-        console.rule("up-to-date config from controller")
-        ic(config_l)
-        console.rule()
+        # config_l = robot.get_controller_config(controller_name_r)
+        # console.rule("update controller parameter in python")
+        # robot.update_controller_config(controller_name_l)
+        # console.rule("up-to-date config from controller")
+        # ic(config_l)
+        # console.rule()
 
         # console.rule("set target")
-        ctrl_l.updateConfig(config_l.to_aron_ice())
+        # ctrl_l.updateConfig(config_l.to_aron_ice())
         # assert False
         # console.rule("done")
 
@@ -503,7 +516,7 @@ if __name__ == "__main__":
         console.log(f"Initial target, left: \n{target_left} \nand right: \n{target_right}")
         console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \nand right: \n{robot.get_pose(tcp_right)}")
 
-        n_steps = 500
+        n_steps = 200
         pose_z_range_left = np.linspace(target_left[2, 3], target_left[2, 3] + 100.0, n_steps)
         pose_z_range_right = np.linspace(target_right[2, 3], target_right[2, 3] + 100.0, n_steps)
         finger_range_left = np.linspace(0, 1, n_steps)
@@ -515,10 +528,14 @@ if __name__ == "__main__":
             target_right[2, 3] = pose_z_range_right[i]
             robot.close_hand(cfg.Side.left, finger_range_left[i], finger_range_left[i])
             robot.close_hand(cfg.Side.right, finger_range_right[i], finger_range_right[i])
-            config_l.desired_pose = target_right
-            ctrl_l.updateConfig(config_l.to_aron_ice())
+
+            config_l = robot.get_controller_config(controller_name_l)
+            robot.update_pose(controller_name_l, config_l, target_left)
+            config_r = robot.get_controller_config(controller_name_r)
+            robot.update_pose(controller_name_r, config_r, target_right)
+
             # robot.set_control_target(controller_name_l, target_left)
-            robot.set_control_target(controller_name_r, target_right)
+            # robot.set_control_target(controller_name_r, target_right)
             time.sleep(dt)
             t += dt
 
