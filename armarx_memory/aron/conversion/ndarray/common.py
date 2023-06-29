@@ -35,7 +35,7 @@ def is_point_cloud(array: np.ndarray):
     except AttributeError:
         pass
     else:
-        return fields is not None
+        return (fields is not None) and ("position" in fields)
 
 
 def ndarray_to_aron(
@@ -47,7 +47,6 @@ def ndarray_to_aron(
     :return: The ARON Ice NDArray.
     """
     if is_point_cloud(value):
-        assert "position" in value.dtype.fields, value.dtype.fields
         return PointCloudConversions.pcl_point_cloud_from_py_point_cloud(value)
 
     # General case.
@@ -117,3 +116,16 @@ def convert_dtype_rgb_to_int8(array: np.ndarray) -> np.ndarray:
     :return: The RGB image with native dtype.
     """
     return np.stack([array[c] for c in "rgb"], axis=-1)
+
+
+def convert_int8_to_dtype_rgb(array: np.ndarray) -> np.ndarray:
+    """
+    Convert an array with shape (m, n, 3) and dtype int8
+    to an array with shape (m, n) and dtype dtype_rgb.
+
+    :param array: The RGB image with native dtype.The RGB image with structured dtype.
+    :return: The RGB image with structured dtype.
+    """
+
+    tuple_array = [[tuple(entry) for entry in row] for row in array]
+    return np.array(tuple_array, dtype=dtype_rgb)
