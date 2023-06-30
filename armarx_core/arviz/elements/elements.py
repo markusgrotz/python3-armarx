@@ -20,11 +20,18 @@ def direction_to_ori_mat(dir: np.ndarray, natural_dir=(0, 1, 0)) -> np.ndarray:
     dir /= np.linalg.norm(dir)
     cross = np.cross(natural_dir, dir)
     angle = np.arccos(natural_dir.dot(dir))
-    if np.linalg.norm(angle) < 1e-6:
+    if np.abs(angle) < 1e-6:
         # Directions are almost colinear => Do no rotation
         cross = np.array((1, 0, 0))
         angle = 0.0
-    axis = cross / np.linalg.norm(cross)
+    if np.abs(angle - np.pi) < 1e-6:
+        # Directions are almost colinear, but in different directions => Do 180 deg rotation
+        cross = np.array((1, 0, 0))
+        angle = np.pi
+
+    cross_norm = np.linalg.norm(cross)
+    assert cross_norm > 1e-9, (cross_norm, dir)
+    axis = cross / cross_norm
     ori = tf3d.axangles.axangle2mat(axis, angle)
     return ori
 
