@@ -41,7 +41,7 @@ class Client:
         """
         return Layer(self.component_name, name)
 
-    def begin_stage(self, commit_on_exit=False) -> Stage:
+    def begin_stage(self, commit_on_exit=True) -> Stage:
         if commit_on_exit:
             return Stage(
                 self.component_name, commit_on_exit=commit_on_exit, client=self
