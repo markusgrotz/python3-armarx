@@ -148,10 +148,10 @@ class Box(Element):
     def size(self, value):
         try:
             iter(value)
-            value = self._to_array_checked(value, (3,), "size vector", np.float)
+            value = self._to_array_checked(value, (3,), "size vector", float)
             self._size = value
         except TypeError:
-            self._size = np.array([value, value, value]).astype(np.float)
+            self._size = np.array([value, value, value]).astype(float)
 
     def _update_ice_data(self, ice_data):
         super()._update_ice_data(ice_data)
@@ -257,11 +257,11 @@ class Ellipsoid(Element):
         try:
             iter(value)
             value = self._to_array_checked(
-                value, (3,), "ellipsoid axis lengths", np.float
+                value, (3,), "ellipsoid axis lengths", float
             )
             self._axis_lengths = value
         except TypeError:
-            self._axis_lengths = np.array([value, value, value]).astype(np.float)
+            self._axis_lengths = np.array([value, value, value]).astype(float)
 
     @property
     def curvature(self) -> np.ndarray:
@@ -269,7 +269,7 @@ class Ellipsoid(Element):
 
     @curvature.setter
     def curvature(self, value):
-        value = self._to_array_checked(value, (3,), "curvature", np.float)
+        value = self._to_array_checked(value, (3,), "curvature", float)
         self._curvature = value
 
     def _update_ice_data(self, ice_data):
@@ -495,7 +495,7 @@ class PointCloud(Element):
             (N, 7): Set as (x, y, z, r, g, b, a).
         """
         value = self._to_array_checked(
-            value, [(0,), (None, 3), (None, 6), (None, 7)], "points", dtype=np.float
+            value, [(0,), (None, 3), (None, 6), (None, 7)], "points", dtype=float
         )
         if value.size == 0:
             self._points = value
@@ -512,7 +512,7 @@ class PointCloud(Element):
     @point_positions.setter
     def point_positions(self, value):
         value = self._to_array_checked(
-            value, [(None, 3)], "point positions", dtype=np.float
+            value, [(None, 3)], "point positions", dtype=float
         )
         self._points[:, :3] = value
 
@@ -533,7 +533,7 @@ class PointCloud(Element):
 
         dtype = np.dtype(
             [
-                ("position", np.float32, (3,)),
+                ("position", float32, (3,)),
                 ("a", np.uint8),
                 ("r", np.uint8),
                 ("g", np.uint8),
@@ -601,7 +601,7 @@ class Polygon(Element):
     @points.setter
     def points(self, value):
         value = self._to_array_checked(
-            value, [(0,), (None, 3)], "polygon points", dtype=np.float
+            value, [(0,), (None, 3)], "polygon points", dtype=float
         )
         self._points = value
 
