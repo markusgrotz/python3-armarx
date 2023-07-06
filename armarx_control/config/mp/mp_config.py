@@ -11,8 +11,8 @@ def default_field(obj: Any):
 
 @dataclass
 class ListViaPoint(CommonControlConfig):
-    canonical_value:    float = 0.0
-    via_point_value:    List[float] = default_field([])
+    canonical_value:    np.float64 = 0.0
+    via_point_value:    List[np.float64] = default_field([])
 
 @dataclass
 class MPConfig(CommonControlConfig):
@@ -23,8 +23,8 @@ class MPConfig(CommonControlConfig):
     mp_style:           str = "Discrete"
     regression_model:   str = "default"
     kernel_size:        int = 20
-    damping:            float = 20.0
-    tau:                np.float32 = 1.0
+    damping:            np.float32 = 20.0
+    tau:                np.float64 = 1.0
     amplitude:          np.float64 = 1.0
     duration_sec:       np.float64 = 5.0
 
@@ -32,7 +32,7 @@ class MPConfig(CommonControlConfig):
     stop_with_mp:       bool = True
     via_points:         List[ListViaPoint] = default_field([])
 
-    enable_phase_stop:  np.float64 = False
+    enable_phase_stop:  bool = False
     max_value:          np.float64 = 10.0
     slop:               np.float64 = 10.0
     go_dist:            np.float64 = 50.0
@@ -68,4 +68,12 @@ if __name__ == "__main__":
         raise FileExistsError(f"{p} does not exist")
     c = MPListConfig().from_json(str(p))
     ic(c.to_aron_ice())
+    ic(isinstance(c.mp_list[0].damping, np.float32))
+    ic(isinstance(c.mp_list[0].tau, np.float64))
+    ic(isinstance(c.mp_list[0].tau, float))
+
+    # cc = MPConfig()
+    # cc.damping = np.float32(20.0)
+    # cc.tau = np.float64(1.0)
+    # ic(cc.to_aron_ice())
 

@@ -119,3 +119,20 @@ def quaternion_matrix(quaternion, rot_only=False):
     if rot_only:
         return mat[:3, :3]
     return mat
+
+
+def pose_to_vec(pose_matrix: np.ndarray):
+    if np.shape(pose_matrix) != (4, 4):
+        raise ValueError(f"pose matrix {pose_matrix} is supposed to be a (4, 4) np.ndarray")
+    pose = np.zeros(7, dtype=float)
+    pose[3:] = quaternion_from_matrix(pose_matrix)
+    pose[:3] = pose_matrix[:3, 3]
+    return pose
+
+
+def vec_to_pose(pose_vec: np.ndarray):
+    if not (np.ndim(pose_vec) == 1 and np.size(pose_vec) == 7):
+        raise ValueError(f"Vector {pose_vec} must have 7 dimensions.")
+    pose = quaternion_matrix(pose_vec[3:])
+    pose[:3, 3] = pose_vec[:3]
+    return pose

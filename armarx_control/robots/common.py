@@ -13,7 +13,7 @@ from armarx_control import console
 from armarx_control.utils.dataclass import load_dataclass
 from armarx_control.utils.load_slice import load_proxy, load_slice
 from armarx_vision.camera_utils import build_calibration_matrix
-from armarx_control.utils.pkg import get_armarx_package_data_dir
+
 from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
 
 load_slice("armarx_control", "../armarx/control/interface/ConfigurableNJointControllerInterface.ice")
@@ -267,7 +267,7 @@ class Robot:
         elif controller_type == "TSBiImpedance":
             self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
         elif controller_type == "TSImpedanceMP":
-            self.controller_cfg[controller_name] = None
+            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
 
         return controller_name, ctrl, self.controller_cfg[controller_name]
 
@@ -286,6 +286,8 @@ class Robot:
         if controller_type == "TSImpedance":
             self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(config_ice)
         elif controller_type == "TSBiImpedance":
+            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(config_ice)
+        elif controller_type == "TSImpedanceMP":
             self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(config_ice)
         return self.controller_cfg[controller_name]
 
@@ -426,23 +428,6 @@ def framed_pose_to_vec(framed_pose: dict):
         framed_pose["qy"],
         framed_pose["qz"],
     ])
-
-
-def pose_to_vec(pose_matrix: np.ndarray):
-    if np.shape(pose_matrix) != (4, 4):
-        raise ValueError(f"pose matrix {pose_matrix} is supposed to be a (4, 4) np.ndarray")
-    pose = np.zeros(7, dtype=float)
-    pose[3:] = math.quaternion_from_matrix(pose_matrix)
-    pose[:3] = pose_matrix[:3, 3]
-    return pose
-
-
-def vec_to_pose(pose_vec: np.ndarray):
-    if not (np.ndim(pose_vec) == 1 and np.size(pose_vec) == 7):
-        raise ValueError(f"Vector {pose_vec} must have 7 dimensions.")
-    pose = math.quaternion_matrix(pose_vec[3:])
-    pose[:3, 3] = pose_vec[:3]
-    return pose
 
 
 if __name__ == "__main__":

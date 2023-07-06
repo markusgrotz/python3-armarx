@@ -1,6 +1,8 @@
 import numpy as np
 from typing import Optional
 from dataclasses import dataclass, field
+from armarx_control import console
+from armarx_control.utils.math import pose_to_vec, vec_to_pose
 from armarx_control.config.common import CommonControlConfig
 
 
@@ -36,6 +38,24 @@ class TSImpedanceConfig:
 
         self.torque_limit = float(self.torque_limit)
         self.qvel_filter = float(self.qvel_filter)
+
+    def get_desired_pose(self):
+        console.log(f"[bold red]Warning: the pose is transposed during conversion from CPP to Python"
+                    f"due to column-major to row-major representation, I manually transposed the pose for you. "
+                    f"This will be fixed in the future.")
+        return self.desired_pose.T
+
+    def set_desired_pose(self, desired_pose: np.ndarray):
+        console.log(f"[bold red]Warning: the pose is transposed during conversion from CPP to Python"
+                    f"due to column-major to row-major representation, I manually transposed the pose for you. "
+                    f"This will be fixed in the future.")
+        self.desired_pose = desired_pose.T.astype(np.float32)
+
+    def get_desired_pose_vector(self):
+        return pose_to_vec(self.get_desired_pose())
+
+    def set_desired_pose_vector(self, desired_pose_vector: np.ndarray):
+        self.set_desired_pose_vector(vec_to_pose(desired_pose_vector))
 
 
 @dataclass
