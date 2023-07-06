@@ -84,9 +84,16 @@ class DataclassFromToDict:
         try:
             result = cls(**data)
         except TypeError:
-            if self.logger is not None:
-                self.logger.debug(f"{pre}Not a dataclass. Return data of type {type(data)} as-is..")
-            return data
+            try:
+                result = cls(data)
+            except TypeError:
+                if self.logger is not None:
+                    self.logger.debug(f"{pre}Not a dataclass. Return data of type  {type(data)} as-is..")
+                return data
+            else:
+                if self.logger is not None:
+                    self.logger.debug(f"{pre}Not a dataclass. Construct {cls} from  {type(data)}.")
+                return result
         else:
             if self.logger is not None:
                 self.logger.debug(f"{pre}Not a dataclass. Construct {cls} from kwargs.")

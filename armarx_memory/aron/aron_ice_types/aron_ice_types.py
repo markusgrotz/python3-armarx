@@ -15,6 +15,7 @@ try:
         Int = ns.AronInt
         Long = ns.AronLong
         Float = ns.AronFloat
+        Double = ns.AronDouble
 
         List = ns.List
         Dict = ns.Dict
@@ -40,6 +41,10 @@ try:
         @classmethod
         def float(cls, value: float) -> Float:
             return cls.Float(value=value, VERSION=cls.ARON_VERSION)
+
+        @classmethod
+        def double(cls, value: float) -> Double:
+            return cls.Double(value=value, VERSION=cls.ARON_VERSION)
 
         @classmethod
         def list(cls, elements: list) -> List:
