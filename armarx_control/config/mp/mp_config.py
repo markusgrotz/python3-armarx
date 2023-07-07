@@ -14,9 +14,11 @@ class ListViaPoint(CommonControlConfig):
     canonical_value:    np.float64 = 0.0
     via_point_value:    List[np.float64] = default_field([])
 
+
 @dataclass
 class MPConfig(CommonControlConfig):
     name:               str = "default"
+    node_set_name:      str = "RightArm"
     class_name:         str = "TSMP"
     mp_type_string:     str = "TaskSpacePrincipalComponent"
     mp_mode:            str = "Linear"

@@ -5,7 +5,7 @@ import time
 import numpy as np
 from pathlib import Path
 from typing import Union, Dict, Tuple, List, Any
-
+from dataclasses import dataclass
 import armarx_control.utils.math as math
 import armarx_control.config.common as cfg
 from armarx_robots.sensors import Camera
@@ -13,7 +13,6 @@ from armarx_control import console
 from armarx_control.utils.dataclass import load_dataclass
 from armarx_control.utils.load_slice import load_proxy, load_slice
 from armarx_vision.camera_utils import build_calibration_matrix
-
 from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
 
 load_slice("armarx_control", "../armarx/control/interface/ConfigurableNJointControllerInterface.ice")
@@ -24,44 +23,63 @@ from armarx import NJointControllerInterfacePrx
 # from armarx.control import ConfigurableNJointControllerInterfacePrx
 
 
-def cast_controller(controller_ptr, controller_type: str):
-    if controller_type == "TSImpedance":
+def cast_controller(controller_ptr, controller_type: cfg.ControllerType):
+    if not isinstance(controller_type, cfg.ControllerType):
+        raise TypeError(f"expected controller type ControllerType, got {type(controller_type)}")
+
+    if controller_type == cfg.ControllerType.TSImpedance:
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceImpedanceControllerInterfacePrx
         return NJointTaskspaceImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
 
-    elif controller_type == "TSImpedanceMP":
+    elif controller_type == cfg.ControllerType.TSImpedanceMP:
         load_slice("armarx_control", "../armarx/control/njoint_mp_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTSImpedanceMPControllerInterfacePrx
-        console.log(f"cast controller for type {controller_type}")
+        console.log(f"cast controller for type {controller_type.value}")
         return NJointTSImpedanceMPControllerInterfacePrx.checkedCast(controller_ptr)
 
-    elif controller_type == "TSBiImpedance":
+    elif controller_type == cfg.ControllerType.TSBiImpedance:
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceBimanualImpedanceControllerInterfacePrx
-        console.log(f"cast controller for type {controller_type}")
+        console.log(f"cast controller for type {controller_type.value}")
         return NJointTaskspaceBimanualImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
 
-    elif controller_type == "TSAdmittance":
+    elif controller_type == cfg.ControllerType.TSAdmittance:
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceAdmittanceControllerInterfacePrx
         return NJointTaskspaceAdmittanceControllerInterfacePrx.checkedCast(controller_ptr)
     
-    elif controller_type == "HandController":
+    elif controller_type == cfg.ControllerType.HandController:
         load_slice("devices_ethercat", "../devices/ethercat/hand/armar6_v2/njoint_controller/ShapeInterface.ice")
         from devices.ethercat.hand.armar6_v2 import ShapeControllerInterfacePrx
         return ShapeControllerInterfacePrx.checkedCast(controller_ptr)
     else:
-        console.log(f"[bold red]controller type {controller_type} is not supported yet")
+        console.log(f"[bold red]controller type {controller_type.value} is not supported yet")
+
+
+def get_controller_config(controller_type: cfg.ControllerType, controller: NJointControllerInterfacePrx):
+    if controller_type == cfg.ControllerType.TSImpedance:
+        return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    elif controller_type == cfg.ControllerType.TSBiImpedance:
+        return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    elif controller_type == cfg.ControllerType.TSImpedanceMP:
+        return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    else:
+        return None
+
+
+@dataclass
+class ControllerData:
+    ctrl: NJointControllerInterfacePrx = None
+    type: cfg.ControllerType = None
+    config: Any = None
 
 
 class Robot:
     def __init__(self, config: Union[str, Path, Dict, cfg.RobotConfig]):
         self.c = config if isinstance(config, cfg.RobotConfig) else load_dataclass(cfg.RobotConfig, config)
 
-        self.controllers = {}       # type: Dict[str, Any]
-        self.controller_cfg = {}    # type: Dict[str, Any]
-        self.controller_type = {}    # type: Dict[str, Any]
+        self.controllers: Dict[str, ControllerData] = {}
         self._load_mono_cam()
         self._load_stereo_cam()
         self._load_kinematic_unit()
@@ -164,22 +182,29 @@ class Robot:
         load_slice("armarx_control", "../armarx/control/components/controller_creator/ComponentInterface.ice")
         from armarx.control.components.controller_creator import ComponentInterfacePrx
         self.ctrl = load_proxy(self.c.ctrl.proxy_name, ComponentInterfacePrx)
-
-        # load_slice("RobotControllers", "components/kvil/KVILInterface.ice")
-        # from armarx.RobotControllers.components.kvil import KVILInterfacePrx
-        # self.ctrl = load_proxy(self.c.ctrl.proxy_name, KVILInterfacePrx)
         
     def _load_hand_controller(self):
         if self.c.hand is None:
             console.log(f"[red]hand unit is not configured, skip")
             return
 
-        self.controllers[f"left_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_l, self.c.hand.type)
-        if not self.controllers["left_hand"].isControllerActive():
-            self.controllers["left_hand"].activateController()
-        self.controllers[f"right_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_r, self.c.hand.type)
-        if not self.controllers["left_hand"].isControllerActive():
-            self.controllers["left_hand"].activateController()
+        hand_l = self.get_controller_by_name(self.c.hand.proxy_name_l, cfg.ControllerType.HandController)
+        hand_r = self.get_controller_by_name(self.c.hand.proxy_name_r, cfg.ControllerType.HandController)
+        if not hand_l.isControllerActive():
+            hand_l.activateController()
+        if not hand_r.isControllerActive():
+            hand_r.activateController()
+        self.controllers[cfg.Side.left.value] = ControllerData(
+            ctrl=hand_l,
+            type=cfg.ControllerType.HandController,
+            config=None
+        )
+        self.controllers[cfg.Side.right.value] = ControllerData(
+            ctrl=hand_r,
+            type=cfg.ControllerType.HandController,
+            config=None
+        )
+        ic(self.controllers.keys())
 
     def _load_robot_state_component(self):
         if self.c.state is None:
@@ -193,6 +218,7 @@ class Robot:
         if not self.ctrl:
             console.log(f"[red]controller builder is not initialized")
             return None
+
         left_cam_pose = np.array(self.ctrl.getPoseInRootFrame(self.c.stereo.frame_name_l)).reshape(4, 4)
         right_cam_pose = np.array(self.ctrl.getPoseInRootFrame(self.c.stereo.frame_name_r)).reshape(4, 4)
         console.log(f"[bold green]left frame: {left_cam_pose}, right frame: {right_cam_pose}")
@@ -229,69 +255,52 @@ class Robot:
     def create_controller(
             self,
             control_name_prefix: str,
-            robot_node_set: Union[str, List[str]],
-            controller_type: str,
+            controller_type: cfg.ControllerType,
             config_filename: str,
             allow_reuse: bool = False,
+            activate: bool = True
     ):
-        controller_name = self.ctrl.createController(control_name_prefix, robot_node_set, controller_type, config_filename, allow_reuse)
+        if not isinstance(controller_type, cfg.ControllerType):
+            raise TypeError(f"expected controller_type ControllerType, got {type(controller_type)}")
+
+        controller_name = self.ctrl.createController(
+            control_name_prefix, controller_type.value, config_filename, activate, allow_reuse
+        )
         ctrl = self.get_controller_by_name(controller_name, controller_type)
         if ctrl is None:
             console.log(f"[bold red]got null pointer to the {controller_name}, "
                         f"you need to check your interface implementation")
-            exit(1)
-        self.controllers[controller_name] = ctrl
+            return None, None, None
 
-        init_taskspace_target = self.get_prev_target(controller_name)
-        init_nullspace_target = self.get_prev_null_target(controller_name)
+        if activate and not ctrl.isControllerActive():
+            ctrl.activateController()
+            while not ctrl.isControllerActive():
+                time.sleep(0.003)
 
-        # TODO, this is here because we don't have the interface to retrieve the current controller configs yet
-        while not ctrl.isControllerActive():
-            time.sleep(0.003)
+        ctrl_cfg = get_controller_config(controller_type, ctrl)
+        self.controllers[controller_name] = ControllerData(
+            ctrl=ctrl,
+            type=controller_type,
+            config=ctrl_cfg
+        )
+        return controller_name, ctrl, ctrl_cfg
 
-        # if controller_type == "TSImpedance":
-        #     json_file = get_armarx_package_data_dir(
-        #         "armarx_control") / f"controller_config/NJointTaskspaceImpedanceController/default.json"
-        #     config = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
-        #     config.desired_pose = init_taskspace_target
-        #     config.desired_nullspace_joint_angles = init_nullspace_target
-        #     self.controller_cfg[controller_name] = config
-        # if controller_type == "TSBiImpedance":
-        # else:
-        #     config = None
-        #     console.log(f"[bold red]controller config in Python for type {controller_type} is not supported yet.")
-        # TODO when it is possible to retieve config directly,
-        self.controller_type[controller_name] = controller_type
-        if controller_type == "TSImpedance":
-            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
-        elif controller_type == "TSBiImpedance":
-            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
-        elif controller_type == "TSImpedanceMP":
-            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getConfig())
+    def teach(self, robot_node_set: cfg.NodeSet, side: str, filename: str):
+        return self.ctrl.kinestheticTeaching(robot_node_set.value, side, filename)
 
-        return controller_name, ctrl, self.controller_cfg[controller_name]
-
-    def teach(self, kinematic_chain: str, side: str, filename: str):
-        return self.ctrl.kinestheticTeaching(kinematic_chain, side, filename)
-
-    def update_controller_config(self, controller_name: str):
-        self.controllers[controller_name].updateConfig(self.controller_cfg[controller_name].to_aron_ice())
-
-    def update_controller_config_with_creator(self, controller_name: str, config: Any):
-        self.ctrl.updateConfig(controller_name, self.controller_type[controller_name], config)
+    def update_controller_config(self, controller_name: str, ctrl_config: cfg.CommonControlConfig = None):
+        ctrl_config = self.controllers[controller_name].config if ctrl_config is None else ctrl_config
+        self.controllers[controller_name].ctrl.updateConfig(
+            ctrl_config.to_aron_ice()
+        )
 
     def get_controller_config(self, controller_name: str):
-        config_ice = self.controllers[controller_name].getConfig()
-        controller_type = self.controller_type[controller_name]
-        if controller_type == "TSImpedance":
-            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(config_ice)
-        elif controller_type == "TSBiImpedance":
-            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(config_ice)
-        elif controller_type == "TSImpedanceMP":
-            self.controller_cfg[controller_name] = TaskspaceImpedanceControllerConfig().from_aron_ice(config_ice)
-        return self.controller_cfg[controller_name]
+        return get_controller_config(
+            controller_type=self.controllers[controller_name].type,
+            controller=self.controllers[controller_name].ctrl
+        )
 
-    def get_controller_by_name(self, controller_name: str, controller_type: str):
+    def get_controller_by_name(self, controller_name: str, controller_type: cfg.ControllerType):
         if not self.robot_unit:
             console.log("[red]robot unit is not initialized")
             return None
@@ -302,7 +311,8 @@ class Robot:
             return None
 
         controller = controllers[controller_name]  # type: NJointControllerInterfacePrx
-        assert isinstance(controller, NJointControllerInterfacePrx)
+        if not isinstance(controller, NJointControllerInterfacePrx):
+            raise RuntimeError(f"expected controller type NJointControllerInterfacePrx, got {type(controller)}")
         return cast_controller(controller, controller_type)
 
     def set_control_target(
@@ -339,30 +349,33 @@ class Robot:
         return True
 
     def deactivate(self, controller_name: str):
-        ctrl = self.controllers.get(controller_name, None)
-        if ctrl is None:
+        ctrl_data = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
             console.log(f"controller: {controller_name} not found")
             return False
-        ctrl.deactivateController()
+        ctrl_data.ctrl.deactivateController()
         return True
 
     def delete_controller(self, controller_name: str):
-        ctrl = self.controllers.get(controller_name, None)
-        if ctrl is None:
+        ctrl_data = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
             console.log(f"controller: {controller_name} not found")
             return False
-        ctrl.deactivateAndDeleteController()
+        ctrl_data.ctrl.deactivateAndDeleteController()
         return True
 
     def close_hand(self, side: cfg.Side, finger: float, thumb: float):
         if self.c.hand is None:
             console.log(f"[red]hand unit is not initialized")
             return
+        hand = self.controllers.get(side.value, None)
+        if hand is None:
+            raise KeyError(f"hand {side.value} is not initialized")
+
         finger = max(min(1.0, finger), 0.0)
         thumb = max(min(1.0, thumb), 0.0)
-        # self.kvil_cmp.closeHand(side, finger, thumb)
-        name = "left_hand" if side == cfg.Side.left else "right_hand"
-        self.controllers[name].setTargetsWithPwm(
+
+        hand.ctrl.setTargetsWithPwm(
             fingers=finger, thumb=thumb,
             fingersRelativeMaxPwm=self.c.hand.max_pwm_finger, thumbRelativeMaxPwm=self.c.hand.max_pwm_thumb
         )
@@ -374,11 +387,11 @@ class Robot:
         return np.array(self.ctrl.getPoseInRootFrame(node_name), dtype=np.float32).reshape(4, 4)
 
     def update_pose(self, controller_name, config, desired_pose):
-        ctrl = self.controllers.get(controller_name, None)
+        ctrl = self.controllers.get(controller_name, None).ctrl
         if ctrl is None:
             console.log(f"[bold red]{controller_name} is not available, check your code")
             return
-        config.desired_pose = desired_pose.T
+        config.set_desired_pose(desired_pose)
         ctrl.updateConfig(config.to_aron_ice())
 
     def get_joint_angles(self, joint_name_lists: list = None) -> Dict[str, float]:
@@ -431,6 +444,7 @@ def framed_pose_to_vec(framed_pose: dict):
 
 
 if __name__ == "__main__":
+    from armarx_control.config.robots.armar6 import Armar6NodeSet, Armar6TCP
     np.set_printoptions(suppress=True, precision=3)
 
     c = cfg.RobotConfig()
@@ -451,19 +465,21 @@ if __name__ == "__main__":
         time.sleep(0.01)
     robot.set_platform_vel([0, 0, 0])
 
-    control_type = "TSImpedance"  # "TSAdmittance"
-    rns_left = "LeftArm"
-    rns_right = "RightArm"
-    tcp_left = "Hand L TCP"
-    tcp_right = "Hand R TCP"
-    controller_name_l, ctrl_l, cfg_l = robot.create_controller("python", rns_left, control_type, "", True)
-    controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, "", True)
+    control_type = cfg.ControllerType.TSImpedance  # "TSAdmittance"
+    rns_left = Armar6NodeSet.LeftArm
+    rns_right = Armar6NodeSet.RightArm
+    tcp_left = Armar6TCP.LeftArm
+    tcp_right = Armar6TCP.RightArm
+    controller_name_l, ctrl_l, cfg_l = robot.create_controller(
+        "python", rns_left, control_type, "", True)
+    controller_name_r, ctrl_r, cfg_r = robot.create_controller(
+        "python", rns_right, control_type, "", True)
 
     try:
-        init_target_pose_l = robot.get_prev_target(controller_name_l)
-        init_target_pose_r = robot.get_prev_target(controller_name_r)
-        init_null_target_l = robot.get_prev_null_target(controller_name_l)
-        init_null_target_r = robot.get_prev_null_target(controller_name_r)
+        init_target_pose_l = cfg_l.get_desired_pose()  # robot.get_prev_target(controller_name_l)
+        init_target_pose_r = cfg_r.get_desired_pose()  # robot.get_prev_target(controller_name_r)
+        init_null_target_l = cfg_l.desired_nullspace_joint_angles  # robot.get_prev_null_target(controller_name_l)
+        init_null_target_r = cfg_r.desired_nullspace_joint_angles  # robot.get_prev_null_target(controller_name_r)
 
         # json_file = get_armarx_package_data_dir("armarx_control") / "controller_config/NJointTaskspaceImpedanceController/default.json"
         # config_l = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
@@ -494,12 +510,10 @@ if __name__ == "__main__":
         robot.close_hand(cfg.Side.right, 0, 0)
         time.sleep(1)
 
-        # target_left = copy.deepcopy(init_target_pose_l)
-        # target_right = copy.deepcopy(init_target_pose_r)
-        target_left = copy.deepcopy(robot.get_pose(tcp_left))
-        target_right = copy.deepcopy(robot.get_pose(tcp_right))
+        target_left = copy.deepcopy(init_target_pose_l)
+        target_right = copy.deepcopy(init_target_pose_r)
         console.log(f"Initial target, left: \n{target_left} \nand right: \n{target_right}")
-        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \nand right: \n{robot.get_pose(tcp_right)}")
+        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left.value)} \nand right: \n{robot.get_pose(tcp_right.value)}")
 
         n_steps = 200
         pose_z_range_left = np.linspace(target_left[2, 3], target_left[2, 3] + 100.0, n_steps)
@@ -515,21 +529,24 @@ if __name__ == "__main__":
             robot.close_hand(cfg.Side.right, finger_range_right[i], finger_range_right[i])
 
             config_l = robot.get_controller_config(controller_name_l)
-            robot.update_pose(controller_name_l, config_l, target_left)
-            config_r = robot.get_controller_config(controller_name_r)
-            robot.update_pose(controller_name_r, config_r, target_right)
+            config_l.set_desired_pose(target_left)
+            robot.update_controller_config(controller_name_l, config_l)
 
-            # robot.set_control_target(controller_name_l, target_left)
-            # robot.set_control_target(controller_name_r, target_right)
+            config_r = robot.get_controller_config(controller_name_r)
+            config_r.set_desired_pose(target_right)
+            robot.update_controller_config(controller_name_r, config_r)
+            # robot.update_pose(controller_name_l, config_l, target_left)
+            # robot.update_pose(controller_name_r, config_r, target_right)
+
             time.sleep(dt)
             t += dt
 
         ic(config_l)
 
-        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \n"
-                    f"and right: \n{robot.get_pose(tcp_right)}")
-        console.log(f"target pose : left: \n{robot.get_prev_target(controller_name_l)} \n"
-                    f"and right: \n{robot.get_prev_target(controller_name_r)}")
+        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left.value)} \n"
+                    f"and right: \n{robot.get_pose(tcp_right.value)}")
+        console.log(f"target pose : left: \n{robot.get_controller_config(controller_name_l).get_desired_pose()} \n"
+                    f"and right: \n{robot.get_controller_config(controller_name_r).get_desired_pose()}")
 
     except RuntimeError as e:
         console.log(f"error: {e}")

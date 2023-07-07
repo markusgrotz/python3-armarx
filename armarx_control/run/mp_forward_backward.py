@@ -8,6 +8,7 @@ from armarx_control.robots.common import cfg, Robot
 from armarx_control.utils.pkg import get_armarx_package_data_dir
 from armarx_control.utils.interact import ask_list
 from armarx_control.config.mp.mp_config import MPListConfig
+from armarx_control.config.robots.armar6 import Armar6NodeSet, Armar6TCP
 
 
 def get_control_robot():
@@ -27,12 +28,12 @@ def run_ts_imp_mp_controller(
         flag_delete_controller: bool = True,
         mp_config: MPListConfig = None
 ):
-    control_type = "TSImpedanceMP"
-    rns_right = "RightArm"
-    tcp_right = "Hand R TCP"
+    control_type = cfg.ControllerType.TSImpedanceMP  # "TSImpedanceMP"
+    rns_right = Armar6NodeSet.RightArm
+    tcp_right = Armar6TCP.RightArm.value  # "Hand R TCP"
     target_pose = []
 
-    controller_name, ctrl, cfg = robot.create_controller(
+    controller_name, ctrl, _ = robot.create_controller(
         "python_reproduction", rns_right, control_type, config_filename, True
     )
 
