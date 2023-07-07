@@ -1,7 +1,8 @@
 import logging
-
 import dataclasses as dc
 import typing as ty
+import numpy as np
+
 
 
 class DataclassFromToDict:
@@ -84,6 +85,10 @@ class DataclassFromToDict:
         try:
             result = cls(**data)
         except TypeError:
+            if cls == np.ndarray:
+                if self.logger is not None:
+                    self.logger.debug(f"{pre} is np.ndarray. Return data of type {type(data)} as-is..")
+                return data
             try:
                 result = cls(data)
             except TypeError:
@@ -122,7 +127,6 @@ class DataclassFromToDict:
                 f"\n{pre}  - origin: {origin}"
                 f"\n{pre}  - type of value: {value_type}"
             )
-
         if field_type == type(None):
             if self.logger is not None:
                 self.logger.debug(f"{pre}> Process NoneType")
