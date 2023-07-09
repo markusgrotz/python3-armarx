@@ -1,5 +1,6 @@
 import time
 import copy
+import click
 import numpy as np
 
 from armarx_control import console
@@ -22,7 +23,10 @@ def get_control_robot():
 def run_bimanual_imp_ctrl(
         robot: Robot,
         config_filename: str = None,
+        from_aron: bool = True,
 ):
+    config = TaskspaceImpedanceControllerConfig().from_json(config_filename) if from_aron else config_filename
+
     control_type = ControllerType.TSImpedance
     nodeset_left = Armar6NodeSet.LeftArm
     nodeset_right = Armar6NodeSet.RightArm
@@ -30,7 +34,7 @@ def run_bimanual_imp_ctrl(
     tcp_right = Armar6TCP.RightArm
 
     controller_name, ctrl, _cfg = robot.create_controller(
-        "python_bi_imp", control_type, config_filename, True, True
+        "python_bi_imp", control_type, config, True, True
     )
 
     try:
@@ -92,14 +96,20 @@ def run_bimanual_imp_ctrl(
         robot.delete_controller(controller_name)
 
 
-if __name__ == "__main__":
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
+@click.option("--from_aron", "-a", is_flag=True, help="to create controller from aron config")
+def main(from_aron: bool):
     np.set_printoptions(suppress=True, precision=3)
     robot = get_control_robot()
 
     from armarx_control.utils.pkg import get_armarx_package_data_dir
 
     p = get_armarx_package_data_dir("armarx_control")
-    p = p / "controller_config/NJointTaskspaceBimanualImpedanceController/default.json"
+    p = p / "controller_config/NJointTaskspaceImpedanceController/default.json"
     if not p.is_file():
         raise FileExistsError(f"{p} does not exist")
-    run_bimanual_imp_ctrl(robot, str(p))
+    run_bimanual_imp_ctrl(robot, str(p), from_aron)
+
+
+if __name__ == "__main__":
+    main()

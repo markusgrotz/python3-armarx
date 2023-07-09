@@ -136,3 +136,15 @@ def vec_to_pose(pose_vec: np.ndarray):
     pose = quaternion_matrix(pose_vec[3:])
     pose[:3, 3] = pose_vec[:3]
     return pose
+
+
+def framed_pose_to_vec(framed_pose: dict):
+    return np.array([
+        framed_pose["x"],
+        framed_pose["y"],
+        framed_pose["z"],
+        framed_pose["qw"],
+        framed_pose["qx"],
+        framed_pose["qy"],
+        framed_pose["qz"],
+    ])

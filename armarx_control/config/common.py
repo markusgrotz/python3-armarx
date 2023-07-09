@@ -8,10 +8,6 @@ from enum import Enum
 class NodeSet(Enum):
     pass
 
-    # @abstractmethod
-    # def get_side(self):
-    #     pass
-
 
 class TCP(Enum):
     pass
@@ -62,11 +58,8 @@ class CommonControlConfig(AronDataclass):
         with open(config_filename) as file:
             json_config = json.load(file)
 
-        conv_options = self._get_conversion_options()
-
         def convert_dict_array_data(dict_cfg: dict, result_dict: dict):
             for k, v in dict_cfg.items():
-                k = conv_options.name_aron_to_python(k)
                 if isinstance(v, dict):
                     if v.get("data", None) is not None and v.get("dims") is not None:
                         result_dict[k] = v.get("data")

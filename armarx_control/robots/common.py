@@ -13,7 +13,9 @@ from armarx_control import console
 from armarx_control.utils.dataclass import load_dataclass
 from armarx_control.utils.load_slice import load_proxy, load_slice
 from armarx_vision.camera_utils import build_calibration_matrix
+from armarx_control.config.common import CommonControlConfig
 from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
+from armarx_control.config.njoint_controllers.taskspace_admittance import TaskspaceAdmittanceControllerConfig
 
 load_slice("armarx_control", "../armarx/control/interface/ConfigurableNJointControllerInterface.ice")
 load_slice("RobotAPI", "interface/units/RobotUnit/RobotUnitInterface.ice")
@@ -38,11 +40,11 @@ def cast_controller(controller_ptr, controller_type: cfg.ControllerType):
         console.log(f"cast controller for type {controller_type.value}")
         return NJointTSImpedanceMPControllerInterfacePrx.checkedCast(controller_ptr)
 
-    elif controller_type == cfg.ControllerType.TSBiImpedance:
-        load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
-        from armarx.control import NJointTaskspaceBimanualImpedanceControllerInterfacePrx
-        console.log(f"cast controller for type {controller_type.value}")
-        return NJointTaskspaceBimanualImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
+    # elif controller_type == cfg.ControllerType.TSBiImpedance:
+    #     load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
+    #     from armarx.control import NJointTaskspaceBimanualImpedanceControllerInterfacePrx
+    #     console.log(f"cast controller for type {controller_type.value}")
+    #     return NJointTaskspaceBimanualImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
 
     elif controller_type == cfg.ControllerType.TSAdmittance:
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
@@ -60,6 +62,8 @@ def cast_controller(controller_ptr, controller_type: cfg.ControllerType):
 def get_controller_config(controller_type: cfg.ControllerType, controller: NJointControllerInterfacePrx):
     if controller_type == cfg.ControllerType.TSImpedance:
         return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    elif controller_type == cfg.ControllerType.TSAdmittance:
+        return TaskspaceAdmittanceControllerConfig().from_aron_ice(controller.getConfig())
     elif controller_type == cfg.ControllerType.TSBiImpedance:
         return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
     elif controller_type == cfg.ControllerType.TSImpedanceMP:
@@ -256,16 +260,44 @@ class Robot:
             self,
             control_name_prefix: str,
             controller_type: cfg.ControllerType,
-            config_filename: str,
+            config: Union[str, CommonControlConfig],
             allow_reuse: bool = False,
             activate: bool = True
-    ):
+    ) -> Union[Tuple[str, NJointControllerInterfacePrx, CommonControlConfig], Tuple[None, None, None]]:
+        """
+        create an RT controller with the requested type.
+        Args:
+            control_name_prefix: the prefix of the controller name, you can set it freely to distinguish the context
+            controller_type: see cfg.ControllerType for supported controller types
+            config: either an absolute path to a configuration file or the Python configuration data structure
+            allow_reuse: set to true will allow you to reuse the controller,
+                without having to delete and recreate the controller
+            activate: set to true to have an activated controller when this request is finished, otherwise, you'll
+                need to activate it manually after this request
+
+        Returns:
+            controller_name: the controller name following
+                'controller_creator_{control_name_prefix}_{robot_node_sets}_{controller_class_name}'
+            ctrl: the proxy to the RT controller
+            ctrl_cfg: the controller configuration data structure in Python
+
+        """
         if not isinstance(controller_type, cfg.ControllerType):
             raise TypeError(f"expected controller_type ControllerType, got {type(controller_type)}")
 
-        controller_name = self.ctrl.createController(
-            control_name_prefix, controller_type.value, config_filename, activate, allow_reuse
-        )
+        if isinstance(config, str):
+            console.log(f"[bold cyan]create controller using {config if config else 'default config'}")
+            controller_name = self.ctrl.createController(
+                control_name_prefix, controller_type.value, config, activate, allow_reuse
+            )
+        elif isinstance(config, CommonControlConfig):
+            console.log(f"[bold cyan]create controller using Aron config")
+            controller_name = self.ctrl.createControllerFromAron(
+                control_name_prefix, controller_type.value, config.to_aron_ice(), activate, allow_reuse
+            )
+        else:
+            raise TypeError(f"expected config type Union[str, CommonControlConfig], got {type(config)}")
+
         ctrl = self.get_controller_by_name(controller_name, controller_type)
         if ctrl is None:
             console.log(f"[bold red]got null pointer to the {controller_name}, "
@@ -286,21 +318,74 @@ class Robot:
         return controller_name, ctrl, ctrl_cfg
 
     def teach(self, robot_node_set: cfg.NodeSet, side: str, filename: str):
+        """
+        Enable kinethestic teaching for the given robot node set, and filename as prefix
+        Args:
+            robot_node_set: RobotNodeSet name
+            side: either left or right
+            filename: the prefix to indicate the context of the demonstration
+
+        Returns: the file_path = 'path_to_armarx_control_data/kinesthetic_teaching/
+            {filename}-{year}-{month}-{day}-{hour}-{minute}-{second}'
+            e.g. 'kinesthetic_teaching-2023-06-18-16-21-15', you will have four files recorded, including
+            file_path-ts-forward.csv, file_path-ts-backward.csv, file_path-js-forward.csv, file_path-js-backward.csv
+        """
         return self.ctrl.kinestheticTeaching(robot_node_set.value, side, filename)
 
-    def update_controller_config(self, controller_name: str, ctrl_config: cfg.CommonControlConfig = None):
-        ctrl_config = self.controllers[controller_name].config if ctrl_config is None else ctrl_config
-        self.controllers[controller_name].ctrl.updateConfig(
+    def update_controller_config(
+            self,
+            controller_name: str,
+            ctrl_config: cfg.CommonControlConfig = None
+    ) -> None:
+        """
+        update RT controller configuration by name and (optional) configuration data structure
+
+        Args:
+            controller_name: the controller name
+            ctrl_config: the concrete configuration of the corresponding controller derived from CommonControlConfig
+        """
+        ctrl_data: ControllerData = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
+            return
+        ctrl_config = ctrl_data.config if ctrl_config is None else ctrl_config
+        ctrl_data.ctrl.updateConfig(
             ctrl_config.to_aron_ice()
         )
 
-    def get_controller_config(self, controller_name: str):
+    def get_controller_config(
+            self,
+            controller_name: str
+    ) -> Union[CommonControlConfig, None]:
+        """
+        get the up-to-date controller configurations from the RT controller
+        Args:
+            controller_name: the controller name
+
+        Returns: None if controller is invalid, otherwise the corresponding RT controller configuration data structure
+
+        """
+        ctrl_data: ControllerData = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
+            return None
         return get_controller_config(
-            controller_type=self.controllers[controller_name].type,
-            controller=self.controllers[controller_name].ctrl
+            controller_type=ctrl_data.type,
+            controller=ctrl_data.ctrl
         )
 
-    def get_controller_by_name(self, controller_name: str, controller_type: cfg.ControllerType):
+    def get_controller_by_name(
+            self,
+            controller_name: str,
+            controller_type: cfg.ControllerType
+    ) -> Union[NJointControllerInterfacePrx, None]:
+        """
+        get the proxy of the RT controller by name
+        Args:
+            controller_name:
+            controller_type:
+
+        Returns: the controller proxy
+
+        """
         if not self.robot_unit:
             console.log("[red]robot unit is not initialized")
             return None
@@ -315,40 +400,43 @@ class Robot:
             raise RuntimeError(f"expected controller type NJointControllerInterfacePrx, got {type(controller)}")
         return cast_controller(controller, controller_type)
 
-    def set_control_target(
-            self,
-            controller_name: str,
-            target: Union[np.ndarray, List[float]]
-    ) -> bool:
-        """
-        Args:
-            controller_name: the name of the controller
-            target: (4, 4) matrix
-        """
-        # if not (np.ndim(target) == 2 and np.size(target) == 16):
-        #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
-        #     return False
-        #
-        # ic(self.controller_cfg[controller_name].desired_pose)
-        # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
-        #     console.log(f"[red bold]target pose {target} too far")
-        #     return False
-        # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
-        # ic(self.controller_cfg[controller_name].desired_pose)
-        # self.update_controller_config(controller_name)
-        # return True
+    # def set_control_target(
+    #         self,
+    #         controller_name: str,
+    #         target: Union[np.ndarray, List[float]]
+    # ) -> bool:
+    #     """
+    #     Args:
+    #         controller_name: the name of the controller
+    #         target: (4, 4) matrix
+    #     """
+    #     # if not (np.ndim(target) == 2 and np.size(target) == 16):
+    #     #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
+    #     #     return False
+    #     #
+    #     # ic(self.controller_cfg[controller_name].desired_pose)
+    #     # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
+    #     #     console.log(f"[red bold]target pose {target} too far")
+    #     #     return False
+    #     # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
+    #     # ic(self.controller_cfg[controller_name].desired_pose)
+    #     # self.update_controller_config(controller_name)
+    #     # return True
+    #
+    #     if np.ndim(target) == 2 and np.size(target) == 16:
+    #         quat = math.quaternion_from_matrix(target)
+    #         target = np.concatenate((target[:3, 3], quat))
+    #     if np.size(target) != 7:
+    #         console.log(f"[bold red]target {target} is invalid")
+    #         return False
+    #     if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target.flatten().tolist()):
+    #         console.log(f"[bold red]update target pose failed")
+    #     return True
 
-        if np.ndim(target) == 2 and np.size(target) == 16:
-            quat = math.quaternion_from_matrix(target)
-            target = np.concatenate((target[:3, 3], quat))
-        if np.size(target) != 7:
-            console.log(f"[bold red]target {target} is invalid")
-            return False
-        if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target.flatten().tolist()):
-            console.log(f"[bold red]update target pose failed")
-        return True
-
-    def deactivate(self, controller_name: str):
+    def deactivate(self, controller_name: str) -> bool:
+        """
+        deactivate the controller by name
+        """
         ctrl_data = self.controllers.get(controller_name, None)
         if ctrl_data is None:
             console.log(f"controller: {controller_name} not found")
@@ -356,7 +444,10 @@ class Robot:
         ctrl_data.ctrl.deactivateController()
         return True
 
-    def delete_controller(self, controller_name: str):
+    def delete_controller(self, controller_name: str) -> bool:
+        """
+        deactivate and delete the controller by name
+        """
         ctrl_data = self.controllers.get(controller_name, None)
         if ctrl_data is None:
             console.log(f"controller: {controller_name} not found")
@@ -364,7 +455,14 @@ class Robot:
         ctrl_data.ctrl.deactivateAndDeleteController()
         return True
 
-    def close_hand(self, side: cfg.Side, finger: float, thumb: float):
+    def close_hand(self, side: cfg.Side, finger: float, thumb: float) -> None:
+        """
+        close hand by setting target for finger and thumb individually
+        Args:
+            side: cfg.Side.left or .right or .bimanual
+            finger: value from 0 (open) to 1 (closed)
+            thumb: value from 0 (open) to 1 (closed)
+        """
         if self.c.hand is None:
             console.log(f"[red]hand unit is not initialized")
             return
@@ -386,13 +484,13 @@ class Robot:
         """
         return np.array(self.ctrl.getPoseInRootFrame(node_name), dtype=np.float32).reshape(4, 4)
 
-    def update_pose(self, controller_name, config, desired_pose):
-        ctrl = self.controllers.get(controller_name, None).ctrl
-        if ctrl is None:
-            console.log(f"[bold red]{controller_name} is not available, check your code")
-            return
-        config.set_desired_pose(desired_pose)
-        ctrl.updateConfig(config.to_aron_ice())
+    # def update_pose(self, controller_name, config, desired_pose):
+    #     ctrl = self.controllers.get(controller_name, None).ctrl
+    #     if ctrl is None:
+    #         console.log(f"[bold red]{controller_name} is not available, check your code")
+    #         return
+    #     config.set_desired_pose(desired_pose)
+    #     ctrl.updateConfig(config.to_aron_ice())
 
     def get_joint_angles(self, joint_name_lists: list = None) -> Dict[str, float]:
         if joint_name_lists is None or len(joint_name_lists) == 0:
@@ -400,13 +498,13 @@ class Robot:
         else:
             raise NotImplementedError
 
-    def get_prev_target(self, controller_name: str):
-        # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
-        return np.array(self.ctrl.getPrevTargetPose(controller_name), dtype=np.float32).reshape(4, 4)
+    # def get_prev_target(self, controller_name: str):
+    #     # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
+    #     return np.array(self.ctrl.getPrevTargetPose(controller_name), dtype=np.float32).reshape(4, 4)
 
-    def get_prev_null_target(self, controller_name: str):
-        # return copy.deepcopy(self.controller_cfg[controller_name].desired_nullspace_joint_angles)
-        return np.array(self.ctrl.getPrevNullspaceTargetAngle(controller_name), dtype=np.float32).reshape(-1, 1)
+    # def get_prev_null_target(self, controller_name: str):
+    #     # return copy.deepcopy(self.controller_cfg[controller_name].desired_nullspace_joint_angles)
+    #     return np.array(self.ctrl.getPrevNullspaceTargetAngle(controller_name), dtype=np.float32).reshape(-1, 1)
 
     def set_platform_vel(self, velocity: Union[list, np.ndarray]):
         """
@@ -429,18 +527,6 @@ class Robot:
     #         pose_l, pose_r, _ = self.get_stereo_frames()
     #         cam_center_pose = pose_l
     #         cam_center_pose[:3, 3] = (pose_r[:3, 3] + pose_l[:3, 3]) * 0.5
-
-
-def framed_pose_to_vec(framed_pose: dict):
-    return np.array([
-        framed_pose["x"],
-        framed_pose["y"],
-        framed_pose["z"],
-        framed_pose["qw"],
-        framed_pose["qx"],
-        framed_pose["qy"],
-        framed_pose["qz"],
-    ])
 
 
 if __name__ == "__main__":
