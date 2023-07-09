@@ -2,9 +2,12 @@
 
 to use the armarx_control feature, you need the following packages at the moment, it will
 be cleaner soon.
-- This package in `armarx_control` branch
-- `armarx/skills/control` package (`new_mp_controller_refactor_jianfeng` branch) is where the NJointControllers are implemented.
+- This package in `feature/get_config_from_controller` branch
+- `armarx/skills/control` package (`feature/dict_arm_cfg` branch) is where the NJointControllers are implemented.
 
+> at the moment, it is not merged, therefore, either you prepare your own workspace to compile 
+> `armarx/skills/control` package (`feature/dict_arm_cfg` branch) or you manually checkout to this branch
+> on the default workspace and compile armarx_control. Don't forget to checkout to main after your exp.
 
 # Using the real robot and armarx_control module
 
@@ -23,10 +26,10 @@ be cleaner soon.
    If you don't have your own workspace, you can use the following workspace if you don't change anything
     ```shell
     # in a new terminal on armar6a-0
-    axii w act code_jianfeng
+    axii w act whatever_workspace_that_has_armarx_control_feature/dict_arm_cfg_branch
     start_unit
     # in a new terminal on armar6a-0
-    axii w act code_jianfeng
+    axii w act whatever_workspace_that_has_armarx_control_feature/dict_arm_cfg_branch
     armarx gui
     # in the pop up GUI, find the component `controller_creator` in the `ControlScenario` scenario.
     # start the component, make sure you see "controller_creator is ready" in the log
@@ -36,14 +39,26 @@ be cleaner soon.
    the meanwhile, the hands close gradually. This demonstrates how you can connect to the proxies on the robot and interact with them.
     ```shell
     cd python3-armarx
-    python armarx_control/robots/common.py
+    # create the bimanual impedance controller using configuration json file
+    python armarx_control/run/bimanual_imp_ctrl.py
+    # see command line args
+    python armarx_control/run/bimanual_imp_ctrl.py -h
+   
+    # Python script read the configuration json and create the bimanual impedance controller using Aron
+    python armarx_control/run/bimanual_imp_ctrl.py -a
     ```
    If you see hand not closed, this might due to the issue of hand unit, which has to be activated once.
-4. MP controller example: the robot will move the arm with a straight line trajectory encoded as Via-point Movement Primitive (VMP). The target is 
+4. Run unimanual example: default using left arm, to use right arm, specify `-r`.
+   ```shell
+   python armarx_control/run/uni_manual_imp_ctrl.py -a -r
+   ```
+5. MP controller example: the robot will move the arm with a straight line trajectory encoded as Via-point Movement Primitive (VMP). The target is 
    30 cm above the current pose. You can, e.g., move the arm to `NavigationPose` before testing the following script.
     ```shell
     cd python3-armarx
-    python armarx_control/test/ts_impedance_mp_controller.py
+    python armarx_control/run/mp_forward_backward.py -f kinesthetic_teaching-2023-06-18-16-21-15 -t 5.0 -r -a
+    # see help 
+    python armarx_control/run/mp_forward_backward.py -h
     ```
 
 More examples:
