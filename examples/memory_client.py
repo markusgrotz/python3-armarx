@@ -13,6 +13,7 @@ def print_title(title: str):
 
 def read(core_segment_id: mem.MemoryID):
     # Get Reader.
+    core_segment_id = mem.MemoryID("Manipulation", "Actions_Executed")
     example_reader = mns.wait_for_reader(core_segment_id)
 
     # Perform query.
@@ -23,7 +24,7 @@ def read(core_segment_id: mem.MemoryID):
     result_data = None
 
     # Process result.
-    for prov in memory.coreSegments["ExampleData"].providerSegments.values():
+    for prov in memory.coreSegments[core_segment_id.core_segment_name].providerSegments.values():
         for entity in prov.entities.values():
             for snapshot in entity.history.values():
                 for instance in snapshot.instances:
