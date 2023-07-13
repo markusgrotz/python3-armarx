@@ -1,3 +1,4 @@
+import enum
 import logging
 
 import dataclasses as dc
@@ -27,32 +28,112 @@ class DataclassFromToDict:
         :param depth: The current recursion depth. Only used for logging.
         :return: An instance of the dataclass.
         """
+        return self.value_from_pythonic(value_name=None, value_type=cls, value=data, depth=depth)
 
+    def value_from_pythonic(
+            self,
+            value_name: ty.Optional[str],
+            value_type,
+            value,
+            depth: int,
+    ):
         pre = self._prefix(depth)
+        try:
+            origin = value_type.__origin__
+        except AttributeError:
+            origin = None
 
         if self.logger is not None:
-            self.logger.debug(f"{pre}Construct value of type {cls.__name__} from a {type(data)} ...")
+            self.logger.debug(
+                (f"{pre}- Field '{value_name}':" if value_name is not None
+                 else f"{pre}- Value:")
+                + f"\n{pre}  - type of annot.: {value_type}"
+                + f"\n{pre}  - origin: {origin}"
+                + f"\n{pre}  - type of value: {type(value).__name__}"
+            )
 
-        if cls == type(data):
+        if value_type == type(value):
             if self.logger is not None:
-                self.logger.debug(f"{pre}> Type matches exactly. Return data {cls.__name__} as-is.")
+                self.logger.debug(f"{pre}> Type matches exactly. Return value {value_type.__name__} as-is.")
             # Nothing to do.
-            return data
+            return value
 
+        if value_type == type(None):
+            if self.logger is not None:
+                self.logger.debug(f"{pre}> Process NoneType")
+            if value is None:
+                return None
+
+        if value_type == ty.Any:
+            if self.logger is not None:
+                self.logger.debug(f"{pre}> Process ty.Any")
+            return value
+
+        if origin is not None:
+            # Type annotation such as ty.List, ty.Dict, etc.
+            if origin in (ty.List, list):
+                [vt] = value_type.__args__
+                if self.logger is not None:
+                    self.logger.debug(f"{pre}> Process ty.List[{vt}] ")
+                return [
+                    self.value_from_pythonic(value_name=None, value_type=vt, value=v, depth=depth+1)
+                    for v in value
+                ]
+
+            elif origin in (ty.Dict, dict):
+                kt, vt = value_type.__args__
+                if self.logger is not None:
+                    self.logger.debug(f"{pre}> Process ty.Dict[{kt}, {vt}]")
+                return {
+                    kt(k): self.value_from_pythonic(value_name=None, value_type=vt, value=v, depth=depth+1)
+                    for k, v in value.items()
+                }
+
+            elif origin in (ty.Union,):  # Included ty.Optional[]
+                union_types = value_type.__args__
+                if self.logger is not None:
+                    self.logger.debug(f"{pre}> Process ty.Union[{union_types}]")
+
+                if type(None) in union_types and value is None:
+                    return None
+
+                for union_type in union_types:
+                    if self.logger is not None:
+                        self.logger.debug(f"{pre}  - Try union option {union_type} ...")
+
+                    # ToDo: Correctly capture when this conversion fails and proceed with next one.
+                    result = self.dataclass_from_dict(union_type, value, depth=depth+1)
+                    if isinstance(result, union_type):
+                        return result
+
+        # No type from typing.
+
+        # Try ARON data class.
         from armarx_memory.aron.aron_dataclass import AronDataclass
-        if issubclass(cls, AronDataclass):
-            conversion_options = cls._get_conversion_options()
+        if issubclass(value_type, AronDataclass):
+            conversion_options = value_type._get_conversion_options()
         else:
             conversion_options = None
 
+        if issubclass(value_type, enum.Enum):
+            if self.logger is not None:
+                self.logger.debug(f"{pre}> Process enum: {value_type}")
+            assert isinstance(value, int), value
+            return value_type(value)
+
         try:
-            field_types = cls.__annotations__
+            field_types = value_type.__annotations__
+
         except AttributeError:
-            return self.non_dataclass_from_dict(cls=cls, data=data, depth=depth)
+            # Not a data class.
+            if self.logger is not None:
+                self.logger.debug(f"{pre}> Process other type: {value_type}")
+
+            return self.non_dataclass_from_dict(cls=value_type, data=value_type, depth=depth)
 
         # Build kwargs for cls.
         kwargs = dict()
-        for field_name, value in data.items():
+        for field_name, value in value.items():
             if conversion_options is not None:
                 field_name = conversion_options.name_aron_to_python(field_name)
 
@@ -60,15 +141,15 @@ class DataclassFromToDict:
                 field_type = field_types[field_name]
             except KeyError as e:
                 raise KeyError(
-                    f"Found no dataclass field '{field_name}' in ARON dataclass {cls} matching the data entry. "
+                    f"Found no dataclass field '{field_name}' in ARON dataclass {value_type.__name__} matching the data entry. "
                     "Available are: " + ", ".join(f"'{f}'" for f in field_types))
 
-            field_value = self.field_value_from_pythonic(field_name=field_name, field_type=field_type, value=value, depth=depth)
+            field_value = self.value_from_pythonic(value_name=field_name, value_type=field_type, value=value, depth=depth)
 
             kwargs[field_name] = field_value
 
         # Construct from kwargs and return.
-        return cls(**kwargs)
+        return value_type(**kwargs)
 
     def non_dataclass_from_dict(self, cls, data, depth: int):
         # Not a dataclass. Can just try to deliver kwargs. Or return data.
@@ -92,81 +173,6 @@ class DataclassFromToDict:
                 self.logger.debug(f"{pre}Not a dataclass. Construct {cls} from kwargs.")
             return result
 
-
-    def field_value_from_pythonic(
-            self,
-            field_name: str,
-            field_type,
-            value,
-            depth: int,
-    ):
-        pre = self._prefix(depth)
-
-        try:
-            origin = field_type.__origin__
-        except AttributeError:
-            origin = None
-
-        if self.logger is not None:
-            value_type = type(value)
-            self.logger.debug(
-                f"{pre}- Field '{field_name}':"
-                f"\n{pre}  - type of annot.: {field_type}"
-                f"\n{pre}  - origin: {origin}"
-                f"\n{pre}  - type of value: {value_type}"
-            )
-
-        if field_type == type(None):
-            if self.logger is not None:
-                self.logger.debug(f"{pre}> Process NoneType")
-            if value is None:
-                return None
-
-        elif origin in (ty.List, list):
-            [vt] = field_type.__args__
-            if self.logger is not None:
-                self.logger.debug(f"{pre}> Process list of {vt} ")
-            return [self.dataclass_from_dict(vt, v, depth=depth+1) for v in value]
-
-        elif origin in (ty.Dict, dict):
-            kt, vt = field_type.__args__
-            if self.logger is not None:
-                self.logger.debug(f"{pre}> Process dict {kt} -> {vt}")
-            if value is not None:
-                return {
-                    kt(k): self.dataclass_from_dict(vt, v, depth=depth+1) for k, v in value.items()
-                }
-            else:
-                return None
-
-        elif origin == ty.Union:
-            if self.logger is not None:
-                self.logger.debug(f"{pre}> Process union.")
-
-            union_types = field_type.__args__
-
-            if type(None) in union_types and value is None:
-                return None
-
-            for union_type in union_types:
-                if self.logger is not None:
-                    self.logger.debug(f"{pre}  - Try option {union_type} ...")
-
-                # ToDo: Correctly capture when this conversion fails and proceed with next one.
-                result = self.dataclass_from_dict(union_type, value, depth=depth+1)
-                if isinstance(result, union_type):
-                    return result
-
-        else:
-            if self.logger is not None:
-                self.logger.debug(f"{pre}> Process other type: {field_type}")
-            try:
-                return self.dataclass_from_dict(field_type, value, depth=depth+1)
-            except AttributeError:
-                # Cannot convert.
-                if self.logger is not None:
-                    self.logger.debug(f"{pre}> Not a dataclass. Take value {value} as-is..")
-                return value
 
     def dataclass_to_dict(
         self,
@@ -266,7 +272,7 @@ class DataclassFromToDict:
             return [self.dataclass_to_dict(v, depth=depth+1) for v in value]
 
         elif isinstance(value, dict):
-            return {k: self.dataclass_to_dict(v, depth=depth+1) for k, v in value.items()}
+            return {k: self.value_from_pythonic(v, depth=depth + 1) for k, v in value.items()}
 
         else:
             if self.logger is not None:
