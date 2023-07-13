@@ -1,3 +1,4 @@
+import enum
 import logging
 
 import dataclasses as dc
@@ -113,6 +114,12 @@ class DataclassFromToDict:
             conversion_options = value_type._get_conversion_options()
         else:
             conversion_options = None
+
+        if issubclass(value_type, enum.Enum):
+            if self.logger is not None:
+                self.logger.debug(f"{pre}> Process enum: {value_type}")
+            assert isinstance(value, int), value
+            return value_type(value)
 
         try:
             field_types = value_type.__annotations__
