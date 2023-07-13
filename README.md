@@ -42,6 +42,9 @@ the ArmarX python bindings.
 
 ### Connecting to an Existing Proxy
 
+Slice definitions can be loaded using the `slice_loader.load_armarx_slice()` function. 
+Default values for the proxy name will also be mapped.
+
 For proxies defined in a project's `Variants-*.xml` it is possible to import
 the interface directly. 
 
@@ -51,10 +54,11 @@ platform_unit = PlatformUnitInterfacePrx.get_proxy('Armar6PlatformUnit')
 platform_unit.moveTo(0.0, 0.0, 0.0, 50.0, 0.1)
 ```
 
-Slice definitions can be loaded using the `slice_loader.load_armarx_slice`
-function. Default values for the proxy name will also be mapped.
+
+### Examples
 
 More examples can be found in the [`examples`](examples) folder.
+See also the [Examples in the ArmarX Academy](https://git.h2t.iar.kit.edu/sw/armarx/meta/academy/-/blob/main/examples/README.md).
 
 
 ### Use armarx_control
