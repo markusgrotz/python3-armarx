@@ -5,9 +5,53 @@ import typing as ty
 
 from armarx_memory.ice_conv.ice_converter import IceConverter
 from armarx_memory.aron.conversion import pythonic_from_to_aron_ice as aron_conv
+
+from armarx_skills import error
 from armarx_skills.provider import dto
 from armarx_skills.provider.skill_id import SkillID, SkillIdConv
 from armarx_skills.callback import dti as callback_dti
+
+
+class SkillStatus(enum.Enum):
+    Idle = enum.auto()
+    Scheduled = enum.auto()
+    Running = enum.auto()
+
+    Failed = enum.auto()
+    Succeeded = enum.auto()
+    Aborted = enum.auto()
+
+
+class ActiveOrTerminatedSkillStatus(enum.Enum):
+    Running = enum.auto()
+    Failed = enum.auto()
+    Succeeded = enum.auto()
+    Aborted = enum.auto()
+
+    def to_skill_status(self) -> SkillStatus:
+        if self == self.Running:
+            return SkillStatus.Running
+        if self == self.Succeeded:
+            return SkillStatus.Succeeded
+        if self == self.Failed:
+            return SkillStatus.Failed
+        if self == self.Aborted:
+            return SkillStatus.Aborted
+        raise error.SkillError("Should not happen!")
+
+class TerminatedSkillStatus(enum.Enum):
+    Failed = enum.auto()
+    Succeeded = enum.auto()
+    Aborted = enum.auto()
+
+    def to_skill_status(self) -> SkillStatus:
+        if self == self.Succeeded:
+            return SkillStatus.Succeeded
+        if self == self.Failed:
+            return SkillStatus.Failed
+        if self == self.Aborted:
+            return SkillStatus.Aborted
+        raise error.SkillError("Should not happen!")
 
 
 class ExecutionStatus(enum.Enum):
