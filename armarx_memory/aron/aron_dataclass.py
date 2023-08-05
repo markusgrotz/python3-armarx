@@ -6,12 +6,17 @@ import typing as ty
 from armarx_memory.aron.conversion.options import ConversionOptions
 
 
+# An ARON-compatible dict. That is, a dictionary that can be con converted to
+# and from Ice DTOs.
+AronDict = ty.Dict[str, ty.Any]
+
+
 @dc.dataclass
 class AronDataclass:
     # Make ConversionOptions available to subclasses via cls.ConversionOptions.
     ConversionOptions = ConversionOptions
 
-    def to_dict(self) -> ty.Dict[str, ty.Any]:
+    def to_dict(self) -> AronDict:
         from armarx_memory.aron.conversion import dataclass_from_to_pythonic
         return dataclass_from_to_pythonic.dataclass_to_dict(self)
 
@@ -25,7 +30,7 @@ class AronDataclass:
     @classmethod
     def from_dict(
             cls,
-            data: ty.Dict[str, ty.Any],
+            data: AronDict,
             logger: ty.Optional[logging.Logger] = None,
     ) -> "AronDataclass":
         from armarx_memory.aron.conversion.dataclass_from_to_pythonic import (
