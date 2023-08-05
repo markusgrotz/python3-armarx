@@ -41,10 +41,10 @@ def run_bimanual_imp_ctrl(
         _cfg: TaskspaceImpedanceControllerConfig
         init_target_pose_l = _cfg.cfg.get(nodeset_left.value).get_desired_pose()
         init_target_pose_r = _cfg.cfg.get(nodeset_right.value).get_desired_pose()
-        ic(init_target_pose_l)
-        ic(init_target_pose_r)
-        input("continue ... ")
+        console.log(f"[cyan]Initial positions: left {init_target_pose_l[:3, 3]}, right {init_target_pose_r[:3, 3]}")
+        input("Press `Enter` to continue ... ")
 
+        console.rule("[bold blue]Start controller")
         console.log("close hands")
         robot.close_hand(cfg.Side.left, 1.0, 1.0)
         robot.close_hand(cfg.Side.right, 1.0, 1.0)
@@ -56,9 +56,11 @@ def run_bimanual_imp_ctrl(
 
         target_left = copy.deepcopy(init_target_pose_l)
         target_right = copy.deepcopy(init_target_pose_r)
-        console.log(f"Initial target, left: \n{target_left}\nand right: \n{target_right}")
+        console.log(f"Initial target, left: \n{target_left[:3, 3]}\nand right: \n{target_right[:3, 3]}")
         console.log(
-            f"current_pose, left: \n{robot.get_pose(tcp_left.value)} \nand right: \n{robot.get_pose(tcp_right.value)}")
+            f"current_pose, left: \n{robot.get_pose(tcp_left.value)[:3, 3]} \n"
+            f"and right: \n{robot.get_pose(tcp_right.value)[:3, 3]}"
+        )
 
         n_steps = 200
         pose_z_range_left = np.linspace(target_left[2, 3], target_left[2, 3] + 100.0, n_steps)
@@ -81,19 +83,22 @@ def run_bimanual_imp_ctrl(
             time.sleep(dt)
             t += dt
 
+        console.rule("[bold blue]Controller finished")
         config: TaskspaceImpedanceControllerConfig = robot.get_controller_config(controller_name)
 
-        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left.value)} \n"
-                    f"and right: \n{robot.get_pose(tcp_right.value)}")
-        console.log(f"target pose : left: \n{config.cfg.get(nodeset_left.value).get_desired_pose()} \n"
-                    f"and right: \n{config.cfg.get(nodeset_right.value).get_desired_pose()}")
+        console.log(f"current position, left: \n{robot.get_pose(tcp_left.value)[:3, 3]} \n"
+                    f"and right: \n{robot.get_pose(tcp_right.value)[:3, 3]}")
+        console.log(f"target position : left: \n{config.cfg.get(nodeset_left.value).get_desired_pose()[:3, 3]} \n"
+                    f"and right: \n{config.cfg.get(nodeset_right.value).get_desired_pose()[:3, 3]}")
 
     except RuntimeError as e:
         console.log(f"error: {e}")
     finally:
+        console.log(f"[bold cyan]deleting controller")
         robot.close_hand(cfg.Side.left, 0, 0)
         robot.close_hand(cfg.Side.right, 0, 0)
         robot.delete_controller(controller_name)
+    console.rule("done")
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))

@@ -81,13 +81,13 @@ class TSAdmittanceConfig(CommonControlConfig):
         # console.log(f"[bold red]Warning: the pose is transposed during conversion from CPP to Python"
         #             f"due to column-major to row-major representation, I manually transposed the pose for you. "
         #             f"This will be fixed in the future.")
-        return self.desired_pose.T
+        return self.desired_pose
 
     def set_desired_pose(self, desired_pose: np.ndarray):
         # console.log(f"[bold red]Warning: the pose is transposed during conversion from CPP to Python"
         #             f"due to column-major to row-major representation, I manually transposed the pose for you. "
         #             f"This will be fixed in the future.")
-        self.desired_pose = desired_pose.T.astype(np.float32)
+        self.desired_pose = desired_pose.astype(np.float32)
 
     def get_desired_pose_vector(self):
         return pose_to_vec(self.get_desired_pose())

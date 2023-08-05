@@ -40,9 +40,10 @@ def run_uni_manual_imp_ctrl(
     try:
         _cfg: TaskspaceImpedanceControllerConfig
         init_target_pose = _cfg.cfg.get(nodeset.value).get_desired_pose()
-        ic(init_target_pose)
-        input("continue ... ")
+        console.log(f"[cyan]Initial position: {init_target_pose[:3, 3]}")
+        input("Press `Enter` to continue ... ")
 
+        console.rule("[bold blue]Start controller")
         console.log("close hands")
         robot.close_hand(side, 1.0, 1.0)
         time.sleep(1)
@@ -51,8 +52,8 @@ def run_uni_manual_imp_ctrl(
         time.sleep(1)
 
         target = copy.deepcopy(init_target_pose)
-        console.log(f"Initial target: \n{target}")
-        console.log(f"current_pose: \n{robot.get_pose(tcp.value)}")
+        console.log(f"Initial target: \n{target[:3, 3]}")
+        console.log(f"current position: \n{robot.get_pose(tcp.value)[:3, 3]}")
 
         n_steps = 200
         pose_z_range = np.linspace(target[2, 3], target[2, 3] + 100.0, n_steps)
@@ -70,6 +71,7 @@ def run_uni_manual_imp_ctrl(
             time.sleep(dt)
             t += dt
 
+        console.rule("[bold blue]Controller finished")
         config: TaskspaceImpedanceControllerConfig = robot.get_controller_config(controller_name)
 
         console.log(f"current_pose: \n{robot.get_pose(tcp.value)}")
@@ -78,8 +80,10 @@ def run_uni_manual_imp_ctrl(
     except RuntimeError as e:
         console.log(f"error: {e}")
     finally:
+        console.log(f"[bold cyan]deleting controller")
         robot.close_hand(side, 0, 0)
         robot.delete_controller(controller_name)
+    console.rule("done")
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))

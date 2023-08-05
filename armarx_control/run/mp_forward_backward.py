@@ -46,8 +46,11 @@ def run_ts_imp_mp_controller(
         current_pose = robot.get_controller_config(controller_name).cfg.get(node_set_name).get_desired_pose_vector()
         ctrl.updateMPConfig(mp_config.to_aron_ice())
         ctrl.learnFromCSV([])
-        console.log(f"[bold cyan]Start with current pose: \n{current_pose}, target pose: \n{target_pose}")
-        input("continue? ... ")
+        console.log(f"[bold cyan]Start with current position: \n{current_pose[:3, 3]}, "
+                    f"target pose: \n{target_pose[:3, 3]}")
+        input("Press `Enter` to continue ... ")
+
+        console.rule("[bold blue]Start movement primitive controller")
         ctrl.start("default", current_pose, target_pose, duration)
 
         _start = time.time()
@@ -63,10 +66,10 @@ def run_ts_imp_mp_controller(
                 console.log("[bold green]stop impedance controller")
                 break
 
-        console.log(f"current_pose right: "
-                    f"\n{robot.get_pose(tcp_name)}")
+        console.log(f"current position right: "
+                    f"\n{robot.get_pose(tcp_name)[:3, 3]}")
         console.log(f"target pose right: \n"
-                    f"{robot.get_controller_config(controller_name).cfg.get(node_set_name).get_desired_pose()}")
+                    f"{robot.get_controller_config(controller_name).cfg.get(node_set_name).get_desired_pose()[:3, 3]}")
 
     except RuntimeError as e:
         console.log(f"error: {e}")
