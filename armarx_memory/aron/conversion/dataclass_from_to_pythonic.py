@@ -284,7 +284,7 @@ class DataclassFromToDict:
             return [self.dataclass_to_dict(v, depth=depth+1) for v in value]
 
         elif isinstance(value, dict):
-            return {k: self.value_from_pythonic(v, depth=depth + 1) for k, v in value.items()}
+            return {k: self.dataclass_to_dict(v, depth=depth + 1) for k, v in value.items()}
 
         else:
             if self.logger is not None:
