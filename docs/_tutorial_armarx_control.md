@@ -6,12 +6,8 @@
 
 to use the armarx_control feature, you need the following packages at the moment, it will
 be cleaner soon.
-- This package in `feature/get_config_from_controller` branch
-- `armarx/skills/control` package (`feature/dict_arm_cfg` branch) is where the NJointControllers are implemented.
-
-> at the moment, it is not merged, therefore, either you prepare your own workspace to compile 
-> `armarx/skills/control` package (`feature/dict_arm_cfg` branch) or you manually checkout to this branch
-> on the default workspace and compile armarx_control. Don't forget to checkout to main after your exp.
+- This package in `master` branch
+- `armarx/skills/control` package (`main` branch) is where the NJointControllers are implemented.
 
 ## Using the Real Robot and `armarx_control` Module
 
@@ -30,10 +26,10 @@ be cleaner soon.
    If you do not have your own workspace, you can use the following workspace if you do not change anything
     ```shell
     # In a new terminal on armar6a-0
-    axii w act whatever_workspace_that_has_armarx_control_feature/dict_arm_cfg_branch
+    axii w act your_workspace
     start_unit
     # In a new terminal on armar6a-0
-    axii w act whatever_workspace_that_has_armarx_control_feature/dict_arm_cfg_branch
+    axii w act your_workspace
     armarx gui
     # In the pop up GUI, find the component `controller_creator` in the `ControlScenario` scenario.
     # start the component, make sure you see "controller_creator is ready" in the log
