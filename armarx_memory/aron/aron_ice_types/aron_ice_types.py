@@ -16,6 +16,7 @@ class AronIceTypes:
     Int = data_dto.AronInt
     Long = data_dto.AronLong
     Float = data_dto.AronFloat
+    Double = data_dto.AronDouble
 
     List = data_dto.List
     Dict = data_dto.Dict
@@ -41,6 +42,10 @@ class AronIceTypes:
     @classmethod
     def float(cls, value: float) -> Float:
         return cls.Float(value=value, VERSION=cls.ARON_VERSION)
+
+    @classmethod
+    def double(cls, value: float) -> Double:
+        return cls.Double(value=value, VERSION=cls.ARON_VERSION)
 
     @classmethod
     def list(cls, elements: list) -> List:

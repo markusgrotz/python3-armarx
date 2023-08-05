@@ -26,12 +26,14 @@ def pythonic_to_aron_ice(
         return AronIceTypes.string(value)
     elif isinstance(value, bool):
         return AronIceTypes.bool(value)
-    elif isinstance(value, int) or isinstance(value, np.int32):
-        return AronIceTypes.int(int(value))
     elif isinstance(value, np.int64):
         return AronIceTypes.long(int(value))
-    elif isinstance(value, float):
-        return AronIceTypes.float(value)
+    elif isinstance(value, int) or isinstance(value, np.int32):
+        return AronIceTypes.int(int(value))
+    elif isinstance(value, np.float64):
+        return AronIceTypes.double(float(value))
+    elif isinstance(value, float) or isinstance(value, np.float32):
+        return AronIceTypes.float(float(value))
     elif isinstance(value, list):
         return AronIceTypes.list(list(map(pythonic_to_aron_ice, value)))
     elif isinstance(value, enum.IntEnum):

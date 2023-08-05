@@ -5,7 +5,7 @@ import time
 import numpy as np
 from pathlib import Path
 from typing import Union, Dict, Tuple, List, Any
-
+from dataclasses import dataclass
 import armarx_control.utils.math as math
 import armarx_control.config.common as cfg
 from armarx_robots.sensors import Camera
@@ -13,8 +13,9 @@ from armarx_control import console
 from armarx_control.utils.dataclass import load_dataclass
 from armarx_control.utils.load_slice import load_proxy, load_slice
 from armarx_vision.camera_utils import build_calibration_matrix
-from armarx_control.utils.pkg import get_armarx_package_data_dir
+from armarx_control.config.common import CommonControlConfig
 from armarx_control.config.njoint_controllers.taskspace_impedance import TaskspaceImpedanceControllerConfig
+from armarx_control.config.njoint_controllers.taskspace_admittance import TaskspaceAdmittanceControllerConfig
 
 load_slice("armarx_control", "../armarx/control/interface/ConfigurableNJointControllerInterface.ice")
 load_slice("RobotAPI", "interface/units/RobotUnit/RobotUnitInterface.ice")
@@ -24,37 +25,65 @@ from armarx import NJointControllerInterfacePrx
 # from armarx.control import ConfigurableNJointControllerInterfacePrx
 
 
-def cast_controller(controller_ptr, controller_type: str):
-    if controller_type == "TSImpedance":
+def cast_controller(controller_ptr, controller_type: cfg.ControllerType):
+    if not isinstance(controller_type, cfg.ControllerType):
+        raise TypeError(f"expected controller type ControllerType, got {type(controller_type)}")
+
+    if controller_type == cfg.ControllerType.TSImpedance:
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceImpedanceControllerInterfacePrx
         return NJointTaskspaceImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
 
-    elif controller_type == "TSImpedanceMP":
+    elif controller_type == cfg.ControllerType.TSImpedanceMP:
         load_slice("armarx_control", "../armarx/control/njoint_mp_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTSImpedanceMPControllerInterfacePrx
-        console.log(f"cast controller for type {controller_type}")
+        console.log(f"cast controller for type {controller_type.value}")
         return NJointTSImpedanceMPControllerInterfacePrx.checkedCast(controller_ptr)
 
-    elif controller_type == "TSAdmittance":
+    # elif controller_type == cfg.ControllerType.TSBiImpedance:
+    #     load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
+    #     from armarx.control import NJointTaskspaceBimanualImpedanceControllerInterfacePrx
+    #     console.log(f"cast controller for type {controller_type.value}")
+    #     return NJointTaskspaceBimanualImpedanceControllerInterfacePrx.checkedCast(controller_ptr)
+
+    elif controller_type == cfg.ControllerType.TSAdmittance:
         load_slice("armarx_control", "../armarx/control/njoint_controller/task_space/ControllerInterface.ice")
         from armarx.control import NJointTaskspaceAdmittanceControllerInterfacePrx
         return NJointTaskspaceAdmittanceControllerInterfacePrx.checkedCast(controller_ptr)
     
-    elif controller_type == "HandController":
+    elif controller_type == cfg.ControllerType.HandController:
         load_slice("devices_ethercat", "../devices/ethercat/hand/armar6_v2/njoint_controller/ShapeInterface.ice")
         from devices.ethercat.hand.armar6_v2 import ShapeControllerInterfacePrx
         return ShapeControllerInterfacePrx.checkedCast(controller_ptr)
     else:
-        console.log(f"[bold red]controller type {controller_type} is not supported yet")
+        console.log(f"[bold red]controller type {controller_type.value} is not supported yet")
+
+
+def get_controller_config(controller_type: cfg.ControllerType, controller: NJointControllerInterfacePrx):
+    if controller_type == cfg.ControllerType.TSImpedance:
+        return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    elif controller_type == cfg.ControllerType.TSAdmittance:
+        return TaskspaceAdmittanceControllerConfig().from_aron_ice(controller.getConfig())
+    elif controller_type == cfg.ControllerType.TSBiImpedance:
+        return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    elif controller_type == cfg.ControllerType.TSImpedanceMP:
+        return TaskspaceImpedanceControllerConfig().from_aron_ice(controller.getConfig())
+    else:
+        return None
+
+
+@dataclass
+class ControllerData:
+    ctrl: NJointControllerInterfacePrx = None
+    type: cfg.ControllerType = None
+    config: Any = None
 
 
 class Robot:
     def __init__(self, config: Union[str, Path, Dict, cfg.RobotConfig]):
         self.c = config if isinstance(config, cfg.RobotConfig) else load_dataclass(cfg.RobotConfig, config)
 
-        self.controllers = {}       # type: Dict[str, Any]
-        self.controller_cfg = {}    # type: Dict[str, Any]
+        self.controllers: Dict[str, ControllerData] = {}
         self._load_mono_cam()
         self._load_stereo_cam()
         self._load_kinematic_unit()
@@ -157,22 +186,29 @@ class Robot:
         load_slice("armarx_control", "../armarx/control/components/controller_creator/ComponentInterface.ice")
         from armarx.control.components.controller_creator import ComponentInterfacePrx
         self.ctrl = load_proxy(self.c.ctrl.proxy_name, ComponentInterfacePrx)
-
-        # load_slice("RobotControllers", "components/kvil/KVILInterface.ice")
-        # from armarx.RobotControllers.components.kvil import KVILInterfacePrx
-        # self.ctrl = load_proxy(self.c.ctrl.proxy_name, KVILInterfacePrx)
         
     def _load_hand_controller(self):
         if self.c.hand is None:
             console.log(f"[red]hand unit is not configured, skip")
             return
 
-        self.controllers[f"left_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_l, self.c.hand.type)
-        if not self.controllers["left_hand"].isControllerActive():
-            self.controllers["left_hand"].activateController()
-        self.controllers[f"right_hand"] = self.get_controller_by_name(self.c.hand.proxy_name_r, self.c.hand.type)
-        if not self.controllers["left_hand"].isControllerActive():
-            self.controllers["left_hand"].activateController()
+        hand_l = self.get_controller_by_name(self.c.hand.proxy_name_l, cfg.ControllerType.HandController)
+        hand_r = self.get_controller_by_name(self.c.hand.proxy_name_r, cfg.ControllerType.HandController)
+        if not hand_l.isControllerActive():
+            hand_l.activateController()
+        if not hand_r.isControllerActive():
+            hand_r.activateController()
+        self.controllers[cfg.Side.left.value] = ControllerData(
+            ctrl=hand_l,
+            type=cfg.ControllerType.HandController,
+            config=None
+        )
+        self.controllers[cfg.Side.right.value] = ControllerData(
+            ctrl=hand_r,
+            type=cfg.ControllerType.HandController,
+            config=None
+        )
+        ic(self.controllers.keys())
 
     def _load_robot_state_component(self):
         if self.c.state is None:
@@ -186,6 +222,7 @@ class Robot:
         if not self.ctrl:
             console.log(f"[red]controller builder is not initialized")
             return None
+
         left_cam_pose = np.array(self.ctrl.getPoseInRootFrame(self.c.stereo.frame_name_l)).reshape(4, 4)
         right_cam_pose = np.array(self.ctrl.getPoseInRootFrame(self.c.stereo.frame_name_r)).reshape(4, 4)
         console.log(f"[bold green]left frame: {left_cam_pose}, right frame: {right_cam_pose}")
@@ -222,44 +259,133 @@ class Robot:
     def create_controller(
             self,
             control_name_prefix: str,
-            robot_node_set: str,
-            controller_type: str,
-            config_filename: str
-    ):
-        controller_name = self.ctrl.createController(control_name_prefix, robot_node_set, controller_type, config_filename)
+            controller_type: cfg.ControllerType,
+            config: Union[str, CommonControlConfig],
+            allow_reuse: bool = False,
+            activate: bool = True
+    ) -> Union[Tuple[str, NJointControllerInterfacePrx, CommonControlConfig], Tuple[None, None, None]]:
+        """
+        create an RT controller with the requested type.
+        Args:
+            control_name_prefix: the prefix of the controller name, you can set it freely to distinguish the context
+            controller_type: see cfg.ControllerType for supported controller types
+            config: either an absolute path to a configuration file or the Python configuration data structure
+            allow_reuse: set to true will allow you to reuse the controller,
+                without having to delete and recreate the controller
+            activate: set to true to have an activated controller when this request is finished, otherwise, you'll
+                need to activate it manually after this request
+
+        Returns:
+            controller_name: the controller name following
+                'controller_creator_{control_name_prefix}_{robot_node_sets}_{controller_class_name}'
+            ctrl: the proxy to the RT controller
+            ctrl_cfg: the controller configuration data structure in Python
+
+        """
+        if not isinstance(controller_type, cfg.ControllerType):
+            raise TypeError(f"expected controller_type ControllerType, got {type(controller_type)}")
+
+        if isinstance(config, str):
+            console.log(f"[bold cyan]create controller using {config if config else 'default config'}")
+            controller_name = self.ctrl.createController(
+                control_name_prefix, controller_type.value, config, activate, allow_reuse
+            )
+        elif isinstance(config, CommonControlConfig):
+            console.log(f"[bold cyan]create controller using Aron config")
+            controller_name = self.ctrl.createControllerFromAron(
+                control_name_prefix, controller_type.value, config.to_aron_ice(), activate, allow_reuse
+            )
+        else:
+            raise TypeError(f"expected config type Union[str, CommonControlConfig], got {type(config)}")
+
         ctrl = self.get_controller_by_name(controller_name, controller_type)
         if ctrl is None:
             console.log(f"[bold red]got null pointer to the {controller_name}, "
                         f"you need to check your interface implementation")
-            exit(1)
-        self.controllers[controller_name] = ctrl
+            return None, None, None
 
-        init_taskspace_target = self.get_prev_target(controller_name)
-        init_nullspace_target = self.get_prev_null_target(controller_name)
+        if activate and not ctrl.isControllerActive():
+            ctrl.activateController()
+            while not ctrl.isControllerActive():
+                time.sleep(0.003)
 
-        # TODO, this is here because we don't have the interface to retrieve the current controller configs yet
-        if controller_type == "TSImpedance":
-            json_file = get_armarx_package_data_dir(
-                "armarx_control") / f"controller_config/NJointTaskspaceImpedanceController/default.json"
-            config = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
-            config.desired_pose = init_taskspace_target
-            config.desired_nullspace_joint_angles = init_nullspace_target
-            self.controller_cfg[controller_name] = config
-        else:
-            config = None
-            console.log(f"[bold red]controller config in Python for type {controller_type} is not supported yet.")
-        # TODO when it is possible to retieve config directly,
-        # config = TaskspaceImpedanceControllerConfig().from_aron_ice(ctrl.getUpToDateConfig())
+        ctrl_cfg = get_controller_config(controller_type, ctrl)
+        self.controllers[controller_name] = ControllerData(
+            ctrl=ctrl,
+            type=controller_type,
+            config=ctrl_cfg
+        )
+        return controller_name, ctrl, ctrl_cfg
 
-        return controller_name, ctrl, config
+    def teach(self, robot_node_set: cfg.NodeSet, side: str, filename: str):
+        """
+        Enable kinethestic teaching for the given robot node set, and filename as prefix
+        Args:
+            robot_node_set: RobotNodeSet name
+            side: either left or right
+            filename: the prefix to indicate the context of the demonstration
 
-    def teach(self, kinematic_chain: str, side: str, filename: str):
-        return self.ctrl.kinestheticTeaching(kinematic_chain, side, filename)
+        Returns: the file_path = 'path_to_armarx_control_data/kinesthetic_teaching/
+            {filename}-{year}-{month}-{day}-{hour}-{minute}-{second}'
+            e.g. 'kinesthetic_teaching-2023-06-18-16-21-15', you will have four files recorded, including
+            file_path-ts-forward.csv, file_path-ts-backward.csv, file_path-js-forward.csv, file_path-js-backward.csv
+        """
+        return self.ctrl.kinestheticTeaching(robot_node_set.value, side, filename)
 
-    def update_controller_config(self, controller_name: str):
-        self.controllers[controller_name].updateConfig(self.controller_cfg[controller_name].to_aron_ice())
+    def update_controller_config(
+            self,
+            controller_name: str,
+            ctrl_config: cfg.CommonControlConfig = None
+    ) -> None:
+        """
+        update RT controller configuration by name and (optional) configuration data structure
 
-    def get_controller_by_name(self, controller_name: str, controller_type: str):
+        Args:
+            controller_name: the controller name
+            ctrl_config: the concrete configuration of the corresponding controller derived from CommonControlConfig
+        """
+        ctrl_data: ControllerData = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
+            return
+        ctrl_config = ctrl_data.config if ctrl_config is None else ctrl_config
+        ctrl_data.ctrl.updateConfig(
+            ctrl_config.to_aron_ice()
+        )
+
+    def get_controller_config(
+            self,
+            controller_name: str
+    ) -> Union[CommonControlConfig, None]:
+        """
+        get the up-to-date controller configurations from the RT controller
+        Args:
+            controller_name: the controller name
+
+        Returns: None if controller is invalid, otherwise the corresponding RT controller configuration data structure
+
+        """
+        ctrl_data: ControllerData = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
+            return None
+        return get_controller_config(
+            controller_type=ctrl_data.type,
+            controller=ctrl_data.ctrl
+        )
+
+    def get_controller_by_name(
+            self,
+            controller_name: str,
+            controller_type: cfg.ControllerType
+    ) -> Union[NJointControllerInterfacePrx, None]:
+        """
+        get the proxy of the RT controller by name
+        Args:
+            controller_name:
+            controller_type:
+
+        Returns: the controller proxy
+
+        """
         if not self.robot_unit:
             console.log("[red]robot unit is not initialized")
             return None
@@ -270,67 +396,84 @@ class Robot:
             return None
 
         controller = controllers[controller_name]  # type: NJointControllerInterfacePrx
-        assert isinstance(controller, NJointControllerInterfacePrx)
+        if not isinstance(controller, NJointControllerInterfacePrx):
+            raise RuntimeError(f"expected controller type NJointControllerInterfacePrx, got {type(controller)}")
         return cast_controller(controller, controller_type)
 
-    def set_control_target(
-            self,
-            controller_name: str,
-            target: Union[np.ndarray, List[float]]
-    ) -> bool:
+    # def set_control_target(
+    #         self,
+    #         controller_name: str,
+    #         target: Union[np.ndarray, List[float]]
+    # ) -> bool:
+    #     """
+    #     Args:
+    #         controller_name: the name of the controller
+    #         target: (4, 4) matrix
+    #     """
+    #     # if not (np.ndim(target) == 2 and np.size(target) == 16):
+    #     #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
+    #     #     return False
+    #     #
+    #     # ic(self.controller_cfg[controller_name].desired_pose)
+    #     # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
+    #     #     console.log(f"[red bold]target pose {target} too far")
+    #     #     return False
+    #     # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
+    #     # ic(self.controller_cfg[controller_name].desired_pose)
+    #     # self.update_controller_config(controller_name)
+    #     # return True
+    #
+    #     if np.ndim(target) == 2 and np.size(target) == 16:
+    #         quat = math.quaternion_from_matrix(target)
+    #         target = np.concatenate((target[:3, 3], quat))
+    #     if np.size(target) != 7:
+    #         console.log(f"[bold red]target {target} is invalid")
+    #         return False
+    #     if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target.flatten().tolist()):
+    #         console.log(f"[bold red]update target pose failed")
+    #     return True
+
+    def deactivate(self, controller_name: str) -> bool:
         """
+        deactivate the controller by name
+        """
+        ctrl_data = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
+            console.log(f"controller: {controller_name} not found")
+            return False
+        ctrl_data.ctrl.deactivateController()
+        return True
+
+    def delete_controller(self, controller_name: str) -> bool:
+        """
+        deactivate and delete the controller by name
+        """
+        ctrl_data = self.controllers.get(controller_name, None)
+        if ctrl_data is None:
+            console.log(f"controller: {controller_name} not found")
+            return False
+        ctrl_data.ctrl.deactivateAndDeleteController()
+        return True
+
+    def close_hand(self, side: cfg.Side, finger: float, thumb: float) -> None:
+        """
+        close hand by setting target for finger and thumb individually
         Args:
-            controller_name: the name of the controller
-            target: (4, 4) matrix
+            side: cfg.Side.left or .right or .bimanual
+            finger: value from 0 (open) to 1 (closed)
+            thumb: value from 0 (open) to 1 (closed)
         """
-        # if not (np.ndim(target) == 2 and np.size(target) == 16):
-        #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
-        #     return False
-        #
-        # ic(self.controller_cfg[controller_name].desired_pose)
-        # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
-        #     console.log(f"[red bold]target pose {target} too far")
-        #     return False
-        # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
-        # ic(self.controller_cfg[controller_name].desired_pose)
-        # self.update_controller_config(controller_name)
-        # return True
-
-        if np.ndim(target) == 2 and np.size(target) == 16:
-            quat = math.quaternion_from_matrix(target)
-            target = np.concatenate((target[:3, 3], quat))
-        if np.size(target) != 7:
-            console.log(f"[bold red]target {target} is invalid")
-            return False
-        if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target.flatten().tolist()):
-            console.log(f"[bold red]update target pose failed")
-        return True
-
-    def deactivate(self, controller_name: str):
-        ctrl = self.controllers.get(controller_name, None)
-        if ctrl is None:
-            console.log(f"controller: {controller_name} not found")
-            return False
-        ctrl.deactivateController()
-        return True
-
-    def delete_controller(self, controller_name: str):
-        ctrl = self.controllers.get(controller_name, None)
-        if ctrl is None:
-            console.log(f"controller: {controller_name} not found")
-            return False
-        ctrl.deactivateAndDeleteController()
-        return True
-
-    def close_hand(self, side: cfg.Side, finger: float, thumb: float):
         if self.c.hand is None:
             console.log(f"[red]hand unit is not initialized")
             return
+        hand = self.controllers.get(side.value, None)
+        if hand is None:
+            raise KeyError(f"hand {side.value} is not initialized")
+
         finger = max(min(1.0, finger), 0.0)
         thumb = max(min(1.0, thumb), 0.0)
-        # self.kvil_cmp.closeHand(side, finger, thumb)
-        name = "left_hand" if side == cfg.Side.left else "right_hand"
-        self.controllers[name].setTargetsWithPwm(
+
+        hand.ctrl.setTargetsWithPwm(
             fingers=finger, thumb=thumb,
             fingersRelativeMaxPwm=self.c.hand.max_pwm_finger, thumbRelativeMaxPwm=self.c.hand.max_pwm_thumb
         )
@@ -341,19 +484,27 @@ class Robot:
         """
         return np.array(self.ctrl.getPoseInRootFrame(node_name), dtype=np.float32).reshape(4, 4)
 
+    # def update_pose(self, controller_name, config, desired_pose):
+    #     ctrl = self.controllers.get(controller_name, None).ctrl
+    #     if ctrl is None:
+    #         console.log(f"[bold red]{controller_name} is not available, check your code")
+    #         return
+    #     config.set_desired_pose(desired_pose)
+    #     ctrl.updateConfig(config.to_aron_ice())
+
     def get_joint_angles(self, joint_name_lists: list = None) -> Dict[str, float]:
         if joint_name_lists is None or len(joint_name_lists) == 0:
             return self.kinematic_unit.getJointAngles()
         else:
             raise NotImplementedError
 
-    def get_prev_target(self, controller_name: str):
-        # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
-        return np.array(self.ctrl.getPrevTargetPose(controller_name), dtype=np.float32).reshape(4, 4)
+    # def get_prev_target(self, controller_name: str):
+    #     # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
+    #     return np.array(self.ctrl.getPrevTargetPose(controller_name), dtype=np.float32).reshape(4, 4)
 
-    def get_prev_null_target(self, controller_name: str):
-        # return copy.deepcopy(self.controller_cfg[controller_name].desired_nullspace_joint_angles)
-        return np.array(self.ctrl.getPrevNullspaceTargetAngle(controller_name), dtype=np.float32).reshape(-1, 1)
+    # def get_prev_null_target(self, controller_name: str):
+    #     # return copy.deepcopy(self.controller_cfg[controller_name].desired_nullspace_joint_angles)
+    #     return np.array(self.ctrl.getPrevNullspaceTargetAngle(controller_name), dtype=np.float32).reshape(-1, 1)
 
     def set_platform_vel(self, velocity: Union[list, np.ndarray]):
         """
@@ -377,134 +528,6 @@ class Robot:
     #         cam_center_pose = pose_l
     #         cam_center_pose[:3, 3] = (pose_r[:3, 3] + pose_l[:3, 3]) * 0.5
 
-
-def framed_pose_to_vec(framed_pose: dict):
-    return np.array([
-        framed_pose["x"],
-        framed_pose["y"],
-        framed_pose["z"],
-        framed_pose["qw"],
-        framed_pose["qx"],
-        framed_pose["qy"],
-        framed_pose["qz"],
-    ])
-
-
-def pose_to_vec(pose_matrix: np.ndarray):
-    if np.shape(pose_matrix) != (4, 4):
-        raise ValueError(f"pose matrix {pose_matrix} is supposed to be a (4, 4) np.ndarray")
-    pose = np.zeros(7, dtype=float)
-    pose[3:] = math.quaternion_from_matrix(pose_matrix)
-    pose[:3] = pose_matrix[:3, 3]
-    return pose
-
-
-def vec_to_pose(pose_vec: np.ndarray):
-    if not (np.ndim(pose_vec) == 1 and np.size(pose_vec) == 7):
-        raise ValueError(f"Vector {pose_vec} must have 7 dimensions.")
-    pose = math.quaternion_matrix(pose_vec[3:])
-    pose[:3, 3] = pose_vec[:3]
-    return pose
-
-
-if __name__ == "__main__":
-    np.set_printoptions(suppress=True, precision=3)
-
-    c = cfg.RobotConfig()
-    # c.mono = cfg.MonocularCameraConfig()
-    # c.stereo = cfg.StereoCameraConfig()
-    c.robot_unit = cfg.RobotUnitConfig("Armar6Unit")
-    c.kinematic_unit = cfg.KinematicUnitConfig("Armar6KinematicUnit")
-    c.ctrl = cfg.ControllerCreatorConfig()
-    c.hand = cfg.HandUnitConfig()
-    c.platform = cfg.PlatformUnitConfig()
-    robot = Robot(c)
-
-    for i in range(100):
-        robot.set_platform_vel([0, -100, 0])
-        time.sleep(0.01)
-    for i in range(100):
-        robot.set_platform_vel([0, 100, 0])
-        time.sleep(0.01)
-    robot.set_platform_vel([0, 0, 0])
-
-    control_type = "TSImpedance"  # "TSAdmittance"
-    rns_left = "LeftArm"
-    rns_right = "RightArm"
-    tcp_left = "Hand L TCP"
-    tcp_right = "Hand R TCP"
-    controller_name_l, ctrl_l, cfg_l = robot.create_controller("python", rns_left, control_type, "")
-    controller_name_r, ctrl_r, cfg_r = robot.create_controller("python", rns_right, control_type, "")
-
-    try:
-        init_target_pose_l = robot.get_prev_target(controller_name_l)
-        init_target_pose_r = robot.get_prev_target(controller_name_r)
-        init_null_target_l = robot.get_prev_null_target(controller_name_l)
-        init_null_target_r = robot.get_prev_null_target(controller_name_r)
-
-        json_file = get_armarx_package_data_dir("armarx_control") / "controller_config/NJointTaskspaceImpedanceController/default.json"
-        config_l = TaskspaceImpedanceControllerConfig().from_json(str(json_file))
-        config_l.desired_pose = init_target_pose_l
-        config_l.desired_nullspace_joint_angles = init_null_target_l
-        ic(config_l)
-        # config_aron_ice = config.to_aron_ice()
-        # ic(config_aron_ice)
-        # ic(type(config_aron_ice))
-
-        # console.rule("set target")
-        ctrl_l.updateConfig(config_l.to_aron_ice())
-        # assert False
-        # console.rule("done")
-
-        console.log("close hands")
-        robot.close_hand(cfg.Side.left, 1.0, 1.0)
-        robot.close_hand(cfg.Side.right, 1.0, 1.0)
-        time.sleep(1)
-        console.log("open hands")
-        robot.close_hand(cfg.Side.left, 0, 0)
-        robot.close_hand(cfg.Side.right, 0, 0)
-        time.sleep(1)
-
-        # target_left = copy.deepcopy(init_target_pose_l)
-        # target_right = copy.deepcopy(init_target_pose_r)
-        target_left = copy.deepcopy(robot.get_pose(tcp_left))
-        target_right = copy.deepcopy(robot.get_pose(tcp_right))
-        console.log(f"Initial target, left: \n{target_left} \nand right: \n{target_right}")
-        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \nand right: \n{robot.get_pose(tcp_right)}")
-
-        n_steps = 500
-        pose_z_range_left = np.linspace(target_left[2, 3], target_left[2, 3] + 300.0, n_steps)
-        pose_z_range_right = np.linspace(target_right[2, 3], target_right[2, 3] + 300.0, n_steps)
-        finger_range_left = np.linspace(0, 1, n_steps)
-        finger_range_right = np.linspace(0, 1, n_steps)
-        t = 0
-        dt = 0.01
-        for i in range(n_steps):
-            target_left[2, 3] = pose_z_range_left[i]
-            target_right[2, 3] = pose_z_range_right[i]
-            robot.close_hand(cfg.Side.left, finger_range_left[i], finger_range_left[i])
-            robot.close_hand(cfg.Side.right, finger_range_right[i], finger_range_right[i])
-            config_l.desired_pose = target_right
-            # ctrl_l.updateConfig(config_l.to_aron_ice())
-            robot.set_control_target(controller_name_l, target_left)
-            robot.set_control_target(controller_name_r, target_right)
-            time.sleep(dt)
-            t += dt
-
-        ic(config_l)
-
-        console.log(f"current_pose, left: \n{robot.get_pose(tcp_left)} \n"
-                    f"and right: \n{robot.get_pose(tcp_right)}")
-        console.log(f"target pose : left: \n{robot.get_prev_target(controller_name_l)} \n"
-                    f"and right: \n{robot.get_prev_target(controller_name_r)}")
-
-    except RuntimeError as e:
-        console.log(f"error: {e}")
-    finally:
-        robot.close_hand(cfg.Side.left, 0, 0)
-        robot.close_hand(cfg.Side.right, 0, 0)
-        robot.delete_controller(controller_name_l)
-        robot.delete_controller(controller_name_r)
 
 
 

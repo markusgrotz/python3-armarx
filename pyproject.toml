@@ -30,6 +30,7 @@ marshmallow_dataclass = "*"
 pyyaml = "*"
 icecream = "*"
 rich = "*"
+inquirer = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

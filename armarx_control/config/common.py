@@ -5,10 +5,35 @@ from armarx_memory.aron.aron_dataclass import AronDataclass
 from enum import Enum
 
 
+class NodeSet(Enum):
+    pass
+
+
+class TCP(Enum):
+    pass
+
+
 class Side(Enum):
-    left = 0
-    right = 1
-    bimanual = 2
+    left = "left_hand"
+    right = "right_hand"
+    bimanual = "left_hand,right_hand"
+
+
+class ControllerType(Enum):
+    TSAdmittance = "TSAdmittance"
+    TSImpedance = "TSImpedance"
+    TSBiImpedance = "TSBiImpedance"
+    KptAdmittance = "KptAdmittance"
+    KptImpedance = "KptImpedance"
+    TSAdmittanceMP = "TSAdmittanceMP"
+    TSImpedanceMP = "TSImpedanceMP"
+    TSBiImpedanceMP = "TSBiImpedanceMP"
+    KptAdmittanceMP = "KptAdmittanceMP"
+    KptImpedanceMP = "KptImpedanceMP"
+    KVILImpedanceMP = "KVILImpedanceMP"
+    QPWholeBodyImpedance = "QPWholeBodyImpedance"
+    QPWholeBodyVelocity = "QPWholeBodyVelocity"
+    HandController = "HandController"
 
 
 class Coordination(Enum):
@@ -33,14 +58,21 @@ class CommonControlConfig(AronDataclass):
         with open(config_filename) as file:
             json_config = json.load(file)
 
-        conv_options = self._get_conversion_options()
-        json_config = {
-            conv_options.name_aron_to_python(k): v["data"] if isinstance(v, dict) else v
-            for k, v in json_config.items()
-        }
+        def convert_dict_array_data(dict_cfg: dict, result_dict: dict):
+            for k, v in dict_cfg.items():
+                if isinstance(v, dict):
+                    if v.get("data", None) is not None and v.get("dims") is not None:
+                        result_dict[k] = v.get("data")
+                    else:
+                        if result_dict.get(k, None) is None:
+                            result_dict[k] = {}
+                        convert_dict_array_data(v, result_dict[k])
+                else:
+                    result_dict[k] = v
 
-        return self.from_dict(json_config)
-
+        converted_config = {}
+        convert_dict_array_data(json_config, converted_config)
+        return self.from_dict(converted_config)
 
 
 @dataclass
