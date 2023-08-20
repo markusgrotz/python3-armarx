@@ -56,21 +56,21 @@ class TSAdmittanceConfig(CommonControlConfig):
     ft_config: FTConfig = default_field(FTConfig())
 
     def __post_init__(self):
-        self.kp_impedance = np.array(self.kp_impedance, dtype=np.float32).reshape(6, 1)
-        self.kd_impedance = np.array(self.kd_impedance, dtype=np.float32).reshape(6, 1)
+        self.kp_impedance = np.array(self.kp_impedance, dtype=np.float32).reshape((6, 1))
+        self.kd_impedance = np.array(self.kd_impedance, dtype=np.float32).reshape((6, 1))
 
-        self.kp_admittance = np.array(self.kp_admittance, dtype=np.float32).reshape(6, 1)
-        self.kd_admittance = np.array(self.kd_admittance, dtype=np.float32).reshape(6, 1)
-        self.km_admittance = np.array(self.km_admittance, dtype=np.float32).reshape(6, 1)
+        self.kp_admittance = np.array(self.kp_admittance, dtype=np.float32).reshape((6, 1))
+        self.kd_admittance = np.array(self.kd_admittance, dtype=np.float32).reshape((6, 1))
+        self.km_admittance = np.array(self.km_admittance, dtype=np.float32).reshape((6, 1))
 
-        self.kp_nullspace = np.array(self.kp_nullspace, dtype=np.float32).reshape(-1, 1)
-        self.kd_nullspace = np.array(self.kp_nullspace, dtype=np.float32).reshape(-1, 1)
+        self.kp_nullspace = np.array(self.kp_nullspace, dtype=np.float32).reshape((-1, 1))
+        self.kd_nullspace = np.array(self.kp_nullspace, dtype=np.float32).reshape((-1, 1))
 
-        self.desired_pose = np.array(self.desired_pose, dtype=np.float32).reshape(4, 4)
-        self.desired_twist = np.array(self.desired_twist, dtype=np.float32).reshape(6, 1)
+        self.desired_pose = np.array(self.desired_pose, dtype=np.float32).reshape((4, 4))
+        self.desired_twist = np.array(self.desired_twist, dtype=np.float32).reshape((6, 1))
 
         if self.desired_nullspace_joint_angles is not None:
-            self.desired_nullspace_joint_angles = np.array(self.desired_nullspace_joint_angles, dtype=np.float32).reshape(-1, 1)
+            self.desired_nullspace_joint_angles = np.array(self.desired_nullspace_joint_angles, dtype=np.float32).reshape((-1, 1))
 
         self.torque_limit = float(self.torque_limit)
         self.qvel_filter = float(self.qvel_filter)
