@@ -130,7 +130,7 @@ class DataclassFromToDict:
             if self.logger is not None:
                 self.logger.debug(f"{pre}> Process other type: {value_type}")
 
-            return self.non_dataclass_from_dict(cls=value_type, data=value_type, depth=depth)
+            return self.non_dataclass_from_dict(cls=value_type, data=value, depth=depth)
 
         # Build kwargs for cls.
         kwargs = dict()
