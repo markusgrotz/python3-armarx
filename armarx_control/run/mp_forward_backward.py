@@ -1,3 +1,4 @@
+import copy
 import time
 import click
 import numpy as np
@@ -46,8 +47,8 @@ def run_ts_imp_mp_controller(
         current_pose = robot.get_controller_config(controller_name).cfg.get(node_set_name).get_desired_pose_vector()
         ctrl.updateMPConfig(mp_config.to_aron_ice())
         ctrl.learnFromCSV([])
-        console.log(f"[bold cyan]Start with current position: \n{current_pose[:3, 3]}, "
-                    f"target pose: \n{target_pose[:3, 3]}")
+        console.log(f"[bold cyan]Start with current position: \n{current_pose[:3]}, "
+                    f"target pose: \n{target_pose}")
         input("Press `Enter` to continue ... ")
 
         console.rule("[bold blue]Start movement primitive controller")
@@ -94,10 +95,20 @@ def move(
     dir_str = "forward" if forward else "backward"
     console.rule(f"[bold cyan]running {dir_str} MP ...")
 
-    motion_list = [str("/home/armar-user/armar6_motion/kinesthetic_teaching/" + f"{traj_file_stem}-ts-{dir_str}.csv")]
-    console.log(f"[yellow]using motion list {motion_list}")
-    mp_config.mp_list[0].file_list = motion_list
+    motion_list_ts = [str("/home/armar-user/armar6_motion/kinesthetic_teaching/" + f"{traj_file_stem}-ts-{dir_str}.csv")]
+    motion_list_js = [str("/home/armar-user/armar6_motion/kinesthetic_teaching/" + f"{traj_file_stem}-js-{dir_str}.csv")]
+    console.log(f"[yellow]using motion list {motion_list_ts} for task space")
+    mp_config.mp_list[0].file_list = motion_list_ts
     mp_config.mp_list[0].node_set_name = Armar6NodeSet.RightArm.value if right_arm else Armar6NodeSet.LeftArm.value
+
+    console.log(f"[yellow]using motion list {motion_list_js} for joint space")
+    js_mp_config = copy.deepcopy(mp_config.mp_list[0])
+    js_mp_config.name = "nullspace_mp"
+    js_mp_config.class_name = "JSMP"
+    js_mp_config.file_list = motion_list_js
+    js_mp_config.mp_type_string = "PrincipalComponent"
+    ic(js_mp_config)
+    mp_config.mp_list.append(js_mp_config)
 
     if ask_list(f"return in a {dir_str} way? ", ["yes", "no"]) == "yes":
         run_ts_imp_mp_controller(robot, str(imp_cfg_file),
@@ -121,7 +132,7 @@ def check_imp_mp_cfg(imp_cfg_file: str = "", mp_cfg_file: str = "", right_arm: b
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
-@click.option("--filename",     "-f",    type=str,      help="abs path to the recorded traj (end before -forward/-backward")
+@click.option("--filename",     "-f",    type=str,      help="abs path to the recorded traj (end before -ts-forward/-ts-backward")
 @click.option("--imp_cfg_file", "-fimp", type=str,      default="", help="abs path to impedance controller configuration file")
 @click.option("--mp_cfg_file",  "-fmp",  type=str,      default="", help="abs path to mp configuration file")
 @click.option("--time_sec",     "-t",    type=float,    default=5.0, help="time duration in seconds")

@@ -26,7 +26,7 @@ def teach_motion(robot, name: str, node_set: NodeSet):
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
-@click.option("--name",         "-n",   type=str,  default="", help="the absolute path to demonstration root")
+@click.option("--name",         "-n",   type=str,  default="", help="some meaningful word that will appear in the filename")
 @click.option("--imp_cfg_file", "-fimp", type=str, default="", help="abs path to impedance controller configuration file")
 @click.option("--mp_cfg_file",  "-fmp",  type=str, default="", help="abs path to mp configuration file")
 @click.option("--time_sec",     "-t",    type=float, default=5.0, help="time duration in seconds")
