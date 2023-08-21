@@ -492,11 +492,14 @@ class Robot:
     #     config.set_desired_pose(desired_pose)
     #     ctrl.updateConfig(config.to_aron_ice())
 
-    def get_joint_angles(self, joint_name_lists: list = None) -> Dict[str, float]:
+    def get_joint_angles(self, joint_name_lists: list = None, as_array: bool = False) -> Union[Dict[str, float], np.ndarray]:
         if joint_name_lists is None or len(joint_name_lists) == 0:
             return self.kinematic_unit.getJointAngles()
         else:
-            raise NotImplementedError
+            joint_value_map = self.kinematic_unit.getJointAngles()
+            return np.array([
+                joint_value_map[joint_name] for joint_name in joint_name_lists
+            ])
 
     # def get_prev_target(self, controller_name: str):
     #     # return copy.deepcopy(self.controller_cfg[controller_name].desired_pose)
