@@ -47,7 +47,10 @@ class TSImpedanceConfig(CommonControlConfig):
         # console.log(f"[bold red]Warning: the pose is transposed during conversion from CPP to Python"
         #             f"due to column-major to row-major representation, I manually transposed the pose for you. "
         #             f"This will be fixed in the future.")
-        self.desired_pose = desired_pose.astype(np.float32)
+        self.desired_pose = desired_pose.astype(np.float32).reshape((4, 4))
+
+    def set_desired_nullspace_joint_angles(self, desired_joint_angle: np.ndarray):
+        self.desired_nullspace_joint_angles = desired_joint_angle.astype(np.float32).reshape((-1, 1))
 
     def get_desired_pose_vector(self):
         return pose_to_vec(self.get_desired_pose())
