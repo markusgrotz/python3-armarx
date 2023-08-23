@@ -35,7 +35,7 @@ def copy_file_to_robot(
             with SCPClient(ssh.get_transport()) as scp:
                 if filename.is_file():
                     scp.put(str(filename), target_folder_on_robot, recursive=True)
-                    console.rule("control config sent to robot")
+                    console.log("[yellow]file sent to robot")
                     return Path(target_folder_on_robot) / filename.name
                 else:
                     console.log(f"[bold red]{filename} doesn't exist")

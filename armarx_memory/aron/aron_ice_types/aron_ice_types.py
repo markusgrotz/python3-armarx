@@ -1,70 +1,56 @@
 from .import_aron_slice import import_aron_slice
 
+armarx_aron = import_aron_slice()
+data_dto = armarx_aron.data.dto
 
-try:
-    # beta 0.2.3
-    class AronIceTypes:
-        ARON_VERSION = "beta 0.2.3"
 
-        ns = import_aron_slice().data.dto
+class AronIceTypes:
+    ARON_VERSION = armarx_aron.Version()
 
-        Data = ns.GenericData
+    Version = armarx_aron.Version
 
-        String = ns.AronString
-        Bool = ns.AronBool
-        Int = ns.AronInt
-        Long = ns.AronLong
-        Float = ns.AronFloat
+    Data = data_dto.GenericData
 
-        List = ns.List
-        Dict = ns.Dict
+    String = data_dto.AronString
+    Bool = data_dto.AronBool
+    Int = data_dto.AronInt
+    Long = data_dto.AronLong
+    Float = data_dto.AronFloat
+    Double = data_dto.AronDouble
 
-        NDArray = ns.NDArray
+    List = data_dto.List
+    Dict = data_dto.Dict
 
-        @classmethod
-        def string(cls, value: str) -> String:
-            return cls.String(value=value, VERSION=cls.ARON_VERSION)
+    NDArray = data_dto.NDArray
 
-        @classmethod
-        def bool(cls, value: int) -> Bool:
-            return cls.Bool(value=value, VERSION=cls.ARON_VERSION)
+    @classmethod
+    def string(cls, value: str) -> String:
+        return cls.String(value=value, VERSION=cls.ARON_VERSION)
 
-        @classmethod
-        def int(cls, value: int) -> Int:
-            return cls.Int(value=value, VERSION=cls.ARON_VERSION)
+    @classmethod
+    def bool(cls, value: int) -> Bool:
+        return cls.Bool(value=value, VERSION=cls.ARON_VERSION)
 
-        @classmethod
-        def long(cls, value: int) -> Long:
-            return cls.Long(value=value, VERSION=cls.ARON_VERSION)
+    @classmethod
+    def int(cls, value: int) -> Int:
+        return cls.Int(value=value, VERSION=cls.ARON_VERSION)
 
-        @classmethod
-        def float(cls, value: float) -> Float:
-            return cls.Float(value=value, VERSION=cls.ARON_VERSION)
+    @classmethod
+    def long(cls, value: int) -> Long:
+        return cls.Long(value=value, VERSION=cls.ARON_VERSION)
 
-        @classmethod
-        def list(cls, elements: list) -> List:
-            return cls.List(elements=elements, VERSION=cls.ARON_VERSION)
+    @classmethod
+    def float(cls, value: float) -> Float:
+        return cls.Float(value=value, VERSION=cls.ARON_VERSION)
 
-        @classmethod
-        def dict(cls, elements: dict) -> Dict:
-            return cls.Dict(elements=elements, VERSION=cls.ARON_VERSION)
+    @classmethod
+    def double(cls, value: float) -> Double:
+        return cls.Double(value=value, VERSION=cls.ARON_VERSION)
 
-except AttributeError as e:
-    # < 0.2.3
+    @classmethod
+    def list(cls, elements: list) -> List:
+        return cls.List(elements=elements, VERSION=cls.ARON_VERSION)
 
-    class AronIceTypes:
-
-        ns = import_aron_slice().data
-
-        Data = ns.AronData
-
-        String = ns.AronString
-        Bool = ns.AronBool
-        Int = ns.AronInt
-        Long = ns.AronLong
-        Float = ns.AronFloat
-
-        List = ns.AronList
-        Dict = ns.AronDict
-
-        NdArray = ns.AronNDArray
+    @classmethod
+    def dict(cls, elements: dict) -> Dict:
+        return cls.Dict(elements=elements, VERSION=cls.ARON_VERSION)
