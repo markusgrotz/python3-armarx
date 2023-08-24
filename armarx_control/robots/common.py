@@ -400,38 +400,42 @@ class Robot:
             raise RuntimeError(f"expected controller type NJointControllerInterfacePrx, got {type(controller)}")
         return cast_controller(controller, controller_type)
 
-    # def set_control_target(
-    #         self,
-    #         controller_name: str,
-    #         target: Union[np.ndarray, List[float]]
-    # ) -> bool:
-    #     """
-    #     Args:
-    #         controller_name: the name of the controller
-    #         target: (4, 4) matrix
-    #     """
-    #     # if not (np.ndim(target) == 2 and np.size(target) == 16):
-    #     #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
-    #     #     return False
-    #     #
-    #     # ic(self.controller_cfg[controller_name].desired_pose)
-    #     # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
-    #     #     console.log(f"[red bold]target pose {target} too far")
-    #     #     return False
-    #     # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
-    #     # ic(self.controller_cfg[controller_name].desired_pose)
-    #     # self.update_controller_config(controller_name)
-    #     # return True
-    #
-    #     if np.ndim(target) == 2 and np.size(target) == 16:
-    #         quat = math.quaternion_from_matrix(target)
-    #         target = np.concatenate((target[:3, 3], quat))
-    #     if np.size(target) != 7:
-    #         console.log(f"[bold red]target {target} is invalid")
-    #         return False
-    #     if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target.flatten().tolist()):
-    #         console.log(f"[bold red]update target pose failed")
-    #     return True
+    def set_control_target(
+            self,
+            controller_name: str,
+            target_pose: Dict[str, List[List[float]]],
+            target_nullspace: Dict[str, List[float]] = None
+    ) -> bool:
+        """
+        Args:
+            controller_name: the name of the controller
+            controller_type:
+
+            target_pose: (4, 4) matrix
+            target_nullspace: (n, 1)
+        """
+        # if not (np.ndim(target) == 2 and np.size(target) == 16):
+        #     console.log(f"[red bold] invalid target pose, should be 4x4 matrix")
+        #     return False
+        #
+        # ic(self.controller_cfg[controller_name].desired_pose)
+        # if np.linalg.norm(target[:3, 3] - self.controller_cfg[controller_name].desired_pose[:3, 3]) > 50:
+        #     console.log(f"[red bold]target pose {target} too far")
+        #     return False
+        # self.controller_cfg[controller_name].desired_pose = copy.deepcopy(target.astype(np.float32))
+        # ic(self.controller_cfg[controller_name].desired_pose)
+        # self.update_controller_config(controller_name)
+        # return True
+
+        # if np.ndim(target) == 2 and np.size(target) == 16:
+        #     quat = math.quaternion_from_matrix(target)
+        #     target = np.concatenate((target[:3, 3], quat))
+        # if np.size(target) != 7:
+        #     console.log(f"[bold red]target {target} is invalid")
+        #     return False
+        if not self.ctrl.updateTargetPose(controller_name, "TSImpedance", target_pose, target_nullspace):
+            console.log(f"[bold red]update target pose failed")
+        return True
 
     def deactivate(self, controller_name: str) -> bool:
         """
