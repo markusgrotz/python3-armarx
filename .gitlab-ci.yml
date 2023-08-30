@@ -1,11 +1,96 @@
+stages:
+  - setup-venv
+
+.setup-venv:
+
+  cache:
+    # https://docs.gitlab.com/ee/ci/caching/#share-caches-across-jobs-in-different-branches
+    key: one-key-to-rule-them-all
+    paths:
+      - .apt
+      - .ccache
+      - .pip
+
+  before_script:
+    # Apt cache configuration.
+    - rm -rf /var/cache/apt/archives || true
+    - rm -f /etc/apt/apt.conf.d/docker-clean  # Remove docker-clean script to avoid cache deletion.
+    - mkdir .apt || true
+    - ln -s "$CI_PROJECT_DIR/.apt" /var/cache/apt/archives
+
+    - ln -s "$CI_PROJECT_DIR/.pip" $HOME/.cache/pip
+
+    # Update apt info.
+    - apt-get update
+
+    # Ccache configuration and introspection.
+    - apt-get install ccache --yes
+    - ccache --set-config=cache_dir="$CI_PROJECT_DIR/.ccache"
+    - ccache --max-size=20G
+    - ccache --show-stats
+
+    # Ice configuration to run in Docker.
+    - export ICE_DEFAULT_HOST="127.0.0.1"
+    - export ICE_RUN_AS_ROOT="true"
+
+    # Activate Axii.
+    - source /axii/scripts/install_axii.sh
+
+  script:
+    # Create workspace.
+    - axii workspace create ~/workspace workspace
+    - axii workspace activate workspace
+    - _axii_auto_env_refresh
+
+    # Use workspace configuration from project.
+    - cp "$CI_PROJECT_DIR/.gitlab/ci/armarx-workspace.json" "$ARMARX_WORKSPACE/armarx-workspace.json"
+    - cat "$ARMARX_WORKSPACE/armarx-workspace.json"
+
+    - axii workspace env
+    - _axii_auto_env_refresh
+
+    - echo "Workspace information:"
+    - axii workspace list-modules
+    - axii workspace list-modules --deps
+    - axii workspace info
+
+    - export PROJECT_MODULE="armarx/python3-armarx"
+    - export PROJECT_PATH_IN_WORKSPACE="$armarx__python3_armarx__PATH"
+
+    # Symlink project directory into Axii workspace.
+    - mkdir -p "$(dirname $PROJECT_PATH_IN_WORKSPACE)"
+    - ln -s "$CI_PROJECT_DIR" "$PROJECT_PATH_IN_WORKSPACE"
+
+    # Upgrade.
+    - axii workspace system --accept-apt-install
+    - axii workspace update --prefer-https
+    - axii workspace upgrade -m "$PROJECT_MODULE"
+
+    - ccache --show-stats
+
+setup-venv-bionic:
+  stage: setup-venv
+  extends: .setup-venv
+
+  image: git.h2t.iar.kit.edu:5050/sw/armarx/meta/axii:latest-bionic
+
+
+setup-venv-jammy:
+  stage: setup-venv
+  extends: .setup-venv
+
+  image: git.h2t.iar.kit.edu:5050/sw/armarx/meta/axii:latest-jammy
+
+
+
 # Global
 
-image: python:3.6
+# image: python:3.6
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
-variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+# variables:
+#   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 
 # Pip's cache doesn't store the python packages
@@ -13,31 +98,31 @@ variables:
 #
 # If you want to also cache the installed packages, you have to install
 # them in a virtualenv and cache it as well.
-cache:
-  paths:
-    - .cache/pip
-    - .venv/
+# cache:
+#   paths:
+#     - .cache/pip
+#     - .venv/
 
 
-before_script:
-  - python --version  # For debugging
-  - pip install poetry
-  - poetry --version
-  - poetry config virtualenvs.in-project true
-  - poetry install -vv
+# before_script:
+#   - python --version  # For debugging
+#   - pip install poetry
+#   - poetry --version
+#   - poetry config virtualenvs.in-project true
+#   - poetry install -vv
 
 # test:
 #  script:
 #    - python3 -m unittest
 
-pages:
-  script:
-    - pip install sphinx sphinx-rtd-theme toml
-    - cd docs
-    - make html
-    - mv _build/html/ ../public/
-  artifacts:
-    paths:
-      - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+# pages:
+#   script:
+#     - pip install sphinx sphinx-rtd-theme toml
+#     - cd docs
+#     - make html
+#     - mv _build/html/ ../public/
+#   artifacts:
+#     paths:
+#       - public
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
