@@ -51,7 +51,7 @@ class ObjectID(IceTwin):
 
     @classmethod
     def resolve_filepath(cls, filepath: str):
-        from armarx import cmake_helper
+        from armarx_core import cmake_helper
 
         package_name = filepath.split(os.path.sep, maxsplit=1)[0]
         package_data_dir = cmake_helper.get_data_path(package_name)[0]

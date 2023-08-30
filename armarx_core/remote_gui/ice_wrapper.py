@@ -3,7 +3,9 @@ import numpy as np
 
 
 #Necessary to load packages and modules from ice through the __init__.py of this module
-import armarx_core
+from armarx_core import slice_loader
+
+slice_loader.load_armarx_slice("ArmarXGui", "RemoteGuiInterface.ice")
 
 from armarx import RemoteGuiInterfacePrx
 from armarx import RemoteGui as rg
