@@ -1,0 +1,17 @@
+{
+  "modules": {
+    "tools/ccache/default": {},
+    "armarx/python3-armarx": {}
+  },
+  "global": {
+    "prepare": {
+      "cmake": {
+        "definitions": {
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+          "CMAKE_C_COMPILER_LAUNCHER": "$CCACHE",
+          "CMAKE_CXX_COMPILER_LAUNCHER": "$CCACHE"
+        }
+      }
+    }
+  }
+}
