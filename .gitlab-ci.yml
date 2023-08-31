@@ -18,7 +18,8 @@ stages:
     - mkdir .apt || true
     - ln -s "$CI_PROJECT_DIR/.apt" /var/cache/apt/archives
 
-    - ln -s "$CI_PROJECT_DIR/.pip" $HOME/.cache/pip
+    # Change pip's cache directory to be inside the project directory since we can only cache local items.
+    - export PIP_CACHE_DIR="$CI_PROJECT_DIR/.pip"
 
     # Update apt info.
     - apt-get update
