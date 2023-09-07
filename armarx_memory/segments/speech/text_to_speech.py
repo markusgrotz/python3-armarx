@@ -9,6 +9,8 @@ from armarx_memory.client import MemoryNameSystem, Commit, Reader, Writer
 @dc.dataclass
 class TextToSpeech(AronDataclass):
     text: str
+    language: ty.Optional[str]
+    voice: ty.Optional[str]
 
 
 class TextToSpeechClientBase:
